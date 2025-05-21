@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500px" height="300px" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-width="10" fill="none">
+      <path d="M 0 100 L 500 100" />
+      <path d="M 255 120 L 255 100" />
+      <path d="M 285 130 L 255 120" />
+      <path d="M 285 170 L 225 150" />
+      <path d="M 285 210 L 225 190" />
+      <path d="M 285 170 L 225 190" />
+      <path d="M 285 130 L 225 150" />
+      <path d="M 285 210 L 225 230" />
+      <path d="M 255 240 L 225 230" />
+      <path d="M 255 260 L 285 260 Q 295 260 287 267 L 263 285 Q 255 291 247 285 L 223 267 Q 215 260 225 260 L 255 260" />
+      <path d="M 255 260 L 255 240" />
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500px" height="300px" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-width="10" fill="none">
+  <path d="M 305 122 L 305 102" />
+  <path d="M 305 242 Q 255 222 305 202" />
+  <path d="M 305 202 Q 255 182 305 162" />
+  <path d="M 305 162 Q 255 142 305 122" />
+  <path d="M 305 262 L 335 262 Q 345 262 337 268 L 313 286 Q 305 292 297 286 L 273 268 Q 265 262 275 262 L 305 262" />
+  <path d="M 305 262 L 305 242" />
+  <path d="M 0 100 L 205 100" />
+  <path d="M 205 162 Q 255 142 205 122" />
+  <path d="M 205 202 Q 255 182 205 162" />
+  <path d="M 205 242 Q 255 222 205 202" />
+  <path d="M 205 262 L 235 262 Q 245 262 237 268 L 213 286 Q 205 292 197 286 L 173 268 Q 165 262 175 262 L 205 262" />
+  <path d="M 205 262 L 205 242" />
+  <path d="M 205 122 L 205 102" />
+  <path d="M 245 242 L 245 122" />
+  <path d="M 265 242 L 265 122" />
+  <path d="M 305 102 L 500 100" />
+  <text x="170" y="190" font-family="Helvetica" font-size="25" text-anchor="middle" stroke="none" fill="#000000">
+    L1
+  </text>
+  <text x="340" y="190" font-family="Helvetica" font-size="25" text-anchor="middle" stroke="none" fill="#000000">
+    L2
+  </text>
+</svg>
