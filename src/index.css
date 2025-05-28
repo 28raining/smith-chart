@@ -22,3 +22,14 @@ body {
 .hoverDp {
   stroke:red;
 }
+
+
+.mr_lg {
+  margin-right: 100px !important;
+}
+
+@media (max-width: 700px) {
+  .mr_lg {
+    margin-right: 0 !important;
+  }
+}

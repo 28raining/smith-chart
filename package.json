@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -12,11 +12,14 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@hyvor/hyvor-talk-react": "^1.0.2",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "d3": "^7.9.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "uplot": "^1.6.32",
+    "uplot-react": "^1.2.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

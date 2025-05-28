@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 18 70 65" stroke="black" stroke-width="3" fill="none">
+
+  <!-- Circle 1 (Largest) -->
+  <circle cx="60" cy="50" r="30" fill="white" />
+  
+  <!-- Circle 2 (Medium) -->
+  <circle cx="70" cy="50" r="20" />
+  
+  <!-- Circle 3 (Smallest) -->
+  <circle cx="80" cy="50" r="10" />
+  
+  <!-- Arc in positive Y direction -->
+  <path d="M 90 50 A 30 30 0 0 0 60 80"/>
+  
+  <!-- Arc in negative Y direction -->
+  <path d="M 90 50 A 30 30 0 0 1 60 20" />
+  <!-- Arc in positive Y direction -->
+  <path d="M 90 50 A 50 30 0 0 0 40 72" />
+  
+  <!-- Arc in negative Y direction -->
+  <path d="M 90 50 A 50 30 0 0 1 40 28" />
+  
+</svg>

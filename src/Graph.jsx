@@ -1,33 +1,50 @@
 import { useState, useRef, useEffect } from "react";
 import * as d3 from "d3";
 // import { Tooltip, Typography } from "@mui/material";
-import { styled } from '@mui/material/styles';
-import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from "@mui/material/styles";
+import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
+import SaveIcon from "@mui/icons-material/Save";
+import IconButton from "@mui/material/IconButton";
 
-import { arcColors, processImpedance } from "./commonFunctions.js";
+import Box from "@mui/material/Box";
+
+import { arcColors, one_over_complex, processImpedance, complex_multiply } from "./commonFunctions.js";
 
 const resistanceCircles = [0, 0.2, 0.5, 1, 2, 4, 10, Infinity];
 const reactanceCircles = [0.2, 0.5, 1, 2, 4, 10, -0.2, -0.5, -1, -2, -4, -10];
 
+const dashTypes = [
+  "5,5", // short dash
+  "10,5", // medium dash
+  "2,2,10,2", // dot-dash pattern
+  "4,6", // dotted
+  "10,2,2,2", // long dash, short gap, short dash, short gap
+];
+// Usage: <path stroke-dasharray={dashTypes[0]} ... />
+
 const LightTooltip = styled(({ className, ...props }) => (
-  <Tooltip {...props} classes={{ popper: className }} slotProps={{
-    popper: {
-      modifiers: [
-        {
-          name: 'offset',
-          options: {
-            offset: [0, 0],
+  <Tooltip
+    {...props}
+    classes={{ popper: className }}
+    slotProps={{
+      popper: {
+        modifiers: [
+          {
+            name: "offset",
+            options: {
+              offset: [0, 0],
+            },
           },
-        },
-      ],
-    },
-  }} />
+        ],
+      },
+    }}
+  />
 ))(({ theme }) => ({
   [`& .${tooltipClasses.tooltip}`]: {
     backgroundColor: theme.palette.common.black,
-    color: 'white',
+    color: "white",
     boxShadow: theme.shadows[1],
-    fontSize: '0.8rem',
+    fontSize: "0.8rem",
   },
 }));
 
@@ -38,43 +55,246 @@ function formatNumber(num, maxDecimals) {
   return Number(num.toFixed(maxDecimals));
 }
 
-function Graph({ impedanceResults, zo }) {
-  const width = 650;
+function createLabel(svg, x, y, text) {
+  var y = Number(y) + 4;
+  var x = Number(x); // + 4;
+  var strLen = (text.length + 1) * 8;
+
+  svg
+    .append("rect")
+    .attr("x", x - 0.5 * strLen)
+    .attr("y", y - 10)
+    .attr("width", strLen)
+    .attr("height", 12)
+    .attr("fill", "white")
+    .attr("stroke", "none") // removes the outline
+    .attr("opacity", 1.0); // 50% opacity
+  svg
+    .append("text")
+    .attr("x", x) // x position
+    .attr("y", y) // y position
+    .text(text) // label content
+    .attr("font-size", "14px")
+    .attr("stroke", "none")
+    .attr("text-anchor", "middle")
+    .attr("fill", "black");
+}
+
+function Graph({
+  impedanceResults,
+  zo,
+  spanResults,
+  qCircles,
+  customMarkers,
+  vswrCircles,
+  nfCircles,
+  zMarkers,
+  reflection_real,
+  reflection_imag,
+}) {
   // const height = 650;
   var svg, svgGroup, svgLabels;
   const initializedRef = useRef(false);
   const svgRef = useRef(null);
+  const svgWrapper = useRef(null);
   const topGroupRef = useRef(null);
   const tracingArcsRef = useRef(null);
   const labelsRef = useRef(null);
+  const qCirclesRef = useRef(null);
+  const zMarkersRef = useRef(null);
+  const vswrCirclesRef = useRef(null);
+  const nfCirclesRef = useRef(null);
   const impedanceArcsRef = useRef(null);
   const dpCirclesRef = useRef(null);
-  const [hoverImpedance, setHoverImpedance] = useState([0, 0]);
+  const [hoverImpedance, setHoverImpedance] = useState([0, 0, 0]);
+  const [hSnaps, setHSnaps] = useState([]);
+  const [width, setWidth] = useState(650);
   // const [snapDetails, setSnapDetails] = useState({ real: 0, imaginary: 0 });
   var hoverSnaps = [];
   const markerRadius = 6;
+  // console.log('WIDTH',width )
 
-  function HoverTooltip({z}) {
-    var res = processImpedance(z, zo);
-    return <>
-      <p style={{margin:0, padding:0}}>Impedance = {res.zStr} ({res.zPolarStr})</p>
-      <p style={{margin:0, padding:0}}>Refl-Coeff = {res.refStr} ({res.refPolarStr})</p>
-      <p style={{margin:0, padding:0}}>VSWR = {res.vswr}</p>
-      <p style={{margin:0, padding:0}}>Q-Factor = {res.qFactor}</p>
-    </>
+  function updateWidth() {
+    var newWidth = svgWrapper.current.offsetWidth;
+    // console.log('neww', newWidth);
+    if (newWidth > 700) setWidth(650);
+    else if (newWidth > 600) setWidth(550);
+    else if (newWidth > 460) setWidth(450);
+    else setWidth(350);
   }
 
-  // console.log("rendering")
-
   useEffect(() => {
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-    var re, im;
-    console.log("initializing");
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => {
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, []);
+
+  //adjusts the coordinates based on the real size (in pixels) of the smith chart
+  function impedanceToSmithChart(re, im) {
+    var [x, y] = impedanceToSmithCoordinates(re, im);
+    var newX = x * width * 0.5;
+    var newY = y * width * 0.5;
+    return [newX.toFixed(1), newY.toFixed(1)];
+  }
+
+  function HoverTooltip({ z, frequency }) {
+    if (z.real < 0) return <p>Move cursor back inside the circle</p>;
+    var res = processImpedance(z, zo);
+    return (
+      <>
+        {frequency && <p style={{ margin: 0, padding: 0 }}>Frequency = {frequency}</p>}
+        <p style={{ margin: 0, padding: 0 }}>
+          Impedance = {res.zStr} ({res.zPolarStr})
+        </p>
+        <p style={{ margin: 0, padding: 0 }}>
+          Refl-Coeff = {res.refStr} ({res.refPolarStr})
+        </p>
+        <p style={{ margin: 0, padding: 0 }}>VSWR = {res.vswr}</p>
+        <p style={{ margin: 0, padding: 0 }}>Q-Factor = {res.qFactor}</p>
+      </>
+    );
+  }
+
+  //draw the constant-Q circles
+  useEffect(() => {
+    var userSVG = d3.select(qCirclesRef.current);
+    userSVG.selectAll("*").remove();
+    var path, coord, imag;
+    for (const q of qCircles) {
+      for (const scaler of [-1, 1]) {
+        path = "M 0 0";
+        imag = 500;
+        for (var i = 0; i < 100; i++) {
+          coord = impedanceToSmithChart(imag / q, imag * scaler);
+          path += ` L ${coord[0]} ${coord[1]}`;
+          imag = imag * 0.9;
+        }
+        path += ` L ${-width} 0`;
+        userSVG
+          .append("path")
+          .attr("stroke-linecap", "round")
+          .attr("stroke-linejoin", "round")
+          .attr("fill", "none")
+          .attr("stroke-width", 3)
+          .attr("stroke-dasharray", dashTypes[1])
+          .attr("d", path);
+
+        //place the label location in the center of the graph (where reflection coefficient is 0, or im^2 + re^2 = zo^2)
+        //we also know im = re * Q
+        var labelRe = Math.sqrt((zo * zo) / (1 + q * q));
+        var labelCoord = impedanceToSmithChart(labelRe / zo, (scaler * (labelRe * q)) / zo);
+        // var y = Number(labelCoord[1]) + 4;
+        // var x = Number(labelCoord[0]);// + 4;
+
+        createLabel(userSVG, labelCoord[0], labelCoord[1], `Q=${q}`);
+      }
+    }
+  }, [qCircles]);
+
+  //draw the constant VSWR circles
+  useEffect(() => {
+    var userSVG = d3.select(vswrCirclesRef.current);
+    userSVG.selectAll("*").remove();
+    for (const v of vswrCircles) {
+      // When imaginary = 0, r/zo = VSWR. This is the radius of the circle
+      // impedanceToSmithCoordinates is already agnostic to zo
+      const [x, y] = impedanceToSmithCoordinates(v, 0);
+      const radius = (1 + x) * width * 0.5;
+      userSVG
+        .append("circle")
+        .attr("cx", -width * 0.5)
+        .attr("cy", 0)
+        .attr("r", radius)
+        .attr("stroke-width", 3)
+        .attr("stroke-dasharray", dashTypes[2]);
+      createLabel(userSVG, -width * 0.5, -radius, `VSWR=${v}`);
+    }
+  }, [vswrCircles, zo]);
+
+  //draw the custom markers
+  useEffect(() => {
+    var userSVG = d3.select(zMarkersRef.current);
+    userSVG.selectAll("*").remove();
+    zMarkers.forEach((m, i) => {
+      // When imaginary = 0, r/zo = VSWR. This is the radius of the circle
+      // impedanceToSmithCoordinates is already agnostic to zo
+      const [x, y] = impedanceToSmithChart(m[0] / zo, m[1] / zo);
+      userSVG.append("circle").attr("cx", x).attr("cy", y).attr("r", 6).attr("stroke-width", 3).attr("stroke", "red");
+      createLabel(userSVG, Number(x) + 25, y, `MK${i}`);
+    });
+  }, [zMarkers, zo]);
+
+  //draw the noise Figure circles
+  useEffect(() => {
+    var userSVG = d3.select(nfCirclesRef.current);
+    userSVG.selectAll("*").remove();
+
+    //Ni = (F - Fmin) * |1 + Go|^2 / 4 * Rn
+    //Circle Center = Go / (Ni + 1)
+    //Circle Radius = sqrt(Ni(Ni + 1 - |Go|^2)) / (Ni + 1)
+    var Fmin, F, Rn, FminLinear, FLinear, Ni, center_real, center_imag, radius, x, y;
+    const Go_real = reflection_real;
+    const Go_imag = reflection_imag;
+    const GoMag = Go_real * Go_real + Go_imag * Go_imag;
+    const GoMagP1 = (Go_real + 1) * (Go_real + 1) + Go_imag * Go_imag;
+
+    for (const n of nfCircles) {
+      // equations here https://www.allaboutcircuits.com/technical-articles/learn-about-designing-unilateral-low-noise-amplifiers/
+      // https://homepages.uc.edu/~ferendam/Courses/EE_611/Amplifier/NFC.html
+      // Fmin = 1.3;//units db
+      // F = 1.8;
+      // Rn = 20/zo;
+      Fmin = n.NFmin;
+      F = n.NF;
+      Rn = n.Rn / zo;
+
+      FminLinear = Math.pow(10, Fmin / 10);
+      FLinear = Math.pow(10, F / 10);
+      Ni = ((FLinear - FminLinear) * GoMagP1) / (4 * Rn);
+      center_real = Go_real / (Ni + 1);
+      center_imag = Go_imag / (Ni + 1);
+      radius = Math.sqrt(Ni * (Ni + 1 - GoMag)) / (Ni + 1);
+
+      //must conver from center Reflection coefficient to Z : Z = 2*Zo/(1+refl)
+      var tempZ = one_over_complex(1 - center_real, -center_imag);
+      var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1 + center_real, center_imag);
+      // var tempZ = one_over_complex(1-Go_real , -Go_imag);
+      // var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1+Go_real, Go_imag);
+
+      [x, y] = impedanceToSmithChart(tempz2.real, tempz2.imaginary);
+      // // [x, y] = impedanceToSmithCoordinates(tempZ.real, tempZ.imaginary);
+
+      // console.log('center, radius', center_real, center_imag, radius, Ni);
+
+      userSVG
+        .append("circle")
+        .attr("cx", x)
+        .attr("cy", y)
+        .attr("r", radius * width * 0.5)
+        .attr("stroke-width", 3)
+        .attr("stroke-dasharray", dashTypes[3]);
+
+      createLabel(userSVG, x, Number(y) - radius * width * 0.5, `${F}dB`);
+    }
+
+  }, [nfCircles, zo, reflection_real, reflection_imag]);
+
+  //initializing the smith chart diagrams
+  useEffect(() => {
+    // if (initializedRef.current) return;
+    // initializedRef.current = true;
+    // console.log("initializing");
 
     [svg, svgGroup] = initializeSmithChart(svgRef, topGroupRef, tracingArcsRef, width); //draw the circles and add the labels
-    // svgLabels = svgGroup.append("g").attr("id", "labels");
-    var impedanceArc = d3.select(impedanceArcsRef.current);
+  }, [width]);
+
+  //mouse handlers (move to the component?)
+  useEffect(() => {
+    var re, im;
+    var svg = d3.select(svgRef.current);
+    var svgGroup = d3.select(topGroupRef.current);
 
     svg.on("mousemove", (event, d) => {
       var dpCircles = d3.select(dpCirclesRef.current);
@@ -83,10 +303,13 @@ function Graph({ impedanceResults, zo }) {
       var x = mouseX / (0.5 * width);
       var y = mouseY / (0.5 * width);
       var snapped = false;
-      for (const [index, s] of hoverSnaps.entries()) {
+      var frequency = null;
+      for (const [index, s] of hSnaps.entries()) {
         if (mouseX > s.x && mouseX < s.x + 2 * markerRadius && mouseY > s.y && mouseY < s.y + 2 * markerRadius) {
+          // console.log("snapped to", s, hoverSnaps);
           re = s.real / zo;
           im = s.imaginary / zo;
+          frequency = s.frequency;
           dpCircles.select(`#hover_dp_${index}`).classed("hoverDp", true);
           snapped = true;
           break;
@@ -95,7 +318,7 @@ function Graph({ impedanceResults, zo }) {
       if (!snapped) {
         [re, im] = smithCoordinatesToImpedance(x, y);
       }
-      setHoverImpedance([re, im]);
+      setHoverImpedance([re, im, frequency]);
 
       var hoverReal = svgGroup.select("#hover_real");
       var hoverImaginary = svgGroup.select("#hover_imaginary");
@@ -121,13 +344,16 @@ function Graph({ impedanceResults, zo }) {
       } else {
         var clockwise = 0;
         if (cy < 0) clockwise = 1;
-        hoverImaginary.attr("d", `M 0 0 A ${cy * width * 0.5} ${cy * width * 0.5} 0 0 ${clockwise} ${xEnd * width * 0.5} ${yEnd * width * 0.5}`);
+        hoverImaginary.attr(
+          "d",
+          `M 0 0 A ${cy * width * 0.5} ${cy * width * 0.5} 0 0 ${clockwise} ${xEnd * width * 0.5} ${yEnd * width * 0.5}`
+        );
       }
       // hoverImaginary.attr("cx", 0) // X coordinate of the center
       // .attr("cy", cy*width*0.5) // Y coordinate of the center
       // .attr("r", Math.abs(cy*width*0.5)); // Radius of the circle //FIXME - don't use math.abs?
     });
-    svg.on("mouseout", (event, d) => {
+    svg.on("mouseleave", (event, d) => {
       const [mouseX, mouseY] = d3.pointer(event, svg.node());
       var x = mouseX / (0.5 * width) - 2;
       var y = mouseY / (0.5 * width) - 1;
@@ -138,9 +364,9 @@ function Graph({ impedanceResults, zo }) {
         // console.log("leaving");
       }
     });
-  }, []);
+  }, [hSnaps, width]);
 
-  function addDpMarker(dpCircles, x, y, tol, point, color) {
+  function addDpMarker(dpCircles, x, y, tol, point, color, frequency) {
     dpCircles
       .append("circle")
       .attr("cx", x)
@@ -164,35 +390,31 @@ function Graph({ impedanceResults, zo }) {
       y: y - markerRadius,
       real: point.real,
       imaginary: point.imaginary,
+      frequency: frequency,
     });
   }
 
+  //draw impedance arcs
   useEffect(() => {
     // console.log("running a");
-    var impedanceArc = d3.select("#impedanceArc");
+    var impedanceArc = d3.select(impedanceArcsRef.current);
     impedanceArc.selectAll("*").remove();
     var dpCircles = d3.select(dpCirclesRef.current);
     dpCircles.selectAll("*").remove();
     hoverSnaps = [];
 
     var coord = [];
-    // for (var x = 1; x<impedanceResults.length; x++) {
     var tol, dp, point, startX, startY;
     var path = "";
     var newPath = "";
+    var spanArc = "";
+    var mainSpanArc = "";
+    var mainZArc = "";
     for (tol = 0; tol < impedanceResults.length; tol++) {
-      // for (dp=1; dp<impedanceResults[tol].length; dp++) {
-      // [startX, startY] = impedanceToSmithChart(
-      //   impedanceResults[tol][0][0].real / 50,
-      //   impedanceResults[tol][0][0].imaginary / 50,
-      //   width
-      // );
-      // console.log("77", impedanceResults[tol][0][0], startX, startY);
       for (dp = 0; dp < impedanceResults[tol].length; dp++) {
         coord = [];
         for (point of impedanceResults[tol][dp]) {
-          // console.log(point)
-          coord.push(impedanceToSmithChart(point.real / zo, point.imaginary / zo, width));
+          coord.push(impedanceToSmithChart(point.real / zo, point.imaginary / zo));
         }
         newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
         if (tol != impedanceResults.length - 1) {
@@ -200,34 +422,9 @@ function Graph({ impedanceResults, zo }) {
           //add a circle at the last dp of the tol curves
           if (dp == impedanceResults[tol].length - 1) {
             addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], tol, point, "#8a8a8a");
-            // dpCircles
-            //   .append("circle")
-            //   .attr("cx", coord[coord.length - 1][0])
-            //   .attr("cy", coord[coord.length - 1][1])
-            //   .attr("r", markerRadius)
-            //   .attr("fill", "#8a8a8a")
-            //   .attr("id", `tol_marker_${tol}`)
-            //   .attr("stroke", "none");
-            // dpCircles
-            //   .append("rect")
-            //   .attr("x", coord[coord.length - 1][0] - markerRadius)
-            //   .attr("y", coord[coord.length - 1][1] - markerRadius)
-            //   .attr("width", 2 * markerRadius)
-            //   .attr("height", 2 * markerRadius)
-            //   .attr("fill", "none")
-            //   .attr("stroke-width", "2")
-            //   .attr("stroke", "none")
-            //   .attr("id", `hover_dp_${hoverSnaps.length}`);
-            // hoverSnaps.push({
-            //   x: coord[coord.length - 1][0] - markerRadius,
-            //   y: coord[coord.length - 1][1] - markerRadius,
-            //   real: point.real,
-            //   imaginary: point.imaginary,
-            // });
           }
         } else {
           //the last entry in impedanceResults array is the circuit without any tolerance applied
-
           impedanceArc
             .append("path")
             .attr("stroke-linecap", "round")
@@ -238,18 +435,17 @@ function Graph({ impedanceResults, zo }) {
             .attr("id", `dp_${dp}`)
             .attr("d", newPath);
 
-          addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], tol, point, arcColors[dp % 10]);
-          // dpCircles
-          //   .append("circle")
-          //   .attr("cx", coord[coord.length - 1][0])
-          //   .attr("cy", coord[coord.length - 1][1])
-          //   .attr("r", 6)
-          //   .attr("fill", arcColors[dp % 10])
-          //   .attr("stroke", "none");
+          addDpMarker(
+            dpCircles,
+            coord[coord.length - 1][0],
+            coord[coord.length - 1][1],
+            tol,
+            point,
+            arcColors[dp % 10]
+          );
         }
       }
     }
-    // console.log(path);
     // the tolerance curves are all in one path
     if (path != "") {
       impedanceArc
@@ -258,10 +454,95 @@ function Graph({ impedanceResults, zo }) {
         .attr("stroke-linejoin", "round")
         .attr("fill", "none")
         .attr("stroke", "#8a8a8a")
-        .attr("stroke-width", 3)
+        .attr("stroke-width", 2)
         .attr("d", path);
     }
-  }, [impedanceResults, zo]);
+
+    // add the span arcs
+    // for (const s of spanResults) {
+    spanResults.forEach((s, i) => {
+      // console.log("span arc", s);
+      coord = [];
+      for (point of s) {
+        coord.push(impedanceToSmithChart(point.real / zo, point.imaginary / zo));
+      }
+      newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
+
+      // console.log("span arc", s, coord, spanArc);
+      if (i != spanResults.length - 1) {
+        spanArc = `${spanArc} ${newPath}`;
+        addDpMarker(
+          dpCircles,
+          coord[coord.length - 1][0],
+          coord[coord.length - 1][1],
+          `${i}_span_0`,
+          point,
+          "#8a8a8a",
+          "F + span"
+        );
+        addDpMarker(dpCircles, coord[0][0], coord[0][1], `${i}_span_1`, point, "#8a8a8a", "F - span");
+      } else {
+        mainSpanArc = newPath;
+        addDpMarker(
+          dpCircles,
+          coord[coord.length - 1][0],
+          coord[coord.length - 1][1],
+          `${i}_span_0`,
+          point,
+          "red",
+          // arcColors[impedanceResults[0].length - (1 % 10)],
+          "F + span"
+        );
+        addDpMarker(
+          dpCircles,
+          coord[0][0],
+          coord[0][1],
+          `${i}_span_1`,
+          point,
+          "red",
+          // arcColors[impedanceResults[0].length - (1 % 10)],
+          "F - span"
+        );
+
+        //the last entry in impedanceResults array is the circuit without any tolerance applied
+        // impedanceArc
+        // .append("path")
+        // .attr("stroke-linecap", "round")
+        // .attr("stroke-linejoin", "round")
+        // .attr("fill", "none")
+        // .attr("stroke", arcColors[dp-1 % 10])
+        // .attr("stroke-width", 5)
+        // .attr("d", newPath);
+      }
+    });
+    // for (const p of [spanArc, mainSpanArc])
+    if (spanArc != "") {
+      // console.log("span arc 2 ", spanArc);
+      //FIXME - combine this duplicate code?
+      impedanceArc
+        .append("path")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round")
+        .attr("fill", "none")
+        .attr("stroke", "#8a8a8a")
+        .attr("stroke-width", 3)
+        .attr("d", spanArc);
+    }
+    if (mainSpanArc != "") {
+      // console.log("span arc 2 ", spanArc);
+      impedanceArc
+        .append("path")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round")
+        .attr("fill", "none")
+        .attr("stroke", "red")
+        // .attr("stroke", arcColors[impedanceResults[0].length - (1 % 10)])
+        .attr("stroke-width", 3)
+        .attr("d", mainSpanArc);
+    }
+    // console.log('snaps', hoverSnaps)
+    setHSnaps(hoverSnaps);
+  }, [impedanceResults, zo, spanResults, width]);
 
   //draw the labels
   useEffect(() => {
@@ -325,19 +606,64 @@ function Graph({ impedanceResults, zo }) {
         .attr("transform", `rotate(${angle * (180 / Math.PI)}, ${x}, ${y})`)
         .attr("fill", "black");
     });
-  }, [zo]);
+  }, [zo,width]);
 
   return (
-    <LightTooltip title={<HoverTooltip z={{'real':hoverImpedance[0]*zo, 'imaginary':hoverImpedance[1]*zo}} />} followCursor sx={{maxWidth: 300}}>
-      <svg ref={svgRef} style={{ padding: "5px" }}>
-        <g id="topGroup" ref={topGroupRef}>
-          <g id="tracingArcs" ref={tracingArcsRef} />
-          <g id="labels" ref={labelsRef} />
-          <g id="impedanceArc" ref={impedanceArcsRef} />
-          <g id="dpCircles" ref={dpCirclesRef} />
-        </g>
-      </svg>
-    </LightTooltip>
+    <Box position="relative">
+      <Tooltip title="Download SVG file">
+        <IconButton
+          aria-label="save"
+          onClick={(e) => {
+            const svg = svgRef.current;
+            // Serialize the SVG to a string
+            const serializer = new XMLSerializer();
+            let source = serializer.serializeToString(svg);
+            // Create a blob and a download link
+            const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "smith_chart.svg";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          }}
+          sx={{
+            position: "absolute",
+            top: -6,
+            right: -8,
+          }}
+        >
+          <SaveIcon sx={{ height: "24px", width: "24px", color: "rgba(0, 0, 0, 0.34)" }} />
+        </IconButton>
+      </Tooltip>
+      <LightTooltip
+        title={
+          <HoverTooltip
+            z={{ real: hoverImpedance[0] * zo, imaginary: hoverImpedance[1] * zo }}
+            frequency={hoverImpedance[2]}
+          />
+        }
+        followCursor
+        sx={{ maxWidth: 300 }}
+      >
+        <div ref={svgWrapper}>
+          <svg ref={svgRef} style={{ padding: "5px" }}>
+            <g id="topGroup" ref={topGroupRef}>
+              <g id="tracingArcs" ref={tracingArcsRef} />
+              <g id="labels" ref={labelsRef} />
+              <g id="userExtras">
+                <g id="zMarkers" ref={zMarkersRef} />
+                <g id="qCircles" ref={qCirclesRef} />
+                <g id="vswrCircles" ref={vswrCirclesRef} />
+                <g id="nfCircles" ref={nfCirclesRef} />
+              </g>
+              <g id="impedanceArc" ref={impedanceArcsRef} />
+              <g id="dpCircles" ref={dpCirclesRef} />
+            </g>
+          </svg>
+        </div>
+      </LightTooltip>
+    </Box>
   );
 }
 
@@ -353,7 +679,8 @@ function initializeSmithChart(svgRef, topGroupRef, tracingArcsRef, width) {
     .attr("stroke", "black")
     .attr("stroke-width", 1);
 
-  var tracingArcs = d3.select(tracingArcsRef.current).attr("id", "tracingArcs").attr("stroke", "rgba(0, 0, 0, 0.75)");
+  var tracingArcs = d3.select(tracingArcsRef.current).attr("stroke", "rgba(0, 0, 0, 0.75)");
+  tracingArcs.selectAll("*").remove();
 
   resistanceCircles.map((r) => {
     var [cx, cy, r] = resistanceToXYR(r);
@@ -376,9 +703,9 @@ function initializeSmithChart(svgRef, topGroupRef, tracingArcsRef, width) {
       .append("path")
       .attr(
         "d",
-        `M ${xStart * width * 0.5} ${yStart * width * 0.5} A ${cy * width * 0.5} ${cy * width * 0.5} 0 0 ${clockwise} ${xEnd * width * 0.5} ${
-          yEnd * width * 0.5
-        }`
+        `M ${xStart * width * 0.5} ${yStart * width * 0.5} A ${cy * width * 0.5} ${cy * width * 0.5} 0 0 ${clockwise} ${
+          xEnd * width * 0.5
+        } ${yEnd * width * 0.5}`
       );
   });
 
@@ -405,9 +732,9 @@ function initializeSmithChart(svgRef, topGroupRef, tracingArcsRef, width) {
       .append("path")
       .attr(
         "d",
-        `M ${(-2 - xStart) * width * 0.5} ${yStart * width * 0.5} A ${cy * width * 0.5} ${cy * width * 0.5} 0 0 ${clockwise} ${
-          (-2 - xEnd) * width * 0.5
-        } ${yEnd * width * 0.5}`
+        `M ${(-2 - xStart) * width * 0.5} ${yStart * width * 0.5} A ${cy * width * 0.5} ${
+          cy * width * 0.5
+        } 0 0 ${clockwise} ${(-2 - xEnd) * width * 0.5} ${yEnd * width * 0.5}`
       )
       .attr("stroke", "rgba(0, 0, 0, 0.25)");
   });
@@ -440,14 +767,6 @@ function impedanceToSmithCoordinates(re, im) {
   var x = (-2 * a * b * b) / (a * a + b * b);
   var y = (2 * a * a * b) / (a * a + b * b);
   return [x, -y];
-}
-
-//adjusts the coordinates based on the real size (in pixels) of the smith chart
-function impedanceToSmithChart(re, im, width) {
-  var [x, y] = impedanceToSmithCoordinates(re, im);
-  var newX = x * width * 0.5;
-  var newY = y * width * 0.5;
-  return [newX.toFixed(1), newY.toFixed(1)];
 }
 
 // inverting these equations

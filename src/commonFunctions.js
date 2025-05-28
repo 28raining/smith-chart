@@ -19,6 +19,12 @@ export function one_over_complex(re, im) {
   return { real, imaginary };
 }
 
+export function complex_multiply (re1, im1, re2, im2) {
+  var real = re1 * re2 - im1 * im2;
+  var imaginary = re1 * im2 + im1 * re2;
+  return { real, imaginary };
+}
+
 export const theme = createTheme({
   palette: {
     bland: {
@@ -31,21 +37,27 @@ export const theme = createTheme({
   breakpoints: {
     values: {
       xs: 0,
-      sm: 600,
-      md: 900,
+      sm: 700,
+      md: 950,
       lg: 1400,
-      xl: 1600,
+      xl: 1700,
     },
   },
 });
 
+// must support
+//input = 0.0, return 0.0
+//input = 0.,  return 0.
 export function parseInput(input) {
+  if (input === "-") return input;
   const num = parseFloat(input);
+  const endsWithDotZeroes = /\.0+$/.test(input); // true
 
   if (isNaN(num)) {
     return "";
   } else if (typeof input === "string") {
     if (input.endsWith(".")) return input;
+    else if (endsWithDotZeroes) return input;
     else return num;
   } else return num;
 }
@@ -128,7 +140,7 @@ export function CustomZAtFrequency(customZ, frequency, interpolation) {
   }
 }
 
-function zToPolar(z) {
+export function zToPolar(z) {
   var magnitude = Math.sqrt(z.real * z.real + z.imaginary * z.imaginary);
   //angle in degrees
   var angle = (Math.atan2(z.imaginary, z.real) * 180) / Math.PI; //in degrees
@@ -137,11 +149,11 @@ function zToPolar(z) {
 
 
 export function processImpedance(z, zo) {
-  var zStr, zPolarStr, refStr, refPolarStr;
-  var real = z.real.toFixed(2);
-  var imaginary = z.imaginary.toFixed(2);
-  if (imaginary < 0) zStr = `${real} - ${(-z.imaginary).toFixed(2)}j`;
-  else zStr = `${real} + ${z.imaginary.toFixed(2)}j`;
+  var zStr, zPolarStr, refStr, refPolarStr, real, imaginary;
+  real = Number(z.real).toFixed(2);
+  imaginary = Number(z.imaginary).toFixed(2);
+  if (imaginary < 0) zStr = `${real} - ${-imaginary}j`;
+  else zStr = `${real} + ${imaginary}j`;
 
   var polar = zToPolar(z);
   zPolarStr = `${polar.magnitude.toFixed(2)} ∠ ${polar.angle.toFixed(2)}°`;
@@ -162,5 +174,5 @@ export function processImpedance(z, zo) {
   if (qFactor < 0.01) qFactor = qFactor.toExponential(1);
   else qFactor = qFactor.toFixed(2);
 
-  return { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor };
+  return { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor, refReal, refImag };
 }

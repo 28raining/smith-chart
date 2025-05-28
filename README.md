@@ -26,21 +26,22 @@ Smith chart tool re-write goals
 
 
 
-# To do
+# High prio To do
+6 - Add google tracking
+6 - point to this site from old site
+- clean the readme
+- clean git history
+
+# Low-prio to-do
+1 - Add equations
+2 - why is mouseover graph causing a re-render
+
+
+
 -- move mouse handlers into initialize smith chart
--- snap to the data points when hovering on the smith chart
--- clicking adds custom impedance markers
--- with 3 tolerances there should be 6 ends?
--- tolerance box is too close to others, especially on fresh circuit
 -- Test all this esr is working! and the sliders!
 -- use debouncing to make it work well on slow mobile devices
--- stub show length meters in impedance box
--- slider change impedance box
--- hover to snap to dp's
--- download as svg / png
 -- navbar whole width in xxxl mode
--- circles to the top of stack
--- make svg heights 250px instead (or 300)
 -- sliders make impedance box change
 -- compare transmission lines across new & old project. Whey equations are so different!
 -- change er per transmission line
@@ -49,8 +50,28 @@ Smith chart tool re-write goals
 -- don't error out when shorted stub length 0
 -- fix the title bar spacing
 -- add a footer
+-- make smith chart bigger
+-- q factor cannot be -ve
+-- NF must be bigger than NF min
+-- check NF vs that website
+- don't crash when zo = 0
 
-3 - git & host
+
+- make sure t-line does honor f-span properly when uits are lambda
+- add url saving
+- run lint
+- add testing, only allow merge
+- lint to include prettier
+
+- investigate if can use preact
+
+
+- go thru all the comments and make sure those features are fixed, like freq - span is allowed to be -ve
+- compare many things against original site!! (fspan, t-line er)
+- re-arrange graph and app.jsx to make them more readable
+
+-does changing q cirlces cause ininitalize to be re-run?
+- Do the mousemove handlers need to be wiped before being re-acitvated?
 
 
 # to vizualise the file sizes:
@@ -62,3 +83,5 @@ npx vite-bundle-visualizer --sourcemap
 This project is **not open source**.  
 All rights reserved © 2025 28raining.  
 You may not copy, modify, redistribute, or use this code or any part thereof for commercial purposes without explicit written permission from the author.
+
+
