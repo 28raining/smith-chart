@@ -193,12 +193,14 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
 
   //mouse handlers (move to the component?)
   useEffect(() => {
-    svg.on("mousemove", null);
-    svg.on("mouseleave", null);
+
 
     var re, im, cx, cy, r, xEnd, yEnd;
     var svg = d3.select(svgRef.current);
     var svgGroup = d3.select(topGroupRef.current);
+
+    svg.on("mousemove", null);
+    svg.on("mouseleave", null);
 
     svg.on("mousemove", (event) => {
       var dpCircles = d3.select(dpCirclesRef.current);
