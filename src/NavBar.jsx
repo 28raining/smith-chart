@@ -5,17 +5,14 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import Snackbar from "@mui/material/Snackbar";
 import Tooltip from "@mui/material/Tooltip";
 
 import SnackbarContent from "@mui/material/SnackbarContent";
-import {ThemeProvider} from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 
-import {theme} from "./commonFunctions.js"; // import your theme
-
+import { theme } from "./commonFunctions.js"; // import your theme
 
 import SmithChartSvg from "./assets/smith-chart-icon.svg"; // import your SVG file
 import Download from "./assets/download.svg"; // import your SVG file
@@ -43,42 +40,72 @@ function NavBar() {
         />
       </Snackbar>
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static" sx={{ backgroundColor: "rgb(37, 50, 64)", py:1 }}>
-          {/* <Container> */}
-          <Toolbar>
-            <img src={SmithChartSvg} alt="Smith Chart" width="50" height="50" style={{ marginRight: "10px" }} />
-            <Typography variant="h6" component="div" sx={{ fontWeight: "bold", display: { xs: "none", sm: "block" }, }} >
+        <AppBar
+          position="static"
+          sx={{ backgroundColor: "rgb(37, 50, 64)", py: 1 }}
+        >
+          <Toolbar style={{ minHeight: 0 }}>
+            <img
+              src={SmithChartSvg}
+              alt="Smith Chart"
+              width="50"
+              height="50"
+              style={{ marginRight: "10px" }}
+            />
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ fontWeight: "bold", display: { xs: "none", sm: "block" } }}
+            >
               ONLINE SMITH CHART TOOL
             </Typography>
-            <Tooltip title="Copy shareable URL" placement="bottom" sx={{flexGrow: 1}}>
-              <IconButton
-                aria-label="download"
-                color="bland"
-                //on user click then copy url to clipboard
-                onClick={() => {
-                  const url = window.location.href;
-                  navigator.clipboard.writeText(url).then(() => {
-                    setUrlSnackbar(true);
-                  });
-                }}
-              >
-                <img src={Download} alt="download" width="30" />
-              </IconButton>
-            </Tooltip>
+            <div
+              style={{ flexGrow: 1, display: "flex", justifyContent: "center" }}
+            >
+              <Tooltip title="Copy shareable URL" placement="bottom">
+                <IconButton
+                  aria-label="download"
+                  color="bland"
+                  //on user click then copy url to clipboard
+                  onClick={() => {
+                    const url = window.location.href;
+                    navigator.clipboard.writeText(url).then(() => {
+                      setUrlSnackbar(true);
+                    });
+                  }}
+                >
+                  <img src={Download} alt="download" width="30" />
+                </IconButton>
+              </Tooltip>
+            </div>
 
-            <Stack spacing={1} direction={{ xs: 'column', sm: 'row' }}>
-              <Button variant="contained" color="bland" component="a" href="https://www.will-kelsey.com">
+            <Stack spacing={1} direction={{ xs: "column", sm: "row" }}>
+              <Button
+                variant="contained"
+                color="bland"
+                component="a"
+                href="https://www.will-kelsey.com"
+              >
                 <img src={Home} alt="home" width="30" />
               </Button>
-              <Button variant="contained" color="bland" component="a" href="https://onlinesmithchart.com">
+              <Button
+                variant="contained"
+                color="bland"
+                component="a"
+                href="https://onlinesmithchart.com"
+              >
                 Smith Chart
               </Button>
-              <Button variant="contained" color="bland" component="a" href="https://www.will-kelsey.com/circuitSolver"> 
+              <Button
+                variant="contained"
+                color="bland"
+                component="a"
+                href="https://www.will-kelsey.com/circuitSolver"
+              >
                 Circuit Solver
               </Button>
             </Stack>
           </Toolbar>
-          {/* </Container> */}
         </AppBar>
       </Box>
     </ThemeProvider>

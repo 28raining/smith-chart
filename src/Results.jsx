@@ -1,7 +1,5 @@
 import { Grid, Typography, Box } from "@mui/material";
-import { one_over_complex } from "./commonFunctions";
 import Tooltip from "@mui/material/Tooltip";
-import uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
 import UplotReact from "uplot-react";
 import { useState, useRef, useEffect } from "react";
@@ -16,8 +14,7 @@ function ImpedanceRes({ type, zStr, zPolarStr }) {
           border: "1px solid #ccc",
           borderRadius: 1,
           padding: 1,
-          // mr: 0.5,
-          width: {xl:"155px",sm:'default'},
+          width: { xl: "155px", sm: "default" },
           backgroundColor: "rgb(37, 50, 64)",
           color: "white",
         }}
@@ -29,7 +26,6 @@ function ImpedanceRes({ type, zStr, zPolarStr }) {
           border: "1px solid #ccc",
           borderRadius: 1,
           padding: 1,
-          // mr: 0.5,
           flex: 1,
         }}
       >
@@ -57,7 +53,6 @@ function MiniRes({ type, res }) {
           border: "1px solid #ccc",
           borderRadius: 1,
           padding: 1,
-          // mr: 0.5,
           width: "65px",
           backgroundColor: "rgb(37, 50, 64)",
           color: "white",
@@ -109,7 +104,6 @@ const optionsInit = {
       scale: "y2",
       side: 1, // right side
       label: "∠S11 (°)",
-      // grid: { show: false },
     },
   ],
   scales: {
@@ -144,8 +138,43 @@ const options2Init = {
   },
 };
 
-export default function Results({ zProc, spanFrequencies, spanResults, freqUnit }) {
-  // const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = processImpedance(z, zo);
+function renderChart(setOptions, setOptions2, containerRef, freqUnit) {
+  setOptions((o) => {
+    return {
+      ...o,
+      width: containerRef.current.offsetWidth,
+      series: o.series.map((s, i) => {
+        if (i === 0) return { ...s, label: `Frequency (${freqUnit})` };
+        return s;
+      }),
+      axes: o.axes.map((a, i) => {
+        if (i === 0) return { ...a, label: `Frequency (${freqUnit})` };
+        return a;
+      }),
+    };
+  });
+  setOptions2((o) => {
+    return {
+      ...o,
+      width: containerRef.current.offsetWidth,
+      series: o.series.map((s, i) => {
+        if (i === 0) return { ...s, label: `Frequency (${freqUnit})` };
+        return s;
+      }),
+      axes: o.axes.map((a, i) => {
+        if (i === 0) return { ...a, label: `Frequency (${freqUnit})` };
+        return a;
+      }),
+    };
+  });
+}
+
+export default function Results({
+  zProc,
+  spanFrequencies,
+  spanResults,
+  freqUnit,
+}) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
   const [options, setOptions] = useState(optionsInit);
@@ -157,9 +186,10 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit 
   if (spanResults) {
     for (const s of spanResults) {
       const { refReal, refImag } = processImpedance(s, 50);
-      const { magnitude, angle } = zToPolar({ real: refReal, imaginary: refImag });
-      // traceS11.y.push(20 * Math.log10(reflection_mag));
-      // traceS11Ph.y.push(reflection_phase);
+      const { magnitude, angle } = zToPolar({
+        real: refReal,
+        imaginary: refImag,
+      });
 
       s11.push(20 * Math.log10(magnitude));
       s11_ang.push(angle);
@@ -169,45 +199,14 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit 
   const data = [spanFrequencies, s11, s11_ang];
   const data2 = [spanFrequencies, s21];
 
-  // console.log(spanFrequencies, s11);
-
-  function renderChart() {
-    // console.log("rezie", containerRef.current.offsetWidth);
-    setOptions((o) => {
-      return {
-        ...o,
-        width: containerRef.current.offsetWidth,
-        series: o.series.map((s, i) => {
-          if (i === 0) return { ...s, label: `Frequency (${freqUnit})` };
-          return s;
-        }),
-        axes: o.axes.map((a, i) => {
-          if (i === 0) return { ...a, label: `Frequency (${freqUnit})` };
-          return a;
-        }),
-      };
-    });
-    setOptions2((o) => {
-      return {
-        ...o,
-        width: containerRef.current.offsetWidth,
-        series: o.series.map((s, i) => {
-          if (i === 0) return { ...s, label: `Frequency (${freqUnit})` };
-          return s;
-        }),
-        axes: o.axes.map((a, i) => {
-          if (i === 0) return { ...a, label: `Frequency (${freqUnit})` };
-          return a;
-        }),
-      };
-    });
-  }
-
   useEffect(() => {
-    renderChart();
-    window.addEventListener("resize", renderChart);
+    function handleResize() {
+      renderChart(setOptions, setOptions2, containerRef, freqUnit);
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener("resize", renderChart);
+      window.removeEventListener("resize", handleResize);
     };
   }, [freqUnit]);
   return (
@@ -216,18 +215,29 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit 
         Final Results
       </Typography>
       <Grid container spacing={1}>
-        <Grid size={{xs:12, sm:12, md:12,lg:9}} sx={{ display: "flex" }}>
-          <ImpedanceRes type="Impedance (Ω)" zStr={zStr} zPolarStr={zPolarStr} />
+        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
+          <ImpedanceRes
+            type="Impedance (Ω)"
+            zStr={zStr}
+            zPolarStr={zPolarStr}
+          />
         </Grid>
         <Tooltip title="Voltage Standing Wave Ratio" arrow placement="top">
-          <Grid size={{xs:12, sm:12, md:12,lg:3}} sx={{ display: "flex" }}>
+          <Grid
+            size={{ xs: 12, sm: 12, md: 12, lg: 3 }}
+            sx={{ display: "flex" }}
+          >
             <MiniRes type="VSWR" res={vswr} />
           </Grid>
         </Tooltip>
-        <Grid size={{xs:12, sm:12, md:12,lg:9}} sx={{ display: "flex" }}>
-          <ImpedanceRes type="Reflection Coefficient" zStr={refStr} zPolarStr={refPolarStr} />
+        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
+          <ImpedanceRes
+            type="Reflection Coefficient"
+            zStr={refStr}
+            zPolarStr={refPolarStr}
+          />
         </Grid>
-        <Grid size={{xs:12, sm:12, md:12,lg:3}} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 3 }} sx={{ display: "flex" }}>
           <MiniRes type="Q Factor" res={qFactor} />
         </Grid>
       </Grid>

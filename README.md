@@ -1,77 +1,56 @@
-# Creating a new SVG
-1 - modify x.drawio
-2 - export to svg
-3 - manually modify the svg, 
--- copy first <svg ...> line from another image
--- remove <g>
--- remove attributes (rely on global attributes in <svg ...>)
--- delete the template rect
--- Manually tweak the start and end lines are at (0,100) and (500,100) - achieve this by using a template rect in x.drawio
+# Online Smith Chart Tool
+This website is an interactive Smith Chart, which is a paper chart invented in 1930's used to impedance match, which is needed to maximise power transfer to the load (for example audio speakers, wifi antennas, radar antennas)
 
+Hosted at `onlinesmithchart.com`
 
-# Goals
-Smith chart tool re-write goals
-1 - Make the code more freiendly to read, so that "the community" can contribute
-2 - Hover on the smith chart
-3 - use a bundler and lint
-4 - Add sliders to components
-5 - Add custom circles
-6 - Add transformers
-7 - move to smithchart.com https://www.smithchart.com
-8 - series stub circuit elements
-9 - get advertising from that one commentor - count clicks with https://letscountapi.com/docs
-10 - put the state in the URL
+# How to run locally
+`npm i; npm run dev`
 
+# How the website gets updated
+Push to the main branch then the git workflow (`.github/workflows/gh-pages.yml`) will execute
+`npm run build`
+and push the results into branch `gh-pages`, which is hosted by github-pages
 
+# How to contribute
+1. Create a branch
+2. Make changes & push to git
+3. Review git workflows are passing
+4. Create merge request
 
+# Release notes
+## v1.0
+The tool was previously hosted at `https://www.will-kelsey.com/smith_chart/`. There were quite a few community requests and users were looking at the code base, which was embaressingly poor. This new repo is a total re-write so the code is now to an acceptable standard, it's no longer hosted at a domain under my name, and the community can help maintain this tool thru pull requests.
 
-
-# High prio To do
-6 - Add google tracking
-6 - point to this site from old site
-- clean the readme
-- clean git history
-
-# Low-prio to-do
-1 - Add equations
-2 - why is mouseover graph causing a re-render
+As well as a re-write, the following new features are added
+  - Smith chart is interactive - hover over the chart. This makes it possible to see Z when there are N curves (tol, fspan)
+  - Components have sliders - quickly see whether to increase or decrease component values
+  - Add Noise Figure circles
+  - Add transformer component
+  - Save whole state in the URL
+  - Move to react + npm. This allows; running lint, more maintainable code, smaller file size, many micro-benefits from joining the mainstream
 
 
 
--- move mouse handlers into initialize smith chart
--- Test all this esr is working! and the sliders!
--- use debouncing to make it work well on slow mobile devices
--- navbar whole width in xxxl mode
--- sliders make impedance box change
--- compare transmission lines across new & old project. Whey equations are so different!
--- change er per transmission line
--- Add equations at the bottom of the page
--- create same note about eeff
--- don't error out when shorted stub length 0
--- fix the title bar spacing
--- add a footer
--- make smith chart bigger
--- q factor cannot be -ve
--- NF must be bigger than NF min
--- check NF vs that website
-- don't crash when zo = 0
+# Remaining to-do items
+1. Add equations descriptions
+- especially NF site
+2. Add release notes to site
+3. remove wkelsey-apple from the repo
+4. Create unit tests and only allow merge into main branch once unit tests + lint pass
+- check items more thoroughly vs old site
+5. Fix chart hover when using a touch device
+6. See if the microwave guy would like to sponsor the site
+7. Don't error out when shorted stubs length = 0, and other error conditions
+- zo = 0
+8. Prevent NF circles where NF < NFmin, R<0
+- Prevent -ve Q factor, -ve VSWR
+9. Review all the old comments, make any previous requests are present (and in unit test?)
 
 
-- make sure t-line does honor f-span properly when uits are lambda
-- add url saving
-- run lint
-- add testing, only allow merge
-- lint to include prettier
-
-- investigate if can use preact
-
-
-- go thru all the comments and make sure those features are fixed, like freq - span is allowed to be -ve
-- compare many things against original site!! (fspan, t-line er)
-- re-arrange graph and app.jsx to make them more readable
-
--does changing q cirlces cause ininitalize to be re-run?
-- Do the mousemove handlers need to be wiped before being re-acitvated?
+# Low -priority to-do items
+1. Why is the graph re-rendering when mouse-over? Is it expensive?
+2. Review performance on 20x slower device than my `m2 mac air`
+3. investigate if can use preact, to reduce size and increase spped
 
 
 # to vizualise the file sizes:
@@ -79,7 +58,6 @@ npx vite-bundle-visualizer --sourcemap
 
 
 ## License
-
 This project is **not open source**.  
 All rights reserved © 2025 28raining.  
 You may not copy, modify, redistribute, or use this code or any part thereof for commercial purposes without explicit written permission from the author.

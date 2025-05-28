@@ -14,15 +14,14 @@
 }
 
 body {
-  margin:0;
+  margin: 0;
 }
 .circuitDrawing:nth-child(even) {
   background-color: rgb(247, 247, 247); /* Change this to your desired color */
 }
 .hoverDp {
-  stroke:red;
+  stroke: red;
 }
-
 
 .mr_lg {
   margin-right: 100px !important;

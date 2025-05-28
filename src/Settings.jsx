@@ -15,7 +15,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 
 import { frequencyUnits, parseInput } from "./commonFunctions";
 
@@ -23,14 +23,6 @@ function setValue(value, field, setX) {
   setX((z) => {
     const newCircuit = { ...z };
     newCircuit[field] = parseInput(value);
-    return newCircuit;
-  });
-}
-
-function setValueIndex(value, field, setX, index) {
-  setX((z) => {
-    const newCircuit = { ...z };
-    newCircuit[index][field] = parseInput(value);
     return newCircuit;
   });
 }
@@ -44,22 +36,18 @@ function setUnit(value, field, setX) {
 }
 
 export default function Settings({ settings, setSettings }) {
-  const rows = [
-    [4, 5],
-    [10, 20],
-  ];
   const [zMarkersInt, setZMarkersInt] = useState([25, 25]);
   const [QInt, setQInt] = useState(0);
   const [VSWRInt, setVSWRInt] = useState(0);
   const [NFInt, setNFInt] = useState({ NFmin: 1, NF: 1.5, Rn: 20 });
-  // console.log([...settings.zMarkers,zMarkersInt])
+
   return (
     <>
       <Typography variant="h5" sx={{ textAlign: "center", mb: 2 }}>
         Settings & Features
       </Typography>
       <Grid container spacing={2}>
-        <Grid size={{xs:12, lg:4}} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, lg: 4 }} sx={{ display: "flex" }}>
           <TextField
             label="Characteristic Impedance (Zo)"
             variant="outlined"
@@ -74,7 +62,7 @@ export default function Settings({ settings, setSettings }) {
             onChange={(e) => setValue(e.target.value, "zo", setSettings)}
           />
         </Grid>
-        <Grid size={{xs:12, lg:4}} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, lg: 4 }} sx={{ display: "flex" }}>
           <TextField
             label="Frequency"
             variant="outlined"
@@ -86,14 +74,16 @@ export default function Settings({ settings, setSettings }) {
           <Select
             size="small"
             value={settings.frequencyUnit}
-            onChange={(e) => setUnit(e.target.value, "frequencyUnit", setSettings)}
+            onChange={(e) =>
+              setUnit(e.target.value, "frequencyUnit", setSettings)
+            }
           >
             {Object.keys(frequencyUnits).map((u) => (
               <MenuItem value={u}>{u}</MenuItem>
             ))}
           </Select>
         </Grid>
-        <Grid size={{xs:12, lg:4}} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, lg: 4 }} sx={{ display: "flex" }}>
           <TextField
             label="Frequency Span ±"
             variant="outlined"
@@ -112,7 +102,7 @@ export default function Settings({ settings, setSettings }) {
             ))}
           </Select>
         </Grid>
-        <Grid size={{xs:12, lg:7}} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, lg: 7 }} sx={{ display: "flex" }}>
           <CustomMarkersTable
             zMarkersInt={zMarkersInt}
             setZMarkersInt={setZMarkersInt}
@@ -120,7 +110,7 @@ export default function Settings({ settings, setSettings }) {
             setSettings={setSettings}
           />
         </Grid>
-        <Grid size={{xs:12, lg:5}} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, lg: 5 }} sx={{ display: "flex" }}>
           <CustomQTable
             QInt={QInt}
             setQInt={setQInt}
@@ -130,7 +120,7 @@ export default function Settings({ settings, setSettings }) {
             index="qCircles"
           />
         </Grid>
-        <Grid size={{xs:12, lg:7}} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, lg: 7 }} sx={{ display: "flex" }}>
           <CustomNFTable
             QInt={NFInt}
             setQInt={setNFInt}
@@ -140,7 +130,7 @@ export default function Settings({ settings, setSettings }) {
             index="nfCircles"
           />
         </Grid>
-        <Grid size={{xs:12, lg:5}} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, lg: 5 }} sx={{ display: "flex" }}>
           <CustomQTable
             QInt={VSWRInt}
             setQInt={setVSWRInt}
@@ -155,38 +145,62 @@ export default function Settings({ settings, setSettings }) {
   );
 }
 
-function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings }) {
+function CustomMarkersTable({
+  zMarkersInt,
+  setZMarkersInt,
+  settings,
+  setSettings,
+}) {
   return (
     <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1 }}>
-      <Typography variant="h7" component="div" sx={{ pb: 0.5  }}>
+      <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
         Add custom markers
       </Typography>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               Name
             </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               Real
             </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               Imaginary
             </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               Add
             </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           <TableRow key="newData">
-            <TableCell component="th" scope="row" align="center" sx={{ px: 0.5 }}></TableCell>
+            <TableCell
+              component="th"
+              scope="row"
+              align="center"
+              sx={{ px: 0.5 }}
+            ></TableCell>
             <TableCell align="center" sx={{ px: 1 }}>
               <TextField
                 variant="outlined"
                 size="small"
                 value={zMarkersInt[0]}
-                onChange={(e) => setZMarkersInt([parseInput(e.target.value), zMarkersInt[1]])}
+                onChange={(e) =>
+                  setZMarkersInt([parseInput(e.target.value), zMarkersInt[1]])
+                }
               />
             </TableCell>
             <TableCell align="center" sx={{ px: 0.5 }}>
@@ -194,7 +208,9 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
                 variant="outlined"
                 size="small"
                 value={zMarkersInt[1]}
-                onChange={(e) => setZMarkersInt([zMarkersInt[0], parseInput(e.target.value)])}
+                onChange={(e) =>
+                  setZMarkersInt([zMarkersInt[0], parseInput(e.target.value)])
+                }
               />
             </TableCell>
             <TableCell align="center" sx={{ p: 0 }}>
@@ -203,7 +219,10 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
                 onClick={() => {
                   setSettings((z) => {
                     const newCircuit = { ...z };
-                    newCircuit["zMarkers"] = [...settings.zMarkers, zMarkersInt];
+                    newCircuit["zMarkers"] = [
+                      ...settings.zMarkers,
+                      zMarkersInt,
+                    ];
                     return newCircuit;
                   });
                   setZMarkersInt([0, 0]);
@@ -215,13 +234,18 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
           </TableRow>
           {settings.zMarkers.map((row, i) => (
             <TableRow key={i}>
-              <TableCell sx={{ px: 1 }} component="th" scope="row" align="center">{`MK${i}`}</TableCell>
+              <TableCell
+                sx={{ px: 1 }}
+                component="th"
+                scope="row"
+                align="center"
+              >{`MK${i}`}</TableCell>
               <TableCell align="center">{row[0]}</TableCell>
               <TableCell align="center">{row[1]}</TableCell>
               <TableCell align="center">
                 <IconButton
                   aria-label="delete"
-                  onClick={(e) => {
+                  onClick={() => {
                     setSettings((z) => {
                       const n = { ...z };
                       n["zMarkers"] = [
@@ -244,17 +268,28 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
 }
 function CustomQTable({ QInt, setQInt, settings, setSettings, title, index }) {
   return (
-    <TableContainer component={Paper} variant="outlined" color="secondary" sx={{ px: 1, py: 1 }}>
-      <Typography variant="h7" component="div" sx={{ pb: 0.5  }}>
+    <TableContainer
+      component={Paper}
+      variant="outlined"
+      color="secondary"
+      sx={{ px: 1, py: 1 }}
+    >
+      <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
         {title}
       </Typography>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               Value
             </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               Add
             </TableCell>
           </TableRow>
@@ -293,7 +328,7 @@ function CustomQTable({ QInt, setQInt, settings, setSettings, title, index }) {
               <TableCell align="center">
                 <IconButton
                   aria-label="delete"
-                  onClick={(e) => {
+                  onClick={() => {
                     setSettings((z) => {
                       const n = { ...z };
                       n[index] = [
@@ -316,34 +351,53 @@ function CustomQTable({ QInt, setQInt, settings, setSettings, title, index }) {
 }
 function CustomNFTable({ QInt, setQInt, settings, setSettings, title, index }) {
   return (
-    <TableContainer component={Paper} variant="outlined" color="secondary" sx={{ px: 1, py: 1 }}>
-      <Typography variant="h7" component="div" sx={{ pb: 0.5  }}>
+    <TableContainer
+      component={Paper}
+      variant="outlined"
+      color="secondary"
+      sx={{ px: 1, py: 1 }}
+    >
+      <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
         {title}
       </Typography>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               NF<sub>min</sub>
             </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               NF
             </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               R<sub>N</sub>
             </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+            <TableCell
+              align="center"
+              sx={{ background: "rgb(37, 50, 64)", color: "white" }}
+            >
               Add
             </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           <TableRow key="newData">
-            <TableCell align="center" sx={{px:0.5}}>
+            <TableCell align="center" sx={{ px: 0.5 }}>
               <TextField
                 slotProps={{
                   input: {
-                    endAdornment: <InputAdornment position="end">dB</InputAdornment>,
+                    endAdornment: (
+                      <InputAdornment position="end">dB</InputAdornment>
+                    ),
                   },
                 }}
                 variant="outlined"
@@ -352,11 +406,13 @@ function CustomNFTable({ QInt, setQInt, settings, setSettings, title, index }) {
                 onChange={(e) => setValue(e.target.value, "NFmin", setQInt)}
               />
             </TableCell>
-            <TableCell align="center" sx={{px:0.5}}>
+            <TableCell align="center" sx={{ px: 0.5 }}>
               <TextField
                 slotProps={{
                   input: {
-                    endAdornment: <InputAdornment position="end">dB</InputAdornment>,
+                    endAdornment: (
+                      <InputAdornment position="end">dB</InputAdornment>
+                    ),
                   },
                 }}
                 variant="outlined"
@@ -365,11 +421,13 @@ function CustomNFTable({ QInt, setQInt, settings, setSettings, title, index }) {
                 onChange={(e) => setValue(e.target.value, "NF", setQInt)}
               />
             </TableCell>
-            <TableCell align="center" sx={{px:0.5}}>
+            <TableCell align="center" sx={{ px: 0.5 }}>
               <TextField
                 slotProps={{
                   input: {
-                    endAdornment: <InputAdornment position="end">Ω</InputAdornment>,
+                    endAdornment: (
+                      <InputAdornment position="end">Ω</InputAdornment>
+                    ),
                   },
                 }}
                 variant="outlined"
@@ -378,7 +436,7 @@ function CustomNFTable({ QInt, setQInt, settings, setSettings, title, index }) {
                 onChange={(e) => setValue(e.target.value, "Rn", setQInt)}
               />
             </TableCell>
-            <TableCell align="center" sx={{ py: 0, px:0.5 }}>
+            <TableCell align="center" sx={{ py: 0, px: 0.5 }}>
               <IconButton
                 sx={{ p: 1 }}
                 onClick={() => {
@@ -408,7 +466,7 @@ function CustomNFTable({ QInt, setQInt, settings, setSettings, title, index }) {
               <TableCell align="center">
                 <IconButton
                   aria-label="delete"
-                  onClick={(e) => {
+                  onClick={() => {
                     setSettings((z) => {
                       const n = { ...z };
                       n[index] = [
