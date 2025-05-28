@@ -193,6 +193,9 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
 
   //mouse handlers (move to the component?)
   useEffect(() => {
+    svg.on("mousemove", null);
+    svg.on("mouseleave", null);
+
     var re, im, cx, cy, r, xEnd, yEnd;
     var svg = d3.select(svgRef.current);
     var svgGroup = d3.select(topGroupRef.current);
@@ -261,6 +264,11 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
         // console.log("leaving");
       }
     });
+    // Optional: cleanup function
+    return () => {
+      svg.on("mousemove", null);
+      svg.on("mouseleave", null);
+    };
   }, [hSnaps, width, zo]);
 
   function addDpMarker(dpCircles, x, y, tol, point, color, frequency, hoverSnaps) {

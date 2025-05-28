@@ -45,6 +45,8 @@ As well as a re-write, the following new features are added
 8. Prevent NF circles where NF < NFmin, R<0
 - Prevent -ve Q factor, -ve VSWR
 9. Review all the old comments, make any previous requests are present (and in unit test?)
+10. Add Gain circles
+11. Add stability circles
 
 
 # Low -priority to-do items
