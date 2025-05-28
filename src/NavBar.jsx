@@ -40,28 +40,13 @@ function NavBar() {
         />
       </Snackbar>
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar
-          position="static"
-          sx={{ backgroundColor: "rgb(37, 50, 64)", py: 1 }}
-        >
+        <AppBar position="static" sx={{ backgroundColor: "rgb(37, 50, 64)", py: 1 }}>
           <Toolbar style={{ minHeight: 0 }}>
-            <img
-              src={SmithChartSvg}
-              alt="Smith Chart"
-              width="50"
-              height="50"
-              style={{ marginRight: "10px" }}
-            />
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{ fontWeight: "bold", display: { xs: "none", sm: "block" } }}
-            >
+            <img src={SmithChartSvg} alt="Smith Chart" width="50" height="50" style={{ marginRight: "10px" }} />
+            <Typography variant="h6" component="div" sx={{ fontWeight: "bold", display: { xs: "none", sm: "block" } }}>
               ONLINE SMITH CHART TOOL
             </Typography>
-            <div
-              style={{ flexGrow: 1, display: "flex", justifyContent: "center" }}
-            >
+            <div style={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
               <Tooltip title="Copy shareable URL" placement="bottom">
                 <IconButton
                   aria-label="download"
@@ -80,28 +65,13 @@ function NavBar() {
             </div>
 
             <Stack spacing={1} direction={{ xs: "column", sm: "row" }}>
-              <Button
-                variant="contained"
-                color="bland"
-                component="a"
-                href="https://www.will-kelsey.com"
-              >
+              <Button variant="contained" color="bland" component="a" href="https://www.will-kelsey.com">
                 <img src={Home} alt="home" width="30" />
               </Button>
-              <Button
-                variant="contained"
-                color="bland"
-                component="a"
-                href="https://onlinesmithchart.com"
-              >
+              <Button variant="contained" color="bland" component="a" href="https://onlinesmithchart.com">
                 Smith Chart
               </Button>
-              <Button
-                variant="contained"
-                color="bland"
-                component="a"
-                href="https://www.will-kelsey.com/circuitSolver"
-              >
+              <Button variant="contained" color="bland" component="a" href="https://www.will-kelsey.com/circuitSolver">
                 Circuit Solver
               </Button>
             </Stack>

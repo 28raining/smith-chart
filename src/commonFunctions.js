@@ -120,14 +120,12 @@ export function checkCustomZValid(input) {
       if (regexResComma == null) splitLines = lines[i].split(/\s+/);
       else splitLines = lines[i].split(",");
       if (splitLines.length == 3) {
-        if (splitLines[0] == "" || splitLines[1] == "" || splitLines[2] == "")
-          allvaluesAreNotBlank = false;
+        if (splitLines[0] == "" || splitLines[1] == "" || splitLines[2] == "") allvaluesAreNotBlank = false;
         else {
           splitLines[0] = Number(splitLines[0]);
           splitLines[1] = Number(splitLines[1]);
           splitLines[2] = Number(splitLines[2]);
-          if (i > 0 && splitLines[0] <= customZPrevFreq)
-            frequencyIncreases = false;
+          if (i > 0 && splitLines[0] <= customZPrevFreq) frequencyIncreases = false;
           else {
             customZImpedanceTable.push(splitLines);
             customZPrevFreq = Number(splitLines[0]);
@@ -136,12 +134,7 @@ export function checkCustomZValid(input) {
       } else allLinesHave3Values = false;
     }
   }
-  if (
-    regexRes == null &&
-    allLinesHave3Values &&
-    allvaluesAreNotBlank &&
-    frequencyIncreases
-  ) {
+  if (regexRes == null && allLinesHave3Values && allvaluesAreNotBlank && frequencyIncreases) {
     return [true, customZImpedanceTable];
   } else {
     return [false, customZImpedanceTable];
@@ -165,9 +158,7 @@ export function CustomZAtFrequency(customZ, frequency, interpolation) {
       if (interpolation == "sah") return values[i];
       const t = (frequency - freqs[i]) / (freqs[i + 1] - freqs[i]);
       const real = values[i].real + t * (values[i + 1].real - values[i].real);
-      const imaginary =
-        values[i].imaginary +
-        t * (values[i + 1].imaginary - values[i].imaginary);
+      const imaginary = values[i].imaginary + t * (values[i + 1].imaginary - values[i].imaginary);
       return { real, imaginary };
     }
   }
@@ -200,9 +191,7 @@ export function processImpedance(z, zo) {
   var refPolar = zToPolar({ real: refReal, imaginary: refImag });
   refPolarStr = `${refPolar.magnitude.toFixed(3)} ∠ ${refPolar.angle.toFixed(1)}°`;
 
-  var vswr = ((1 + refPolar.magnitude) / (1 - refPolar.magnitude)).toPrecision(
-    3,
-  );
+  var vswr = ((1 + refPolar.magnitude) / (1 - refPolar.magnitude)).toPrecision(3);
 
   var qFactor = Math.abs(z.imaginary / z.real);
   if (qFactor < 0.01) qFactor = qFactor.toExponential(1);

@@ -169,12 +169,7 @@ function renderChart(setOptions, setOptions2, containerRef, freqUnit) {
   });
 }
 
-export default function Results({
-  zProc,
-  spanFrequencies,
-  spanResults,
-  freqUnit,
-}) {
+export default function Results({ zProc, spanFrequencies, spanResults, freqUnit }) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
   const [options, setOptions] = useState(optionsInit);
@@ -216,26 +211,15 @@ export default function Results({
       </Typography>
       <Grid container spacing={1}>
         <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
-          <ImpedanceRes
-            type="Impedance (Ω)"
-            zStr={zStr}
-            zPolarStr={zPolarStr}
-          />
+          <ImpedanceRes type="Impedance (Ω)" zStr={zStr} zPolarStr={zPolarStr} />
         </Grid>
         <Tooltip title="Voltage Standing Wave Ratio" arrow placement="top">
-          <Grid
-            size={{ xs: 12, sm: 12, md: 12, lg: 3 }}
-            sx={{ display: "flex" }}
-          >
+          <Grid size={{ xs: 12, sm: 12, md: 12, lg: 3 }} sx={{ display: "flex" }}>
             <MiniRes type="VSWR" res={vswr} />
           </Grid>
         </Tooltip>
         <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
-          <ImpedanceRes
-            type="Reflection Coefficient"
-            zStr={refStr}
-            zPolarStr={refPolarStr}
-          />
+          <ImpedanceRes type="Reflection Coefficient" zStr={refStr} zPolarStr={refPolarStr} />
         </Grid>
         <Grid size={{ xs: 12, sm: 12, md: 12, lg: 3 }} sx={{ display: "flex" }}>
           <MiniRes type="Q Factor" res={qFactor} />

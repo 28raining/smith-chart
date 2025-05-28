@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import * as d3 from "d3";
 import { styled } from "@mui/material/styles";
 import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
@@ -7,12 +7,7 @@ import IconButton from "@mui/material/IconButton";
 
 import Box from "@mui/material/Box";
 
-import {
-  arcColors,
-  one_over_complex,
-  processImpedance,
-  complex_multiply,
-} from "./commonFunctions.js";
+import { arcColors, one_over_complex, processImpedance, complex_multiply } from "./commonFunctions.js";
 
 const resistanceCircles = [0, 0.2, 0.5, 1, 2, 4, 10, Infinity];
 const reactanceCircles = [0.2, 0.5, 1, 2, 4, 10, -0.2, -0.5, -1, -2, -4, -10];
@@ -26,17 +21,7 @@ const dashTypes = [
 ];
 // Usage: <path stroke-dasharray={dashTypes[0]} ... />
 
-function Graph({
-  impedanceResults,
-  zo,
-  spanResults,
-  qCircles,
-  vswrCircles,
-  nfCircles,
-  zMarkers,
-  reflection_real,
-  reflection_imag,
-}) {
+function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCircles, zMarkers, reflection_real, reflection_imag }) {
   const svgRef = useRef(null);
   const svgWrapper = useRef(null);
   const topGroupRef = useRef(null);
@@ -53,7 +38,6 @@ function Graph({
   const [width, setWidth] = useState(650);
   // const [snapDetails, setSnapDetails] = useState({ real: 0, imaginary: 0 });
   const markerRadius = 6;
-  // console.log('WIDTH',width )
 
   function updateWidth() {
     var newWidth = svgWrapper.current.offsetWidth;
@@ -71,26 +55,6 @@ function Graph({
       window.removeEventListener("resize", updateWidth);
     };
   }, []);
-
-  function HoverTooltip({ z, frequency }) {
-    if (z.real < 0) return <p>Move cursor back inside the circle</p>;
-    var res = processImpedance(z, zo);
-    return (
-      <>
-        {frequency && (
-          <p style={{ margin: 0, padding: 0 }}>Frequency = {frequency}</p>
-        )}
-        <p style={{ margin: 0, padding: 0 }}>
-          Impedance = {res.zStr} ({res.zPolarStr})
-        </p>
-        <p style={{ margin: 0, padding: 0 }}>
-          Refl-Coeff = {res.refStr} ({res.refPolarStr})
-        </p>
-        <p style={{ margin: 0, padding: 0 }}>VSWR = {res.vswr}</p>
-        <p style={{ margin: 0, padding: 0 }}>Q-Factor = {res.qFactor}</p>
-      </>
-    );
-  }
 
   //draw the constant-Q circles
   useEffect(() => {
@@ -119,11 +83,7 @@ function Graph({
         //place the label location in the center of the graph (where reflection coefficient is 0, or im^2 + re^2 = zo^2). zo cancels out as impedanceToSmithChart is in units of zo
         //we also know im = re * Q
         var labelRe = Math.sqrt(1 / (1 + q * q));
-        var labelCoord = impedanceToSmithChart(
-          labelRe,
-          scaler * (labelRe * q),
-          width,
-        );
+        var labelCoord = impedanceToSmithChart(labelRe, scaler * (labelRe * q), width);
         // var y = Number(labelCoord[1]) + 4;
         // var x = Number(labelCoord[0]);// + 4;
 
@@ -160,13 +120,7 @@ function Graph({
       // When imaginary = 0, r/zo = VSWR. This is the radius of the circle
       // impedanceToSmithCoordinates is already agnostic to zo
       const [x, y] = impedanceToSmithChart(m[0] / zo, m[1] / zo, width);
-      userSVG
-        .append("circle")
-        .attr("cx", x)
-        .attr("cy", y)
-        .attr("r", 6)
-        .attr("stroke-width", 3)
-        .attr("stroke", "red");
+      userSVG.append("circle").attr("cx", x).attr("cy", y).attr("r", 6).attr("stroke-width", 3).attr("stroke", "red");
       createLabel(userSVG, Number(x) + 25, y, `MK${i}`);
     });
   }, [zMarkers, zo, width]);
@@ -179,17 +133,7 @@ function Graph({
     //Ni = (F - Fmin) * |1 + Go|^2 / 4 * Rn
     //Circle Center = Go / (Ni + 1)
     //Circle Radius = sqrt(Ni(Ni + 1 - |Go|^2)) / (Ni + 1)
-    var Fmin,
-      F,
-      Rn,
-      FminLinear,
-      FLinear,
-      Ni,
-      center_real,
-      center_imag,
-      radius,
-      x,
-      y;
+    var Fmin, F, Rn, FminLinear, FLinear, Ni, center_real, center_imag, radius, x, y;
     const Go_real = reflection_real;
     const Go_imag = reflection_imag;
     const GoMag = Go_real * Go_real + Go_imag * Go_imag;
@@ -214,12 +158,7 @@ function Graph({
 
       //must conver from center Reflection coefficient to Z : Z = 2*Zo/(1+refl)
       var tempZ = one_over_complex(1 - center_real, -center_imag);
-      var tempz2 = complex_multiply(
-        tempZ.real,
-        tempZ.imaginary,
-        1 + center_real,
-        center_imag,
-      );
+      var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1 + center_real, center_imag);
       // var tempZ = one_over_complex(1-Go_real , -Go_imag);
       // var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1+Go_real, Go_imag);
 
@@ -267,12 +206,7 @@ function Graph({
       var snapped = false;
       var frequency = null;
       for (const [index, s] of hSnaps.entries()) {
-        if (
-          mouseX > s.x &&
-          mouseX < s.x + 2 * markerRadius &&
-          mouseY > s.y &&
-          mouseY < s.y + 2 * markerRadius
-        ) {
+        if (mouseX > s.x && mouseX < s.x + 2 * markerRadius && mouseY > s.y && mouseY < s.y + 2 * markerRadius) {
           re = s.real / zo;
           im = s.imaginary / zo;
           frequency = s.frequency;
@@ -289,16 +223,10 @@ function Graph({
       var hoverReal = svgGroup.select("#hover_real");
       var hoverImaginary = svgGroup.select("#hover_imaginary");
       if (hoverReal.empty()) {
-        svgGroup
-          .append("circle")
-          .attr("id", "hover_real")
-          .attr("stroke-dasharray", "5,5");
+        svgGroup.append("circle").attr("id", "hover_real").attr("stroke-dasharray", "5,5");
       }
       if (hoverImaginary.empty()) {
-        svgGroup
-          .append("path")
-          .attr("id", "hover_imaginary")
-          .attr("stroke-dasharray", "5,5");
+        svgGroup.append("path").attr("id", "hover_imaginary").attr("stroke-dasharray", "5,5");
       }
       if (re > 0) {
         [cx, cy, r] = resistanceToXYR(re);
@@ -316,10 +244,7 @@ function Graph({
       } else {
         var clockwise = 0;
         if (cy < 0) clockwise = 1;
-        hoverImaginary.attr(
-          "d",
-          `M 0 0 A ${cy * width * 0.5} ${cy * width * 0.5} 0 0 ${clockwise} ${xEnd * width * 0.5} ${yEnd * width * 0.5}`,
-        );
+        hoverImaginary.attr("d", `M 0 0 A ${cy * width * 0.5} ${cy * width * 0.5} 0 0 ${clockwise} ${xEnd * width * 0.5} ${yEnd * width * 0.5}`);
       }
       // hoverImaginary.attr("cx", 0) // X coordinate of the center
       // .attr("cy", cy*width*0.5) // Y coordinate of the center
@@ -338,16 +263,7 @@ function Graph({
     });
   }, [hSnaps, width, zo]);
 
-  function addDpMarker(
-    dpCircles,
-    x,
-    y,
-    tol,
-    point,
-    color,
-    frequency,
-    hoverSnaps,
-  ) {
+  function addDpMarker(dpCircles, x, y, tol, point, color, frequency, hoverSnaps) {
     dpCircles
       .append("circle")
       .attr("cx", x)
@@ -394,25 +310,14 @@ function Graph({
       for (dp = 0; dp < impedanceResults[tol].length; dp++) {
         coord = [];
         for (point of impedanceResults[tol][dp]) {
-          coord.push(
-            impedanceToSmithChart(point.real / zo, point.imaginary / zo, width),
-          );
+          coord.push(impedanceToSmithChart(point.real / zo, point.imaginary / zo, width));
         }
         newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
         if (tol != impedanceResults.length - 1) {
           path = `${path} ${newPath}`;
           //add a circle at the last dp of the tol curves
           if (dp == impedanceResults[tol].length - 1) {
-            addDpMarker(
-              dpCircles,
-              coord[coord.length - 1][0],
-              coord[coord.length - 1][1],
-              tol,
-              point,
-              "#8a8a8a",
-              null,
-              hoverSnaps,
-            );
+            addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], tol, point, "#8a8a8a", null, hoverSnaps);
           }
         } else {
           //the last entry in impedanceResults array is the circuit without any tolerance applied
@@ -426,16 +331,7 @@ function Graph({
             .attr("id", `dp_${dp}`)
             .attr("d", newPath);
 
-          addDpMarker(
-            dpCircles,
-            coord[coord.length - 1][0],
-            coord[coord.length - 1][1],
-            tol,
-            point,
-            arcColors[dp % 10],
-            null,
-            hoverSnaps,
-          );
+          addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], tol, point, arcColors[dp % 10], null, hoverSnaps);
         }
       }
     }
@@ -457,57 +353,19 @@ function Graph({
       // console.log("span arc", s);
       coord = [];
       for (point of s) {
-        coord.push(
-          impedanceToSmithChart(point.real / zo, point.imaginary / zo, width),
-        );
+        coord.push(impedanceToSmithChart(point.real / zo, point.imaginary / zo, width));
       }
       newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
 
       // console.log("span arc", s, coord, spanArc);
       if (i != spanResults.length - 1) {
         spanArc = `${spanArc} ${newPath}`;
-        addDpMarker(
-          dpCircles,
-          coord[coord.length - 1][0],
-          coord[coord.length - 1][1],
-          `${i}_span_0`,
-          point,
-          "#8a8a8a",
-          "F + span",
-          hoverSnaps,
-        );
-        addDpMarker(
-          dpCircles,
-          coord[0][0],
-          coord[0][1],
-          `${i}_span_1`,
-          point,
-          "#8a8a8a",
-          "F - span",
-          hoverSnaps,
-        );
+        addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], `${i}_span_0`, point, "#8a8a8a", "F + span", hoverSnaps);
+        addDpMarker(dpCircles, coord[0][0], coord[0][1], `${i}_span_1`, point, "#8a8a8a", "F - span", hoverSnaps);
       } else {
         mainSpanArc = newPath;
-        addDpMarker(
-          dpCircles,
-          coord[coord.length - 1][0],
-          coord[coord.length - 1][1],
-          `${i}_span_0`,
-          point,
-          "red",
-          "F + span",
-          hoverSnaps,
-        );
-        addDpMarker(
-          dpCircles,
-          coord[0][0],
-          coord[0][1],
-          `${i}_span_1`,
-          point,
-          "red",
-          "F - span",
-          hoverSnaps,
-        );
+        addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], `${i}_span_0`, point, "red", "F + span", hoverSnaps);
+        addDpMarker(dpCircles, coord[0][0], coord[0][1], `${i}_span_1`, point, "red", "F - span", hoverSnaps);
 
         //the last entry in impedanceResults array is the circuit without any tolerance applied
         // impedanceArc
@@ -622,8 +480,7 @@ function Graph({
             const serializer = new XMLSerializer();
             let source = serializer.serializeToString(svg);
             // Create a blob and a download link
-            const url =
-              "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+            const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
             const a = document.createElement("a");
             a.href = url;
             a.download = "smith_chart.svg";
@@ -637,9 +494,7 @@ function Graph({
             right: -8,
           }}
         >
-          <SaveIcon
-            sx={{ height: "24px", width: "24px", color: "rgba(0, 0, 0, 0.34)" }}
-          />
+          <SaveIcon sx={{ height: "24px", width: "24px", color: "rgba(0, 0, 0, 0.34)" }} />
         </IconButton>
       </Tooltip>
       <LightTooltip
@@ -650,12 +505,27 @@ function Graph({
               imaginary: hoverImpedance[1] * zo,
             }}
             frequency={hoverImpedance[2]}
+            zo={zo}
           />
         }
         followCursor
         sx={{ maxWidth: 300 }}
       >
         <div ref={svgWrapper}>
+          <MemoizedSmithChartSvg
+            svgRef={svgRef}
+            topGroupRef={topGroupRef}
+            tracingArcsRef={tracingArcsRef}
+            labelsRef={labelsRef}
+            zMarkersRef={zMarkersRef}
+            qCirclesRef={qCirclesRef}
+            vswrCirclesRef={vswrCirclesRef}
+            nfCirclesRef={nfCirclesRef}
+            impedanceArcsRef={impedanceArcsRef}
+            dpCirclesRef={dpCirclesRef}
+          />
+        </div>
+        {/* <div ref={svgWrapper}>
           <svg ref={svgRef} style={{ padding: "5px" }}>
             <g id="topGroup" ref={topGroupRef}>
               <g id="tracingArcs" ref={tracingArcsRef} />
@@ -670,9 +540,46 @@ function Graph({
               <g id="dpCircles" ref={dpCirclesRef} />
             </g>
           </svg>
-        </div>
+        </div> */}
       </LightTooltip>
     </Box>
+  );
+}
+
+const MemoizedSmithChartSvg = memo(
+  ({ svgRef, topGroupRef, tracingArcsRef, labelsRef, zMarkersRef, qCirclesRef, vswrCirclesRef, nfCirclesRef, impedanceArcsRef, dpCirclesRef }) => (
+    <svg ref={svgRef} style={{ padding: "5px" }}>
+      <g id="topGroup" ref={topGroupRef}>
+        <g id="tracingArcs" ref={tracingArcsRef} />
+        <g id="labels" ref={labelsRef} />
+        <g id="userExtras">
+          <g id="zMarkers" ref={zMarkersRef} />
+          <g id="qCircles" ref={qCirclesRef} />
+          <g id="vswrCircles" ref={vswrCirclesRef} />
+          <g id="nfCircles" ref={nfCirclesRef} />
+        </g>
+        <g id="impedanceArc" ref={impedanceArcsRef} />
+        <g id="dpCircles" ref={dpCirclesRef} />
+      </g>
+    </svg>
+  ),
+);
+
+function HoverTooltip({ z, frequency, zo }) {
+  if (z.real < 0) return <p>Move cursor back inside the circle</p>;
+  var res = processImpedance(z, zo);
+  return (
+    <>
+      {frequency && <p style={{ margin: 0, padding: 0 }}>Frequency = {frequency}</p>}
+      <p style={{ margin: 0, padding: 0 }}>
+        Impedance = {res.zStr} ({res.zPolarStr})
+      </p>
+      <p style={{ margin: 0, padding: 0 }}>
+        Refl-Coeff = {res.refStr} ({res.refPolarStr})
+      </p>
+      <p style={{ margin: 0, padding: 0 }}>VSWR = {res.vswr}</p>
+      <p style={{ margin: 0, padding: 0 }}>Q-Factor = {res.qFactor}</p>
+    </>
   );
 }
 
@@ -735,9 +642,7 @@ function createLabel(svg, x, y, text) {
 }
 
 function initializeSmithChart(tracingArcsRef, width) {
-  var tracingArcs = d3
-    .select(tracingArcsRef.current)
-    .attr("stroke", "rgba(0, 0, 0, 0.75)");
+  var tracingArcs = d3.select(tracingArcsRef.current).attr("stroke", "rgba(0, 0, 0, 0.75)");
   tracingArcs.selectAll("*").remove();
 
   resistanceCircles.map((r) => {
@@ -798,12 +703,7 @@ function initializeSmithChart(tracingArcsRef, width) {
   });
 
   //add a line down the middle
-  tracingArcs
-    .append("line")
-    .attr("x1", 0)
-    .attr("y1", 0)
-    .attr("x2", -width)
-    .attr("y2", 0);
+  tracingArcs.append("line").attr("x1", 0).attr("y1", 0).attr("x2", -width).attr("y2", 0);
 }
 
 //This smith chart has coordinate space x=[-2,0] and y=[-1,1]

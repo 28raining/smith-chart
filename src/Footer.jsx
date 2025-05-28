@@ -9,24 +9,14 @@ import Link from "@mui/material/Link";
 function Footer() {
   return (
     <Box sx={{ flexGrow: 1, mt: 5 }}>
-      <AppBar
-        position="static"
-        sx={{ backgroundColor: "rgb(37, 50, 64)", py: 2 }}
-      >
+      <AppBar position="static" sx={{ backgroundColor: "rgb(37, 50, 64)", py: 2 }}>
         <Toolbar>
-          <Stack
-            spacing={1}
-            sx={{ width: "100%" }}
-            direction={{ xs: "column", sm: "row" }}
-          >
+          <Stack spacing={1} sx={{ width: "100%" }} direction={{ xs: "column", sm: "row" }}>
             <Typography sx={{ flexGrow: 1 }}>
-              © {new Date().getFullYear()} Will Kelsey. This work is licensed
-              under a Creative Commons Attribution 4.0 International License.
-              You may not resell this tool
+              © {new Date().getFullYear()} Will Kelsey. This work is licensed under a Creative Commons Attribution 4.0 International License. You may
+              not resell this tool
             </Typography>
-            <Typography sx={{px:2}}>
-              v1.1
-            </Typography>
+            <Typography sx={{ px: 2 }}>v1.1</Typography>
             <div
               style={{
                 marginLeft: "auto",
@@ -35,11 +25,7 @@ function Footer() {
               }}
             >
               <GitHubIcon sx={{ height: "24px", width: "24px", mr: 1 }} />
-              <Link
-                href="https://github.com/28raining/smith-chart"
-                target="_blank"
-                color="inherit"
-              >
+              <Link href="https://github.com/28raining/smith-chart" target="_blank" color="inherit">
                 https://github.com/28raining/smith-chart
               </Link>
             </div>

@@ -56,22 +56,11 @@ function toEngineeringNotation(num) {
   return `${mantissa}${exponent === 0 ? "" : "e" + exponent}`;
 }
 
-function CustomComponent({
-  modalOpen,
-  setModalOpen,
-  value,
-  index,
-  setUserCircuit,
-  frequency,
-  interpolation,
-}) {
+function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, frequency, interpolation }) {
   const [customInput, setCustomInput] = useState("");
 
   const textInput = Object.keys(value)
-    .map(
-      (x) =>
-        `${toEngineeringNotation(x)}, ${value[x].real}, ${value[x].imaginary}`,
-    )
+    .map((x) => `${toEngineeringNotation(x)}, ${value[x].real}, ${value[x].imaginary}`)
     .join("\n");
 
   const validCheckerResults = checkCustomZValid(customInput);
@@ -80,8 +69,7 @@ function CustomComponent({
 
   var objResult = {};
   if (validCheckerResults[0]) {
-    for (const l of validCheckerResults[1])
-      objResult[l[0]] = { real: l[1], imaginary: l[2] };
+    for (const l of validCheckerResults[1]) objResult[l[0]] = { real: l[1], imaginary: l[2] };
   }
   var z = CustomZAtFrequency(value, frequency, interpolation);
   // console.log(validCheckerResults[1], objResult);
@@ -140,16 +128,8 @@ function CustomComponent({
             });
           }}
         >
-          <FormControlLabel
-            value="sah"
-            control={<Radio />}
-            label="Sample & Hold"
-          />
-          <FormControlLabel
-            value="linear"
-            control={<Radio />}
-            label="Linear Interpolation"
-          />
+          <FormControlLabel value="sah" control={<Radio />} label="Sample & Hold" />
+          <FormControlLabel value="linear" control={<Radio />} label="Linear Interpolation" />
         </RadioGroup>
         <Button
           sx={{ m: 2 }}
@@ -215,14 +195,7 @@ function SliderAdjust({ handleChange, value }) {
   );
 }
 
-function ComplexComponent({
-  real,
-  imaginary,
-  index,
-  setUserCircuit,
-  slider_re,
-  slider_im,
-}) {
+function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, slider_im }) {
   return (
     <>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
@@ -232,49 +205,27 @@ function ComplexComponent({
           size="small"
           sx={{ mx: 0.5, p: 0, width: "9ch", padding: 0 }}
           value={real}
-          onChange={(e) =>
-            setValue(e.target.value, "real", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "real", setUserCircuit, index)}
         />
-        <Typography
-          sx={{ display: "flex", alignItems: "center", m: 0.0, p: 0 }}
-        >
-          +
-        </Typography>
+        <Typography sx={{ display: "flex", alignItems: "center", m: 0.0, p: 0 }}>+</Typography>
         <TextField
           label="Im"
           variant="outlined"
           size="small"
           sx={{ mx: 0.5, p: 0, width: "9ch", padding: 0 }}
           value={imaginary}
-          onChange={(e) =>
-            setValue(e.target.value, "imaginary", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "imaginary", setUserCircuit, index)}
         />
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 0, mb: 1, zIndex: 10 }}>
-        <SliderAdjust
-          handleChange={(v) => setValue(v, "slider_re", setUserCircuit, index)}
-          value={slider_re}
-        />
-        <SliderAdjust
-          handleChange={(v) => setValue(v, "slider_im", setUserCircuit, index)}
-          value={slider_im}
-        />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider_re", setUserCircuit, index)} value={slider_re} />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider_im", setUserCircuit, index)} value={slider_im} />
       </Box>
     </>
   );
 }
 
-function TransformerComponent({
-  l1,
-  unit_l1,
-  l2,
-  unit_l2,
-  k,
-  index,
-  setUserCircuit,
-}) {
+function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, index, setUserCircuit }) {
   return (
     <>
       <Typography variant="caption" align="center" sx={{ display: "block" }}>
@@ -287,18 +238,9 @@ function TransformerComponent({
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
           value={l1}
-          onChange={(e) =>
-            setValue(e.target.value, "l1", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "l1", setUserCircuit, index)}
         />
-        <Select
-          value={unit_l1}
-          size="small"
-          sx={{ marginRight: 0.5 }}
-          onChange={(e) =>
-            setUnit(e.target.value, "unit_l1", setUserCircuit, index)
-          }
-        >
+        <Select value={unit_l1} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit_l1", setUserCircuit, index)}>
           {Object.keys(inductorUnits).map((u) => (
             <MenuItem value={u}>{u}</MenuItem>
           ))}
@@ -311,18 +253,9 @@ function TransformerComponent({
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
           value={l2}
-          onChange={(e) =>
-            setValue(e.target.value, "l2", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "l2", setUserCircuit, index)}
         />
-        <Select
-          value={unit_l2}
-          size="small"
-          sx={{ marginRight: 0.5 }}
-          onChange={(e) =>
-            setUnit(e.target.value, "unit_l2", setUserCircuit, index)
-          }
-        >
+        <Select value={unit_l2} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit_l2", setUserCircuit, index)}>
           {Object.keys(inductorUnits).map((u) => (
             <MenuItem value={u}>{u}</MenuItem>
           ))}
@@ -350,53 +283,28 @@ function InductorComponent({ value, unit, index, setUserCircuit, slider }) {
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
           value={value}
-          onChange={(e) =>
-            setValue(e.target.value, "value", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "value", setUserCircuit, index)}
         />
-        <Select
-          value={unit}
-          size="small"
-          sx={{ marginRight: 0.5 }}
-          onChange={(e) =>
-            setUnit(e.target.value, "unit", setUserCircuit, index)
-          }
-        >
+        <Select value={unit} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit", setUserCircuit, index)}>
           {Object.keys(inductorUnits).map((u) => (
             <MenuItem value={u}>{u}</MenuItem>
           ))}
         </Select>
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, zIndex: 10 }}>
-        <SliderAdjust
-          handleChange={(v) => setValue(v, "slider", setUserCircuit, index)}
-          value={slider}
-        />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} />
       </Box>
     </>
   );
 }
 
-function WireComponent({
-  value,
-  unit,
-  index,
-  setUserCircuit,
-  slider,
-  zo,
-  frequency,
-  eeff,
-}) {
+function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequency, eeff }) {
   var length, metricLength;
   if (unit == "λ") {
-    metricLength =
-      (((value * speedOfLight) / frequency) * (1 + slider / 100)) /
-      Math.sqrt(eeff);
+    metricLength = (((value * speedOfLight) / frequency) * (1 + slider / 100)) / Math.sqrt(eeff);
     if (metricLength > 1) length = `${metricLength.toPrecision(4)}m`;
-    else if (metricLength > 1e-3)
-      length = `${(metricLength * 1e3).toPrecision(4)}mm`;
-    else if (metricLength > 1e-6)
-      length = `${(metricLength * 1e6).toPrecision(4)}um`;
+    else if (metricLength > 1e-3) length = `${(metricLength * 1e3).toPrecision(4)}mm`;
+    else if (metricLength > 1e-6) length = `${(metricLength * 1e6).toPrecision(4)}um`;
     else length = `${metricLength.toExponential(4)}m`;
   } else length = `${(value * (1 + slider / 100)).toPrecision(3)}${unit}`;
   // console.log("TL", length, slider)
@@ -413,28 +321,16 @@ function WireComponent({
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
           value={value}
-          onChange={(e) =>
-            setValue(e.target.value, "value", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "value", setUserCircuit, index)}
         />
-        <Select
-          value={unit}
-          size="small"
-          sx={{ marginRight: 0.5 }}
-          onChange={(e) =>
-            setUnit(e.target.value, "unit", setUserCircuit, index)
-          }
-        >
+        <Select value={unit} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit", setUserCircuit, index)}>
           {Object.keys(lengthUnits).map((u) => (
             <MenuItem value={u}>{u}</MenuItem>
           ))}
         </Select>
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, zIndex: 10 }}>
-        <SliderAdjust
-          handleChange={(v) => setValue(v, "slider", setUserCircuit, index)}
-          value={slider}
-        />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} />
       </Box>
       <TextField
         label="Zo"
@@ -450,14 +346,8 @@ function WireComponent({
         size="small"
         sx={{ mx: 0.5, mb: 1.2, p: 0, padding: 0 }}
         value={eeff}
-        onChange={(e) =>
-          setValue(e.target.value, "eeff", setUserCircuit, index)
-        }
-        helperText={
-          eeff != 1 && unit == "λ"
-            ? "Note - physical line length is changed"
-            : ""
-        }
+        onChange={(e) => setValue(e.target.value, "eeff", setUserCircuit, index)}
+        helperText={eeff != 1 && unit == "λ" ? "Note - physical line length is changed" : ""}
       />
     </>
   );
@@ -472,11 +362,7 @@ function EsComponent({ type, value, setUserCircuit, index }) {
       sx={{ mx: 0.5, mb: 1.2, p: 0, padding: 0 }}
       slotProps={{
         input: {
-          endAdornment: (
-            <InputAdornment position="end">
-              {type == "esr" ? "Ω" : "nH"}
-            </InputAdornment>
-          ),
+          endAdornment: <InputAdornment position="end">{type == "esr" ? "Ω" : "nH"}</InputAdornment>,
         },
       }}
       value={value === undefined ? "" : value}
@@ -495,28 +381,16 @@ function ResistorComponent({ value, unit, index, setUserCircuit, slider }) {
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
           value={value}
-          onChange={(e) =>
-            setValue(e.target.value, "value", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "value", setUserCircuit, index)}
         />
-        <Select
-          value={unit}
-          size="small"
-          sx={{ marginRight: 0.5 }}
-          onChange={(e) =>
-            setUnit(e.target.value, "unit", setUserCircuit, index)
-          }
-        >
+        <Select value={unit} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit", setUserCircuit, index)}>
           {Object.keys(resistorUnits).map((u) => (
             <MenuItem value={u}>{u}</MenuItem>
           ))}
         </Select>
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, zIndex: 10 }}>
-        <SliderAdjust
-          handleChange={(v) => setValue(v, "slider", setUserCircuit, index)}
-          value={slider}
-        />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} />
       </Box>
     </>
   );
@@ -531,40 +405,21 @@ function CapacitorComponent({ value, unit, index, setUserCircuit, slider }) {
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
           value={value}
-          onChange={(e) =>
-            setValue(e.target.value, "value", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "value", setUserCircuit, index)}
         />
-        <Select
-          value={unit}
-          size="small"
-          sx={{ marginRight: 0.5 }}
-          onChange={(e) =>
-            setUnit(e.target.value, "unit", setUserCircuit, index)
-          }
-        >
+        <Select value={unit} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit", setUserCircuit, index)}>
           {Object.keys(capacitorUnits).map((u) => (
             <MenuItem value={u}>{u}</MenuItem>
           ))}
         </Select>
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, zIndex: 10 }}>
-        <SliderAdjust
-          handleChange={(v) => setValue(v, "slider", setUserCircuit, index)}
-          value={slider}
-        />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} />
       </Box>
     </>
   );
 }
-function LCComponent({
-  value_l,
-  unit_l,
-  value_c,
-  unit_c,
-  index,
-  setUserCircuit,
-}) {
+function LCComponent({ value_l, unit_l, value_c, unit_c, index, setUserCircuit }) {
   return (
     <>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
@@ -574,18 +429,9 @@ function LCComponent({
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
           value={value_l}
-          onChange={(e) =>
-            setValue(e.target.value, "value_l", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "value_l", setUserCircuit, index)}
         />
-        <Select
-          value={unit_l}
-          size="small"
-          sx={{ marginRight: 0.5 }}
-          onChange={(e) =>
-            setUnit(e.target.value, "unit_l", setUserCircuit, index)
-          }
-        >
+        <Select value={unit_l} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit_l", setUserCircuit, index)}>
           {Object.keys(inductorUnits).map((u) => (
             <MenuItem value={u}>{u}</MenuItem>
           ))}
@@ -598,18 +444,9 @@ function LCComponent({
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
           value={value_c}
-          onChange={(e) =>
-            setValue(e.target.value, "value_c", setUserCircuit, index)
-          }
+          onChange={(e) => setValue(e.target.value, "value_c", setUserCircuit, index)}
         />
-        <Select
-          value={unit_c}
-          size="small"
-          sx={{ marginRight: 0.5 }}
-          onChange={(e) =>
-            setUnit(e.target.value, "unit_c", setUserCircuit, index)
-          }
-        >
+        <Select value={unit_c} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit_c", setUserCircuit, index)}>
           {Object.keys(capacitorUnits).map((u) => (
             <MenuItem value={u}>{u}</MenuItem>
           ))}
@@ -633,9 +470,7 @@ function ToleranceComponent({ tol, index, setUserCircuit }) {
         },
       }}
       value={tol}
-      onChange={(e) =>
-        setValue(e.target.value, "tolerance", setUserCircuit, index)
-      }
+      onChange={(e) => setValue(e.target.value, "tolerance", setUserCircuit, index)}
     />
   );
 }
@@ -647,67 +482,33 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
 
   function componentMap(type, component, index) {
     var real, imaginary;
-    const slider_re =
-      component.slider_re === undefined ? 0 : component.slider_re;
-    const slider_im =
-      component.slider_im === undefined ? 0 : component.slider_im;
+    const slider_re = component.slider_re === undefined ? 0 : component.slider_re;
+    const slider_im = component.slider_im === undefined ? 0 : component.slider_im;
     const slider = component.slider === undefined ? 0 : component.slider;
 
     switch (type) {
       case "impedance":
         if (component.name == "shortedInd" || component.name == "seriesInd") {
           real = 0;
-          imaginary =
-            component.value *
-            2 *
-            Math.PI *
-            frequency *
-            unitConverter[component.unit] *
-            (1 + slider / 100);
-        } else if (
-          component.name == "shortedCap" ||
-          component.name == "seriesCap"
-        ) {
+          imaginary = component.value * 2 * Math.PI * frequency * unitConverter[component.unit] * (1 + slider / 100);
+        } else if (component.name == "shortedCap" || component.name == "seriesCap") {
           real = 0;
-          imaginary =
-            -1 /
-            (component.value *
-              2 *
-              Math.PI *
-              frequency *
-              unitConverter[component.unit]);
-        } else if (
-          component.name == "shortedRes" ||
-          component.name == "seriesRes"
-        ) {
-          real =
-            component.value *
-            unitConverter[component.unit] *
-            (1 + slider / 100);
+          imaginary = -1 / (component.value * 2 * Math.PI * frequency * unitConverter[component.unit]);
+        } else if (component.name == "shortedRes" || component.name == "seriesRes") {
+          real = component.value * unitConverter[component.unit] * (1 + slider / 100);
           imaginary = 0;
         } else if (component.name == "seriesRlc") {
           var zj =
             (w * component.value_l * unitConverter[component.unit_l]) /
-            (1 -
-              w *
-                w *
-                component.value_l *
-                component.value_c *
-                unitConverter[component.unit_l] *
-                unitConverter[component.unit_c]);
-          var z = one_over_complex(
-            1 / (component.value * unitConverter[component.unit]),
-            -1 / zj,
-          );
+            (1 - w * w * component.value_l * component.value_c * unitConverter[component.unit_l] * unitConverter[component.unit_c]);
+          var z = one_over_complex(1 / (component.value * unitConverter[component.unit]), -1 / zj);
           real = z.real * (1 + slider / 100);
           imaginary = z.imaginary;
         } else if (component.name == "blackBox") {
           real = component.real * (1 + slider_re / 100); //for black box this will be correct
           imaginary = component.imaginary * (1 + slider_im / 100);
         }
-        return (
-          <ImpedanceComponent real={real} imaginary={imaginary} key={index} />
-        );
+        return <ImpedanceComponent real={real} imaginary={imaginary} key={index} />;
       case "complex":
         return (
           <ComplexComponent
@@ -747,24 +548,10 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
           />
         );
       case "tolerance":
-        return (
-          <ToleranceComponent
-            tol={component.tolerance}
-            index={index}
-            setUserCircuit={setUserCircuit}
-            key={type}
-          />
-        );
+        return <ToleranceComponent tol={component.tolerance} index={index} setUserCircuit={setUserCircuit} key={type} />;
       case "inductor":
         return (
-          <InductorComponent
-            value={component.value}
-            unit={component.unit}
-            index={index}
-            setUserCircuit={setUserCircuit}
-            key={type}
-            slider={slider}
-          />
+          <InductorComponent value={component.value} unit={component.unit} index={index} setUserCircuit={setUserCircuit} key={type} slider={slider} />
         );
       case "capacitor":
         return (
@@ -779,14 +566,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
         );
       case "resistor":
         return (
-          <ResistorComponent
-            value={component.value}
-            unit={component.unit}
-            index={index}
-            setUserCircuit={setUserCircuit}
-            key={type}
-            slider={slider}
-          />
+          <ResistorComponent value={component.value} unit={component.unit} index={index} setUserCircuit={setUserCircuit} key={type} slider={slider} />
         );
       case "lc":
         return (
@@ -815,25 +595,9 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
           />
         );
       case "esr":
-        return (
-          <EsComponent
-            type={"esr"}
-            value={component.esr}
-            index={index}
-            setUserCircuit={setUserCircuit}
-            key={type}
-          />
-        );
+        return <EsComponent type={"esr"} value={component.esr} index={index} setUserCircuit={setUserCircuit} key={type} />;
       case "esl":
-        return (
-          <EsComponent
-            type={"esl"}
-            value={component.esl}
-            index={index}
-            setUserCircuit={setUserCircuit}
-            key={type}
-          />
-        );
+        return <EsComponent type={"esl"} value={component.esl} index={index} setUserCircuit={setUserCircuit} key={type} />;
       default:
         return "";
     }
@@ -850,9 +614,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
               <Grid size={2} key={i}>
                 <Button
                   variant="contained"
-                  onClick={() =>
-                    setUserCircuit([...userCircuit, { ...c.default, name: k }])
-                  }
+                  onClick={() => setUserCircuit([...userCircuit, { ...c.default, name: k }])}
                   color="bland"
                   style={{
                     flex: 1,
@@ -867,12 +629,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
                   }}
                 >
                   <img src={c.src} width="100%" />
-                  <Typography
-                    variant="caption"
-                    align="center"
-                    gutterBottom
-                    sx={{ display: "block" }}
-                  >
+                  <Typography variant="caption" align="center" gutterBottom sx={{ display: "block" }}>
                     {c.name}
                   </Typography>
                 </Button>
@@ -881,27 +638,15 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
         })}
       </Grid>
       <div style={{ display: "flex", width: "100%" }}>
-        <p>
-          Clicking components above will add them to the circuit below.
-          Impedance is looking towards the BLACK BOX
-        </p>
+        <p>Clicking components above will add them to the circuit below. Impedance is looking towards the BLACK BOX</p>
       </div>
 
-      <Grid
-        container
-        spacing={0}
-        columns={{ xs: 4, sm: 8, md: 4, lg: 8, xl: 12 }}
-      >
+      <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 4, lg: 8, xl: 12 }}>
         {userCircuit.map((c, i) => {
           const comp = circuitComponents[c.name];
           const color = arcColors[i % arcColors.length];
           return (
-            <Grid
-              size={2}
-              key={i}
-              sx={{ display: "flex", flexDirection: "column", borderRadius: 1 }}
-              className="circuitDrawing"
-            >
+            <Grid size={2} key={i} sx={{ display: "flex", flexDirection: "column", borderRadius: 1 }} className="circuitDrawing">
               <Box position="relative">
                 <img src={comp.src} width="100%" />
                 {i == 0 ? null : (

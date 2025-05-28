@@ -1,11 +1,6 @@
 import { circuitComponents } from "./circuitComponents.js";
 
-export function syncObjectToUrl(
-  settings,
-  defaultSettings,
-  circuit,
-  defaultCircuit,
-) {
+export function syncObjectToUrl(settings, defaultSettings, circuit, defaultCircuit) {
   const params = new URLSearchParams(window.location.search);
 
   //handle the settings
@@ -29,9 +24,7 @@ export function syncObjectToUrl(
       }
     } else if (key == "nfCircles") {
       if (value.length > 0) {
-        const arrString = value
-          .map((v) => `${v.NFmin}_${v.NF}_${v.Rn}`)
-          .join("__");
+        const arrString = value.map((v) => `${v.NFmin}_${v.NF}_${v.Rn}`).join("__");
         params.set(key, arrString);
       } else {
         params.delete(key);
@@ -57,9 +50,7 @@ export function syncObjectToUrl(
     }
     params.set("circuit", circuitParams.join("__"));
   }
-  const newUrl = params.toString()
-    ? `${window.location.pathname}?${params}`
-    : window.location.pathname;
+  const newUrl = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname;
   window.history.replaceState({}, "", newUrl);
 }
 
