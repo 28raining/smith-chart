@@ -1,16 +1,19 @@
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect } from "react";
 import * as d3 from "d3";
 import { styled } from "@mui/material/styles";
 import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
 import SaveIcon from "@mui/icons-material/Save";
 import IconButton from "@mui/material/IconButton";
+import Link from "@mui/material/Link";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import TextField from "@mui/material/TextField";
+import FormControl from "@mui/material/FormControl";
 
 import Box from "@mui/material/Box";
 
-import { arcColors, one_over_complex, processImpedance, complex_multiply } from "./commonFunctions.js";
-
-const resistanceCircles = [0, 0.2, 0.5, 1, 2, 4, 10, Infinity];
-const reactanceCircles = [0.2, 0.5, 1, 2, 4, 10, -0.2, -0.5, -1, -2, -4, -10];
+import { arcColors, one_over_complex, processImpedance, complex_multiply, parseInput } from "./commonFunctions.js";
 
 const dashTypes = [
   "5,5", // short dash
@@ -36,6 +39,11 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
   const [hoverImpedance, setHoverImpedance] = useState([0, 0, 0]);
   const [hSnaps, setHSnaps] = useState([]);
   const [width, setWidth] = useState(650);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [resistanceCircles, setResistanceCircles] = useState([0, 0.2, 0.5, 1, 2, 4, 10]);
+  const [reactanceCircles, setReactanceCircles] = useState([0.2, 0.5, 1, 2, 4, 10, -0.2, -0.5, -1, -2, -4, -10]);
+
+  // console.log('resistanceCircles', resistanceCircles);
   // const [snapDetails, setSnapDetails] = useState({ real: 0, imaginary: 0 });
   const markerRadius = 6;
 
@@ -188,8 +196,8 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
       .attr("fill", "none")
       .attr("stroke", "black")
       .attr("stroke-width", 1);
-    initializeSmithChart(tracingArcsRef, width); //draw the circles and add the labels
-  }, [width]);
+    initializeSmithChart(tracingArcsRef, width, resistanceCircles, reactanceCircles); //draw the circles and add the labels
+  }, [width, resistanceCircles, reactanceCircles]);
 
   //mouse handlers (move to the component?)
   useEffect(() => {
@@ -475,10 +483,18 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
         .attr("transform", `rotate(${angle * (180 / Math.PI)}, ${x}, ${y})`)
         .attr("fill", "black");
     });
-  }, [zo, width]);
+  }, [zo, width, resistanceCircles, reactanceCircles]);
 
   return (
     <Box position="relative">
+      <DialogGraphSettings
+        dialogOpen={dialogOpen}
+        setDialogOpen={setDialogOpen}
+        resistanceCircles={resistanceCircles}
+        setResistanceCircles={setResistanceCircles}
+        reactanceCircles={reactanceCircles}
+        setReactanceCircles={setReactanceCircles}
+      />
       <Tooltip title="Download SVG file">
         <IconButton
           aria-label="save"
@@ -505,6 +521,16 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
           <SaveIcon sx={{ height: "24px", width: "24px", color: "rgba(0, 0, 0, 0.34)" }} />
         </IconButton>
       </Tooltip>
+      <Link
+        onClick={() => setDialogOpen(true)}
+        sx={{
+          position: "absolute",
+          bottom: 0,
+          right: 4,
+        }}
+      >
+        Graph Settings
+      </Link>
       <LightTooltip
         title={
           <HoverTooltip
@@ -519,22 +545,8 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
         followCursor
         sx={{ maxWidth: 300 }}
       >
-        <div ref={svgWrapper}>
-          <MemoizedSmithChartSvg
-            svgRef={svgRef}
-            topGroupRef={topGroupRef}
-            tracingArcsRef={tracingArcsRef}
-            labelsRef={labelsRef}
-            zMarkersRef={zMarkersRef}
-            qCirclesRef={qCirclesRef}
-            vswrCirclesRef={vswrCirclesRef}
-            nfCirclesRef={nfCirclesRef}
-            impedanceArcsRef={impedanceArcsRef}
-            dpCirclesRef={dpCirclesRef}
-          />
-        </div>
-        {/* <div ref={svgWrapper}>
-          <svg ref={svgRef} style={{ padding: "5px" }}>
+        <div ref={svgWrapper} style={{ textAlign: "center" }}>
+          <svg ref={svgRef} style={{ margin: "8px" }}>
             <g id="topGroup" ref={topGroupRef}>
               <g id="tracingArcs" ref={tracingArcsRef} />
               <g id="labels" ref={labelsRef} />
@@ -548,30 +560,47 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
               <g id="dpCircles" ref={dpCirclesRef} />
             </g>
           </svg>
-        </div> */}
+        </div>
       </LightTooltip>
     </Box>
   );
 }
 
-const MemoizedSmithChartSvg = memo(
-  ({ svgRef, topGroupRef, tracingArcsRef, labelsRef, zMarkersRef, qCirclesRef, vswrCirclesRef, nfCirclesRef, impedanceArcsRef, dpCirclesRef }) => (
-    <svg ref={svgRef} style={{ padding: "5px" }}>
-      <g id="topGroup" ref={topGroupRef}>
-        <g id="tracingArcs" ref={tracingArcsRef} />
-        <g id="labels" ref={labelsRef} />
-        <g id="userExtras">
-          <g id="zMarkers" ref={zMarkersRef} />
-          <g id="qCircles" ref={qCirclesRef} />
-          <g id="vswrCircles" ref={vswrCirclesRef} />
-          <g id="nfCircles" ref={nfCirclesRef} />
-        </g>
-        <g id="impedanceArc" ref={impedanceArcsRef} />
-        <g id="dpCircles" ref={dpCirclesRef} />
-      </g>
-    </svg>
-  ),
-);
+function DialogGraphSettings({ dialogOpen, setDialogOpen, resistanceCircles, setResistanceCircles, reactanceCircles, setReactanceCircles }) {
+  const [tempRCircles, setTempRCircles] = useState(resistanceCircles.join(", "));
+  const [tempReacCircles, setTempReacCircles] = useState(reactanceCircles.join(", "));
+
+  function handleClose() {
+    setDialogOpen(false);
+    setResistanceCircles(tempRCircles.split(",").map((x) => parseInput(x)));
+    setReactanceCircles(tempReacCircles.split(",").map((x) => parseInput(x)));
+  }
+  return (
+    <Dialog onClose={handleClose} open={dialogOpen} maxWidth="xl" fullWidth>
+      <DialogTitle>Graph Settings</DialogTitle>
+      <DialogContent>
+        <FormControl sx={{ minWidth: 250 }} fullWidth>
+          <TextField
+            sx={{ mt: 2, minWidth: 250 }}
+            label="Resistance Circles (Units of Zo)"
+            variant="outlined"
+            size="small"
+            value={tempRCircles}
+            onChange={(e) => setTempRCircles(e.target.value)}
+          />
+          <TextField
+            sx={{ mt: 2 }}
+            label="Reactance Circles (Units of Zo)"
+            variant="outlined"
+            size="small"
+            value={tempReacCircles}
+            onChange={(e) => setTempReacCircles(e.target.value)}
+          />
+        </FormControl>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function HoverTooltip({ z, frequency, zo }) {
   if (z.real < 0) return <p>Move cursor back inside the circle</p>;
@@ -582,6 +611,7 @@ function HoverTooltip({ z, frequency, zo }) {
       <p style={{ margin: 0, padding: 0 }}>
         Impedance = {res.zStr} ({res.zPolarStr})
       </p>
+      <p style={{ margin: 0, padding: 0 }}>Admittance = {res.admString}</p>
       <p style={{ margin: 0, padding: 0 }}>
         Refl-Coeff = {res.refStr} ({res.refPolarStr})
       </p>
@@ -649,7 +679,7 @@ function createLabel(svg, x, y, text) {
     .attr("fill", "black");
 }
 
-function initializeSmithChart(tracingArcsRef, width) {
+function initializeSmithChart(tracingArcsRef, width, resistanceCircles, reactanceCircles) {
   var tracingArcs = d3.select(tracingArcsRef.current).attr("stroke", "rgba(0, 0, 0, 0.75)");
   tracingArcs.selectAll("*").remove();
 
