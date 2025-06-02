@@ -35,7 +35,6 @@ As well as a re-write, the following new features are added
 1. Add equations descriptions
 - especially NF site
 2. Add release notes to site
-3. remove wkelsey-apple from the repo
 4. Create unit tests and only allow merge into main branch once unit tests + lint pass
 - check items more thoroughly vs old site
 5. Fix chart hover when using a touch device
@@ -47,6 +46,7 @@ As well as a re-write, the following new features are added
 9. Review all the old comments, make any previous requests are present (and in unit test?)
 10. Add Gain circles
 11. Add stability circles
+12. remove fixme's
 
 
 # Low -priority to-do items

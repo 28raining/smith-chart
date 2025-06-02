@@ -193,8 +193,6 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
 
   //mouse handlers (move to the component?)
   useEffect(() => {
-
-
     var re, im, cx, cy, r, xEnd, yEnd;
     var svg = d3.select(svgRef.current);
     var svgGroup = d3.select(topGroupRef.current);
