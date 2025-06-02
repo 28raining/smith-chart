@@ -3,7 +3,9 @@ import { unitConverter, ESLUnit, one_over_complex, speedOfLight, CustomZAtFreque
 export function calculateTlineZ(resolution, component, line_length, beta, startImaginary, startReal, impedanceResolution, startAdmittance) {
   var tan_beta, zBottom_inv, zTop;
   for (var j = 0; j <= resolution; j++) {
-    tan_beta = Math.tan((beta * j * line_length) / resolution);
+    if (component.name == "shortedStub") tan_beta = Math.tan((beta * j * line_length) / resolution + Math.PI / 2);
+    else tan_beta = Math.tan((beta * j * line_length) / resolution);
+
     if (component.name == "transmissionLine") {
       zBottom_inv = one_over_complex(component.zo - startImaginary * tan_beta, startReal * tan_beta);
       zTop = {
@@ -98,10 +100,8 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
       var lengthLambda;
       startAdmittance = one_over_complex(startReal, startImaginary);
 
-      //convert length into lambdas
-      lengthLambda = component.value;
-      if (component.unit != "λ") lengthLambda = (component.value * unitConverter[component.unit] * frequency) / speedOfLight;
-      if (component.name == "shortedStub") lengthLambda += 0.25; //shorted stub is like a stub with an additional quater wavelength
+      //convert length into lambdas (it was already converted to meters at f0, now converted to lambda at f0 + fspan)
+      lengthLambda = (component.value * unitConverter[component.unit] * frequency) / speedOfLight;
       //apply eeff to the length before we do modulus 0.5, because a line of 0.5λ will be <> 0.5λ after eeff
       lengthLambda = lengthLambda * Math.sqrt(component.eeff);
       // if (lengthLambda > 0 && lengthLambda % 0.5 == 0) line_length = (0.5 * speedOfLight) / frequency;
@@ -196,8 +196,10 @@ export function applySliders(circuit) {
 
 export function convertLengthToM(circuit, frequency) {
   for (var i = 0; i < circuit.length; i++) {
-    if (circuit[i].unit == "λ") {
-      const metricLength = (circuit[i].value * speedOfLight) / frequency / Math.sqrt(circuit[i].eeff);
+    if (circuit[i].unit == "λ" || circuit[i].unit == "deg") {
+      var lambdaLen = circuit[i].value;
+      if (circuit[i].unit == "deg") lambdaLen = circuit[i].value / 360;
+      const metricLength = (lambdaLen * speedOfLight) / frequency / Math.sqrt(circuit[i].eeff);
       circuit[i].value = metricLength;
       circuit[i].unit = "m";
     }

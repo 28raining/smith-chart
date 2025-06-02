@@ -300,13 +300,19 @@ function InductorComponent({ value, unit, index, setUserCircuit, slider }) {
 
 function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequency, eeff }) {
   var length, metricLength;
-  if (unit == "λ") {
-    metricLength = (((value * speedOfLight) / frequency) * (1 + slider / 100)) / Math.sqrt(eeff);
+  var convertedUnit = unit;
+  var convertedValue = value;
+  if (unit == "deg") {
+    convertedUnit = "λ";
+    convertedValue = value / 360; // convert degrees to fraction of wavelength
+  }
+  if (convertedUnit == "λ") {
+    metricLength = (((convertedValue * speedOfLight) / frequency) * (1 + slider / 100)) / Math.sqrt(eeff);
     if (metricLength > 1) length = `${metricLength.toPrecision(4)}m`;
     else if (metricLength > 1e-3) length = `${(metricLength * 1e3).toPrecision(4)}mm`;
     else if (metricLength > 1e-6) length = `${(metricLength * 1e6).toPrecision(4)}um`;
     else length = `${metricLength.toExponential(4)}m`;
-  } else length = `${(value * (1 + slider / 100)).toPrecision(3)}${unit}`;
+  } else length = `${(convertedValue * (1 + slider / 100)).toPrecision(3)}${unit}`;
   // console.log("TL", length, slider)
   // const lengthWSlider = length * (1 + slider / 100);
   return (
@@ -347,7 +353,7 @@ function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequen
         sx={{ mx: 0.5, mb: 1.2, p: 0, padding: 0 }}
         value={eeff}
         onChange={(e) => setValue(e.target.value, "eeff", setUserCircuit, index)}
-        helperText={eeff != 1 && unit == "λ" ? "Note - physical line length is changed" : ""}
+        helperText={eeff != 1 && (unit == "λ" || unit == "deg") ? "Note - physical line length is changed" : ""}
       />
     </>
   );

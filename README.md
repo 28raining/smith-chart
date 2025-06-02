@@ -32,10 +32,10 @@ As well as a re-write, the following new features are added
 
 
 # Remaining to-do items
-1. Add equations descriptions
-- especially NF site
+~~1. Add equations descriptions~~
+~~- especially NF site~~
 2. Add release notes to site
-4. Create unit tests and only allow merge into main branch once unit tests + lint pass
+~~4. Create unit tests and only allow merge into main branch once unit tests + lint pass~~
 - check items more thoroughly vs old site
 5. Fix chart hover when using a touch device
 6. See if the microwave guy would like to sponsor the site
@@ -63,6 +63,3 @@ npx vite-bundle-visualizer --sourcemap
 This project is **not open source**.  
 All rights reserved © 2025 28raining.  
 You may not copy, modify, redistribute, or use this code or any part thereof for commercial purposes without explicit written permission from the author.
-
-
-Testing push protections - attempt 4

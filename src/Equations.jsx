@@ -381,12 +381,14 @@ function Equations() {
                     <a href="https://www.allaboutcircuits.com/technical-articles/learn-about-designing-unilateral-low-noise-amplifiers/">here</a> and{" "}
                     <a href="https://homepages.uc.edu/~ferendam/Courses/EE_611/Amplifier/NFC.html">here</a>
                   </Typography>
-                  <msub>
-                    <mi mathvariant="normal">&#x0393;</mi>
-                    <mrow>
-                      <mi>opt</mi>
-                    </mrow>
-                  </msub>{" "}
+                  <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <msub>
+                      <mi mathvariant="normal">&#x0393;</mi>
+                      <mrow>
+                        <mi>opt</mi>
+                      </mrow>
+                    </msub>
+                  </math>{" "}
                   is the reflection coeffient of your circuit
                 </TableCell>
               </TableRow>

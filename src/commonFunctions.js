@@ -79,7 +79,7 @@ export const capacitorUnits = {
   fF: 1e-15,
 };
 export const resistorUnits = { MΩ: 1e6, KΩ: 1e3, Ω: 1, mΩ: 1e-3 };
-export const lengthUnits = { λ: 0, m: 1, mm: 1e-3, um: 1e-6 };
+export const lengthUnits = { λ: 0, m: 1, mm: 1e-3, um: 1e-6, deg: 0 };
 export const frequencyUnits = {
   Hz: 1,
   KHz: 1e3,
@@ -172,7 +172,7 @@ export function zToPolar(z) {
 }
 
 export function processImpedance(z, zo) {
-  var zStr, zPolarStr, refStr, refPolarStr, real, imaginary;
+  var zStr, zPolarStr, refStr, refPolarStr, real, imaginary, admString;
   real = Number(z.real).toFixed(2);
   imaginary = Number(z.imaginary).toFixed(2);
   if (imaginary < 0) zStr = `${real} - ${-imaginary}j`;
@@ -197,6 +197,13 @@ export function processImpedance(z, zo) {
   if (qFactor < 0.01) qFactor = qFactor.toExponential(1);
   else qFactor = qFactor.toFixed(2);
 
+  //admittance
+  var admittance = one_over_complex(z.real, z.imaginary);
+  real = Number(admittance.real).toPrecision(3);
+  imaginary = Number(admittance.imaginary).toPrecision(3);
+  if (imaginary < 0) admString = `${real} - ${-imaginary}j`;
+  else admString = `${real} + ${imaginary}j`;
+
   return {
     zStr,
     zPolarStr,
@@ -206,5 +213,6 @@ export function processImpedance(z, zo) {
     qFactor,
     refReal,
     refImag,
+    admString,
   };
 }
