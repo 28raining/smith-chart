@@ -245,7 +245,7 @@ function CustomQTable({ QInt, setQInt, settings, setSettings, title, index }) {
                 onClick={() => {
                   setSettings((z) => {
                     const newCircuit = { ...z };
-                    newCircuit[index] = [...settings[index], QInt];
+                    newCircuit[index] = [...settings[index], Math.abs(QInt)];
                     return newCircuit;
                   });
                   setQInt(0);

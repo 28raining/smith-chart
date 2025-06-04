@@ -201,6 +201,8 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
 
   //mouse handlers (move to the component?)
   useEffect(() => {
+    if (zo <= 0) return;
+
     var re, im, cx, cy, r, xEnd, yEnd;
     var svg = d3.select(svgRef.current);
     var svgGroup = d3.select(topGroupRef.current);
@@ -257,9 +259,6 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
         if (cy < 0) clockwise = 1;
         hoverImaginary.attr("d", `M 0 0 A ${cy * width * 0.5} ${cy * width * 0.5} 0 0 ${clockwise} ${xEnd * width * 0.5} ${yEnd * width * 0.5}`);
       }
-      // hoverImaginary.attr("cx", 0) // X coordinate of the center
-      // .attr("cy", cy*width*0.5) // Y coordinate of the center
-      // .attr("r", Math.abs(cy*width*0.5)); // Radius of the circle //FIXME - don't use math.abs?
     });
     svg.on("mouseleave", (event) => {
       const [mouseX, mouseY] = d3.pointer(event, svg.node());
@@ -309,6 +308,7 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
 
   //draw impedance arcs
   useEffect(() => {
+    if (zo <= 0) return;
     // console.log("running a");
     var impedanceArc = d3.select(impedanceArcsRef.current);
     impedanceArc.selectAll("*").remove();
@@ -382,22 +382,9 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
         mainSpanArc = newPath;
         addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], `${i}_span_0`, point, "red", "F + span", hoverSnaps);
         addDpMarker(dpCircles, coord[0][0], coord[0][1], `${i}_span_1`, point, "red", "F - span", hoverSnaps);
-
-        //the last entry in impedanceResults array is the circuit without any tolerance applied
-        // impedanceArc
-        // .append("path")
-        // .attr("stroke-linecap", "round")
-        // .attr("stroke-linejoin", "round")
-        // .attr("fill", "none")
-        // .attr("stroke", arcColors[dp-1 % 10])
-        // .attr("stroke-width", 5)
-        // .attr("d", newPath);
       }
     });
-    // for (const p of [spanArc, mainSpanArc])
     if (spanArc != "") {
-      // console.log("span arc 2 ", spanArc);
-      //FIXME - combine this duplicate code?
       impedanceArc
         .append("path")
         .attr("stroke-linecap", "round")
@@ -544,6 +531,8 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
         }
         followCursor
         sx={{ maxWidth: 300 }}
+        enterTouchDelay={0} // show immediately on touch
+        leaveTouchDelay={10000} // stay for 3 seconds
       >
         <div ref={svgWrapper} style={{ textAlign: "center" }}>
           <svg ref={svgRef} style={{ margin: "8px" }}>
@@ -794,7 +783,6 @@ function resistanceToXYR(z) {
 function reactanceToXYR(z) {
   z = -1 * z;
   var cy = 1 / z;
-  // var radius = Math.abs(1/z); //FIXME - use if else, math.abs too heavy
 
   //The arc must finish when it intersects the R=1 circle:
   //(x + 1)² + y² = 1
@@ -815,7 +803,6 @@ function reactanceToXYR(z) {
   var a = -1 / (1 + 10);
   var xStart = (2 * a) / (z * z * a * a + 1);
   var yStart = z * a * xStart;
-  // console.log("reactance z", z, xStart, yStart, xEnd, yEnd);
 
   return [cy, xStart, yStart, xEnd, yEnd];
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
 
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import Snackbar from "@mui/material/Snackbar";
 import SnackbarContent from "@mui/material/SnackbarContent";
-
 import CardContent from "@mui/material/CardContent";
 import { ThemeProvider } from "@mui/material/styles";
 import NavBar from "./NavBar.jsx";
@@ -16,6 +16,7 @@ import Graph from "./Graph.jsx";
 import Results from "./Results.jsx";
 import Settings from "./Settings.jsx";
 import Equations from "./Equations.jsx";
+import ReleaseNotes from "./ReleaseNotes.jsx";
 import { Comments } from "@hyvor/hyvor-talk-react";
 
 import { syncObjectToUrl, updateObjectFromUrl } from "./urlFunctions.js"; // Import the syncObjectToUrl function
@@ -177,9 +178,17 @@ function App() {
             <Equations />
           </Grid>
           <Grid size={12}>
+            <ReleaseNotes />
+          </Grid>
+          <Grid size={12}>
             <Card>
               <CardContent>
-                <Typography>Let me know of any issues or requests!</Typography>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography>Comment section below</Typography>
+                  <Link href="https://www.microwave-master.com/contact-us/" target="_blank" color="inherit">
+                    Get professional support from Microwave Master here
+                  </Link>
+                </div>
                 {!import.meta.env.DEV && <Comments website-id="12282" page-id="/smith_chart/" />}
               </CardContent>
             </Card>

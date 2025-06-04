@@ -34,19 +34,31 @@ As well as a re-write, the following new features are added
 # Remaining to-do items
 ~~1. Add equations descriptions~~
 ~~- especially NF site~~
-2. Add release notes to site
+~~2. Add release notes to site~~
 ~~4. Create unit tests and only allow merge into main branch once unit tests + lint pass~~
-- check items more thoroughly vs old site
-5. Fix chart hover when using a touch device
-6. See if the microwave guy would like to sponsor the site
-7. Don't error out when shorted stubs length = 0, and other error conditions
-- zo = 0
-8. Prevent NF circles where NF < NFmin, R<0
-- Prevent -ve Q factor, -ve VSWR
+~~5. Fix chart hover when using a touch device~~
+~~6. See if the microwave guy would like to sponsor the site~~
+~~7. Don't error out when shorted stubs length = 0, and other error conditions~~
+~~- zo = 0~~
+~~- Prevent -ve Q factor, -ve VSWR~~
+~~12. remove fixme's~~
 9. Review all the old comments, make any previous requests are present (and in unit test?)
-10. Add Gain circles
-11. Add stability circles
-12. remove fixme's
+- check items more thoroughly vs old site
+13. To add Gain, Stability and Noise circles I must add S-parameter inputs
+-- Use touchstone S-parameter format
+---- chatGPT already wrote me a parser...!
+-- Add a complex-conjugate 'ideal match' to the output of the s-parameter block. This load be in the same SVG. The Smith Chart is then used to design the input circut
+-- Also get Ropt, NFmin and Rn from s-parameter file
+-- Users cannot add any more elements after s-parameter file
+-- Then it's possible to add Noise-Figure, Gain and Stability circles
+-- Add plots for Gain and Noise
+---- S11 and S21 should then be plotted looking into s-parameter block (change Zo from 50 in reflection coefficient equation)
+-- follow these resources
+---- https://www.allaboutcircuits.com/technical-articles/learn-about-designing-unilateral-low-noise-amplifiers/
+---- https://www.allaboutcircuits.com/technical-articles/using-the-available-power-gain-to-design-bilateral-low-noise-amplifiers
+---- https://www.allaboutcircuits.com/technical-articles/learn-about-unconditional-stability-and-potential-instability-in-rf-amplifier-design/
+14. Prevent NF circles where NF < NFmin, R<0
+
 
 
 # Low -priority to-do items

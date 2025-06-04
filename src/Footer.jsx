@@ -16,7 +16,7 @@ function Footer() {
               © {new Date().getFullYear()} Will Kelsey. This work is licensed under a Creative Commons Attribution 4.0 International License. You may
               not resell this tool
             </Typography>
-            <Typography sx={{ px: 2 }}>v1.1</Typography>
+            <Typography sx={{ px: 2 }}>v2.0</Typography>
             <div
               style={{
                 marginLeft: "auto",
