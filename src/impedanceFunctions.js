@@ -137,7 +137,7 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
         //L1
         i1z = {
           real: startReal,
-          imaginary: startImaginary + ((l1w-lmw) * j) / resolution,
+          imaginary: startImaginary + ((l1w - lmw) * j) / resolution,
         };
         //Lm
         newStartAdmittance = one_over_complex(i1z.real, i1z.imaginary);
@@ -145,7 +145,7 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
         //L2
         impedanceResolution.push({
           real: i2z.real,
-          imaginary: i2z.imaginary + ((l2w-lmw) * j) / resolution,
+          imaginary: i2z.imaginary + ((l2w - lmw) * j) / resolution,
         });
       }
     } else if (component.name == "custom") {
