@@ -13,10 +13,10 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
 const asciiArtTransformer = `
- --- L1 --- --- L2 ---  <- look this way
-|             |
-Zl         Lm
-|             |
+ --- (L1-Lm) --- --- (L2-Lm) ---  <- look this way
+|                    |
+Zl                Lm
+|                    |
 `;
 
 function Equations() {
