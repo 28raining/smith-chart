@@ -1,3 +1,4 @@
+/* global gtag */
 import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -185,7 +186,12 @@ function App() {
               <CardContent>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography>Comment section below</Typography>
-                  <Link href="https://www.microwave-master.com/contact-us/" target="_blank" color="inherit">
+                  <Link
+                    href="https://www.microwave-master.com/contact-us/"
+                    onClick={() => gtag("event", "click_microwave_maser")}
+                    target="_blank"
+                    color="inherit"
+                  >
                     Get professional support from Microwave Master here
                   </Link>
                 </div>
