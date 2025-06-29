@@ -45,7 +45,7 @@ function ReleaseNotes() {
                 </TableCell>
                 <TableCell>
                   <ul>
-                    <li>Site moved from will-kelsey.com to onlinesmithchart.com</li>
+                    <li>Site moved from will-kelsey.com/smith_chart/ to onlinesmithchart.com</li>
                     <li>
                       Whole site re-written. Over 6 years many features were added to the old site which left the code very messy. Some users were
                       looking at the code to verify implementations, which was tough. Now, the code is much more organised and optimized. In the
