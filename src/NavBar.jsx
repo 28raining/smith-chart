@@ -71,7 +71,7 @@ function NavBar() {
               <Button variant="contained" color="bland" component="a" href="https://onlinesmithchart.com">
                 Smith Chart
               </Button>
-              <Button variant="contained" color="bland" component="a" href="https://www.will-kelsey.com/circuitSolver">
+              <Button variant="contained" color="bland" component="a" href="https://onlinecircuitsolver.com">
                 Circuit Solver
               </Button>
             </Stack>
