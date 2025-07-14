@@ -30,6 +30,14 @@ As well as a re-write, the following new features are added
   - Move to react + npm. This allows; running lint, more maintainable code, smaller file size, many micro-benefits from joining the mainstream
 
 
+# S2P files to-do
+ 0. Create an S2P icon
+ 1. Plot the gain circles with this S2P file
+ 2. Ask user if they want to plot gain circles, or add component to the network? I think this is what's needed...
+ - convert parsed data into a standard format
+ - test with a different s2p file from a different source
+ - before creating user input, create an s-param component which can be added
+ - then use the default touchstone file to test out stability circles
 
 # Remaining to-do items
 ~~1. Add equations descriptions~~
@@ -58,7 +66,7 @@ As well as a re-write, the following new features are added
 ---- https://www.allaboutcircuits.com/technical-articles/using-the-available-power-gain-to-design-bilateral-low-noise-amplifiers
 ---- https://www.allaboutcircuits.com/technical-articles/learn-about-unconditional-stability-and-potential-instability-in-rf-amplifier-design/
 14. Prevent NF circles where NF < NFmin, R<0
-
+15. Add 'tool' into google search queries - it doesn't show up under smith chart tool
 
 
 # Low -priority to-do items

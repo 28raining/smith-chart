@@ -216,3 +216,70 @@ export function processImpedance(z, zo) {
     admString,
   };
 }
+
+export function parseTouchstoneFile(content) {
+  const optionsRegex = /^\s*#\s+(?<freq_unit>\S+)\s+(?<param>\S+)\s+(?<format>\S+)\s+R\s+(?<z0>\S+)\s*$/;
+  const dataLineRegex = /^(?<freq>\S+)((\s+[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?){2,})$/;
+  const noiseRegex = /^\s*(?<freq>\S+)\s+(?<fmin>\S+)\s+(?<gamma_mag>\S+)\s+(?<gamma_ang>\S+)\s+(?<rn>\S+)\s*$/;
+  
+  const results = {'data': [], 'noise': []};
+  var noiseExists = false;
+  var line;
+
+  const lines = content.trim().split(/\r?\n/); // split by line
+  const match = lines[0].match(optionsRegex);
+  if (match?.groups) {
+    // console.log("parsedSettings", match.groups);
+    results['settings'] = match.groups;
+  } else return { error: "Invalid Touchstone file format" };
+
+  for (line=1; line < lines.length; line++) {
+    if (lines[line].includes("! Noise parameters")) {
+      noiseExists = true;
+      break
+    }
+    const splLine = lines[line].trim().split(/\s+/);
+    if (splLine.length == 9) results['data'].push(splLine.map(x => parseFloat(x)));
+  }
+
+  if (noiseExists) {
+    for (line++; line < lines.length; line++) {
+      const match = lines[line].match(noiseRegex);
+      if (match?.groups) {
+        // console.log("noiseData", match.groups);
+        results['noise'].push(match.groups);
+      } else return { error: "Invalid Touchstone noise data format" };
+    }
+  }
+
+  // const results = {};
+  // for (var line in lines) {
+  //   if (line == 0) {
+  //     match = line.match(optionsRegex);
+  //     if (match?.groups) {
+  //     console.log("parsedSettings", match.groups);
+  //     results['settings'] = match.groups;
+  //     } else return { error: "Invalid Touchstone file format" };
+  //   }
+
+  // for (const line of lines) {
+  //   const match = line.match(optionsRegex);
+  //   if (match?.groups) {
+  //     console.log("parsedSettings", match.groups);
+  //     results['settings'] = match.groups;
+  //     break;
+  //   }
+  // }
+
+  // results['data'] = []
+  // for (const line of lines) {
+  //   const match = line.match(dataLineRegex);
+  //   if (match?.groups) {
+  //     console.log("data", match.groups);
+  //     results['data'].push(match.groups);
+  //     break;
+  //   }
+  // }
+
+  console.log("Touchstone results", results);
+}
