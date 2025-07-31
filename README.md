@@ -30,14 +30,36 @@ As well as a re-write, the following new features are added
   - Move to react + npm. This allows; running lint, more maintainable code, smaller file size, many micro-benefits from joining the mainstream
 
 
-# S2P files to-do
- 0. Create an S2P icon
- 1. Plot the gain circles with this S2P file
- 2. Ask user if they want to plot gain circles, or add component to the network? I think this is what's needed...
- - convert parsed data into a standard format
- - test with a different s2p file from a different source
- - before creating user input, create an s-param component which can be added
- - then use the default touchstone file to test out stability circles
+ ## The data
+ 0.8
+
+0.440 ∠ –157.6 degrees
+
+4.725 ∠ 84.3 degrees
+
+0.06 ∠ 55.4 degrees
+
+0.339 ∠ –51.8 degrees
+
+1.4
+
+0.533 ∠ 176.6 degrees
+
+2.800 ∠ 64.5 degrees
+
+0.06 ∠ 58.4 degrees
+
+0.604 ∠ –58.3 degrees
+
+2.0
+
+0.439 ∠ 159.6 degrees
+
+2.057 ∠ 49.2 degrees
+
+0.17 ∠ 58.1 degrees
+
+0.294 ∠ –68.1 degrees
 
 # Remaining to-do items
 ~~1. Add equations descriptions~~
@@ -67,12 +89,19 @@ As well as a re-write, the following new features are added
 ---- https://www.allaboutcircuits.com/technical-articles/learn-about-unconditional-stability-and-potential-instability-in-rf-amplifier-design/
 14. Prevent NF circles where NF < NFmin, R<0
 15. Add 'tool' into google search queries - it doesn't show up under smith chart tool
+16. allow plotting of s-parameters on smith chart on their own?
+17. bbox on small screens the boxs don't align with sliders
+18. move / eliminate DP0 marker
+19. make impedance and reflection ceofficient boxes the same size
+20. I changed a lot of complex maths, much add testing to ensure site matches old site!
+21. rename zToPolar
 
 
 # Low -priority to-do items
 1. Why is the graph re-rendering when mouse-over? Is it expensive?
 2. Review performance on 20x slower device than my `m2 mac air`
 3. investigate if can use preact, to reduce size and increase spped
+
 
 
 # to vizualise the file sizes:
@@ -83,3 +112,68 @@ npx vite-bundle-visualizer --sourcemap
 This project is **not open source**.  
 All rights reserved © 2025 28raining.  
 You may not copy, modify, redistribute, or use this code or any part thereof for commercial purposes without explicit written permission from the author.
+
+
+1 - Add gain circle input
+2 - plot gain circles & compare against website
+3 - make s-param component icon bigger
+
+Example S1p parameter file:
+Infineon example from https://www.youtube.com/watch?v=hh8gTWF7uC8
+
+https://www.johansontechnology.com/products/antennas/rf-antennas/2450at45a0100001e/
+https://www.kyocera-avx.com/products/antennas/antenna-resources/ - M830320
+
+# S2P files to-do
+1 - Add .s1p and plot S11 just like NanoVNA
+-- pop up modal when they add sparam block
+-- Plot S11 magnitude and phase when in s-param mode
+-- plot S21 when in IMPEDANCE mode
+-- allow variable input impedance
+-- When s1p model added then prevent adding of more blocks
+2 - button to add a termination network (for plotting S21 and for terminating the s-parameter model)
+3 - Plot Zout when doing 2-parameter model - but don't do an arc to it? Create 2 separate arcs?
+4 - Add .s2p and plot S22 & S11
+-- by default add 50ohm termination
+-- allow move components left and right, so user can easier match
+-- option to show or hide S11 & S22
+5 - Allow plotting of gain circles when user adds .s2p file
+6 - Plot gain vs frequency
+- custom impedance default is blank now?
+- Prevent adding anything else after the sparameter
+-s-param ico to better reflect s1p too
+- can hide or show just one of the plots
+- fix valid.s1p plot
+- go to s-param plotting mode when add sparam
+ 0. Create an S2P icon
+ 1. Plot the gain circles with this S2P file
+ 2. Ask user if they want to plot gain circles, or add component to the network? I think this is what's needed...
+ - test with a different s2p file from a different source
+ - then use the default touchstone file to test out stability circles
+ - allow enabling of just one plot (s11 or s22)
+ -- then user doesn't need to chose between one or other
+ -- instead move that plotting to results tab? (implement s2p first)
+ - prevent more components being added
+ - take example from Youtube person
+ - check I didn't screq up reflection coefficient maths
+ -- or span frequency & tol
+ - create md tutorial in git hub which shows user how to match an antenna like in the youtube
+ - show sparam and impedance on the same plot, so user can match to certain points
+
+Extra?
+  - let user move components left and right? at the end shows unused if its after s11? or s-param always goes last? 
+
+
+#######################
+- Sparam DONE
+-- I need an example file with example smith chart drawing
+-- example in nanosaver
+-- plot it here:  https://emisleuth.com/Tools/S-Param-Plotting.html
+-- allow user to toggle between s-param plots and smith plots
+-- touchstone importer for different frequency units and different formats
+- convert S11 from 50ohm to real circuit ohm
+- Graph titles
+- change fspan when sparam is loaded
+- only plot s-param over the frequency range
+
+

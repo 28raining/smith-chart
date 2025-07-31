@@ -24,6 +24,7 @@ import { syncObjectToUrl, updateObjectFromUrl } from "./urlFunctions.js"; // Imp
 import { unitConverter, theme, processImpedance } from "./commonFunctions.js";
 
 import { calculateImpedance, createToleranceArray, applySliders, convertLengthToM } from "./impedanceFunctions.js";
+import { sParamFrequencyRange, S11NotMatched } from "./sparam.js"; // Import the sParamFrequencyRange function
 
 const resolution = 50;
 
@@ -37,19 +38,30 @@ var initialState = {
   vswrCircles: [],
   qCircles: [],
   nfCircles: [],
+  gainCircles: [],
 };
 
 const initialCircuit = [{ name: "blackBox", real: 25, imaginary: -25 }];
 
 var [stateInURL, defaultCircuit, urlContainsState] = updateObjectFromUrl(initialState, initialCircuit);
 
+//calculate impedance at a specific frequency
+function impedanceAtFrequency(circuit, frequency) {
+  const span_tol = calculateImpedance(circuit, frequency, 2);
+  const span_tol_final = span_tol[span_tol.length - 1];
+  return span_tol_final[span_tol_final.length - 1];
+}
+
 function App() {
   const [userCircuit, setUserCircuit] = useState(defaultCircuit);
 
   const [settings, setSettings] = useState(stateInURL);
   const [urlSnackbar, setUrlSnackbar] = useState(false);
+  const [plotType, setPlotType] = useState("impedance");
 
-  syncObjectToUrl(settings, initialState, userCircuit, initialCircuit); // Sync the settings object to the URL
+  // console.log("userCircuit", userCircuit, sParameters)
+
+  // syncObjectToUrl(settings, initialState, userCircuit, initialCircuit); // Sync the settings object to the URL
 
   var impedanceResults = [];
   var spanResults = [];
@@ -75,11 +87,24 @@ function App() {
       spanResults.push([]);
       for (i = -10; i <= 10; i++) {
         f = numericalFrequency + i * spanStep;
-        span_tol = calculateImpedance(z, f, 2);
-        span_tol_final = span_tol[span_tol.length - 1];
-        spanResults[spanResults.length - 1].push(span_tol_final[span_tol_final.length - 1]);
+        // span_tol = calculateImpedance(z, f, 2);
+        // span_tol_final = span_tol[span_tol.length - 1];
+        spanResults[spanResults.length - 1].push(impedanceAtFrequency(z, f));
       }
     }
+  }
+
+  const sParametersSearch = userCircuit.filter((c) => c.name === "sparam");
+  var sParameters = null;
+  if (sParametersSearch.length != 0 && Object.hasOwn(sParametersSearch[0], "value")) {
+    // console.log("sParametersSearch", sParametersSearch);
+    sParameters = { ...sParametersSearch[0].value };
+    sParameters.data = sParamFrequencyRange([...sParameters.data], numericalFrequency - numericalFspan, numericalFrequency + numericalFspan);
+    // sParameters.matched = S11NotMatched([...sParameters.data], sParameters.settings.zo, finalDp[finalDp.length - 1]);
+    sParameters.matched = sParameters.data.map((d) => {
+      return S11NotMatched(d, sParameters.settings.zo, impedanceAtFrequency(circuitArray[circuitArray.length - 1], d.frequency));
+    });
+    // console.log("sParameters", sParameters);
   }
 
   // converts real and imaginary into Q, VSWR, reflection coeff, etc
@@ -137,7 +162,13 @@ function App() {
           <Grid size={{ sm: 12, md: 6 }}>
             <Card>
               <CardContent>
-                <Circuit userCircuit={userCircuit} setUserCircuit={setUserCircuit} frequency={numericalFrequency} />
+                <Circuit
+                  userCircuit={userCircuit}
+                  setUserCircuit={setUserCircuit}
+                  frequency={numericalFrequency}
+                  setPlotType={setPlotType}
+                  setSettings={setSettings}
+                />
               </CardContent>
             </Card>
           </Grid>
@@ -150,9 +181,13 @@ function App() {
                 qCircles={settings.qCircles}
                 vswrCircles={settings.vswrCircles}
                 nfCircles={settings.nfCircles}
+                gainCircles={settings.gainCircles}
                 zMarkers={settings.zMarkers}
                 reflection_real={processedImpedanceResults.refReal}
                 reflection_imag={processedImpedanceResults.refImag}
+                plotType={plotType}
+                setPlotType={setPlotType}
+                sParameters={sParameters}
               />
             </Card>
           </Grid>
@@ -164,6 +199,8 @@ function App() {
                   spanFrequencies={spanFrequencies}
                   spanResults={spanResults[spanResults.length - 1]}
                   freqUnit={settings.frequencyUnit}
+                  plotType={plotType}
+                  sParameters={sParameters}
                 />
               </CardContent>
             </Card>

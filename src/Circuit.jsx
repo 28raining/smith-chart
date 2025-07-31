@@ -16,6 +16,15 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+
 import {
   arcColors,
   inductorUnits,
@@ -29,7 +38,11 @@ import {
   parseInput,
   checkCustomZValid,
   CustomZAtFrequency,
+                
+
 } from "./commonFunctions.js";
+
+import { parseTouchstoneFile } from "./sparam.js";
 
 import { circuitComponents } from "./circuitComponents.js";
 
@@ -87,7 +100,7 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
       >
         Set Impedance vs Frequency
       </Button>
-      <Dialog open={modalOpen}>
+      <Dialog open={modalOpen} fullScreen>
         <Box sx={{ p: 2 }}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
             Custom Impedance input box
@@ -152,8 +165,130 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
             setModalOpen(false);
           }}
         >
-          {validCheckerResults[0] ? "Save" : "Input Error - remove component"}
+          {validCheckerResults[0] ? "Save" : "Input error - remove component"}
         </Button>
+      </Dialog>
+    </>
+  );
+}
+
+function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setPlotType, setSettings }) {
+  const [customInput, setCustomInput] = useState(value ? value : "");
+
+  const parsed = parseTouchstoneFile(customInput);
+  const validCheckerResults = parsed.error === null;
+  const helperText =
+    customInput == "" ? "Copy in a file" : validCheckerResults ? `${parsed.data.length} data points parsed succesfully` : parsed.error;
+  return (
+    <>
+      <Button
+        sx={{ m: 2 }}
+        variant="contained"
+        color="primary"
+        onClick={() => {
+          // setCustomInput();
+          setModalOpen((o) => !o);
+        }}
+      >
+        Enter S-param file
+      </Button>
+      <Dialog open={modalOpen} fullScreen>
+        <Box sx={{ p: 4 }}>
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Paste .s1p or .s2p file contents below
+            </Typography>
+            <Button
+              sx={{ m: 0, ml: 1 }}
+              variant="contained"
+              color={customInput == "" ? "secondary" : validCheckerResults ? "primary" : "error"}
+              onClick={() => {
+                if (validCheckerResults) {
+                  const fMin = parsed.data[0].frequency;
+                  const fMax = parsed.data[parsed.data.length - 1].frequency;
+                  setUserCircuit((c) => {
+                    const newCircuit = [...c];
+                    newCircuit[index].value = parsed;
+                    return newCircuit;
+                  });
+                  setPlotType("sparam")
+                  setSettings((s) => {
+                    s.frequencyUnit = parsed.settings.freq_unit;
+                    s.fSpanUnit = parsed.settings.freq_unit;
+                    s.frequency = (fMax + fMin)/2
+                    s.fSpan = (fMax - fMin) / 2;
+                    return s;
+                  });
+                } else {
+                  setUserCircuit((z) => [
+                    ...z.slice(0, index), // Items before the index `i`
+                    ...z.slice(index + 1),
+                  ]);
+                }
+                setModalOpen(false);
+              }}
+            >
+              {validCheckerResults ? "Save" : customInput == "" ? "No input - remove component?" : "Input error - remove component?"}
+            </Button>
+          </Box>
+          <TextField
+            sx={{ width: "100%", p: 1 }}
+            error={!validCheckerResults}
+            size="small"
+            multiline
+            minRows="3"
+            maxRows="10"
+            value={customInput}
+            onChange={(e) => setCustomInput(e.target.value)}
+            helperText={helperText}
+          />
+          {validCheckerResults && (
+            <>
+              <ul style={{ marginTop: 0 }}>
+                <li>File type: .{parsed.type}</li>
+                <li>Frequency Unit: {parsed.settings.freq_unit}</li>
+                <li>Data Type: {parsed.settings.param}</li>
+                <li>
+                  Format: {parsed.settings.format} ({parsed.settings.format == "RI" ? "Rectangular" : "Polar"})
+                </li>
+                <li>Zo: {parsed.settings.zo}</li>
+              </ul>
+              First 300 rows of data:
+              <TableContainer sx={{ maxHeight: 200, border: "1px solid black" }}>
+                <Table stickyHeader size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell key="frequency">Frequency ({parsed.settings.freq_unit})</TableCell>
+                      {Object.keys(parsed.data[0]).map((column) => {
+                        if (column !== "frequency") {
+                          return [<TableCell key="mag">|{column}|</TableCell>, <TableCell key="ang">∠{column}</TableCell>];
+                        }
+                      })}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {parsed.data.map((row, i) => {
+                      if (i>300) return null; // limit to 300 rows for performance
+                      return (
+                        <TableRow hover tabIndex={-1} key={i}>
+                          {Object.keys(row).map((column) => {
+                            if (column == "frequency") return <TableCell key="freq">{row[column].toLocaleString()}</TableCell>;
+                            else {
+                              return [
+                                <TableCell key="mag">{row[column].magnitude.toFixed(4)}</TableCell>,
+                                <TableCell key="ang">{row[column].angle.toFixed(4)}</TableCell>,
+                              ];
+                            }
+                          })}
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
+        </Box>
       </Dialog>
     </>
   );
@@ -481,9 +616,10 @@ function ToleranceComponent({ tol, index, setUserCircuit }) {
   );
 }
 
-function Circuit({ userCircuit, setUserCircuit, frequency }) {
+function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSettings }) {
   const w = 2 * Math.PI * frequency;
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalSparam, setModalSparam] = useState(false);
   // console.log(userCircuit);
 
   function componentMap(type, component, index) {
@@ -491,7 +627,6 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
     const slider_re = component.slider_re === undefined ? 0 : component.slider_re;
     const slider_im = component.slider_im === undefined ? 0 : component.slider_im;
     const slider = component.slider === undefined ? 0 : component.slider;
-
     switch (type) {
       case "impedance":
         if (component.name == "shortedInd" || component.name == "seriesInd") {
@@ -507,7 +642,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
           var zj =
             (w * component.value_l * unitConverter[component.unit_l]) /
             (1 - w * w * component.value_l * component.value_c * unitConverter[component.unit_l] * unitConverter[component.unit_c]);
-          var z = one_over_complex(1 / (component.value * unitConverter[component.unit]), -1 / zj);
+          var z = one_over_complex({real:1 / (component.value * unitConverter[component.unit]), imaginary:-1 / zj});
           real = z.real * (1 + slider / 100);
           imaginary = z.imaginary;
         } else if (component.name == "blackBox") {
@@ -538,6 +673,19 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
             setUserCircuit={setUserCircuit}
             frequency={frequency}
             key={type}
+          />
+        );
+      case "sparam":
+        return (
+          <SparamComponent
+            modalOpen={modalSparam}
+            setModalOpen={setModalSparam}
+            value={component.value}
+            index={index}
+            setUserCircuit={setUserCircuit}
+            setPlotType={setPlotType}
+            key={type}
+            setSettings={setSettings}
           />
         );
       case "transformer":
@@ -620,7 +768,14 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
               <Grid size={2} key={i}>
                 <Button
                   variant="contained"
-                  onClick={() => setUserCircuit([...userCircuit, { ...c.default, name: k }])}
+                  onClick={() => {
+                    setUserCircuit([...userCircuit, { ...c.default, name: k }]);
+                    if (k == "custom") {
+                      setModalOpen(true);
+                    } else if (k == "sparam") {
+                      setModalSparam(true);
+                    }
+                  }}
                   color="bland"
                   style={{
                     flex: 1,
@@ -682,8 +837,8 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
                 <Typography
                   sx={{
                     position: "absolute",
-                    top: 2,
-                    left: 6,
+                    top: 1,
+                    left: 1,
                     color: { color },
                   }}
                 >

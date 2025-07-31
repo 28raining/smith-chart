@@ -11,6 +11,7 @@ import stub_open from "./assets/components/stub_open.svg";
 import stub_shorted from "./assets/components/stub_shorted.svg";
 import transformer from "./assets/components/transformer.svg";
 import transmissionLine from "./assets/components/transmission_line.svg";
+import s2p from "./assets/components/s2p.svg";
 
 export const circuitComponents = {
   blackBox: {
@@ -238,5 +239,14 @@ export const circuitComponents = {
         k: Number(u[5]),
       };
     },
+  },
+  sparam: {
+    name: "S-Parameter",
+    src: s2p,
+    //FIXME belowe!
+    circuitInputs: ['sparam'],
+    // default: { l1: 1, unit_l1: "nH", l2: 1, unit_l2: "nH", k: 1 },
+    toURL: (c) => `null`,
+    fromURL: (u) => null, //FIXME
   },
 };

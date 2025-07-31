@@ -39,6 +39,7 @@ export default function Settings({ settings, setSettings }) {
   const [zMarkersInt, setZMarkersInt] = useState([25, 25]);
   const [QInt, setQInt] = useState(0);
   const [VSWRInt, setVSWRInt] = useState(0);
+  const [gainInt, setGainInt] = useState(0);
   const [NFInt, setNFInt] = useState({ NFmin: 1, NF: 1.5, Rn: 20 });
 
   return (
@@ -123,6 +124,17 @@ export default function Settings({ settings, setSettings }) {
             setSettings={setSettings}
             title="Constant VSWR circles"
             index="vswrCircles"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, lg: 5 }} sx={{ display: "flex" }}>
+          <CustomQTable
+            QInt={gainInt}
+            setQInt={setGainInt}
+            settings={settings}
+            setSettings={setSettings}
+            title="Gain Circles"
+            index="gainCircles"
+            unit="dB"
           />
         </Grid>
       </Grid>
@@ -217,7 +229,7 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
     </TableContainer>
   );
 }
-function CustomQTable({ QInt, setQInt, settings, setSettings, title, index }) {
+function CustomQTable({ QInt, setQInt, settings, setSettings, title, index, unit }) {
   return (
     <TableContainer component={Paper} variant="outlined" color="secondary" sx={{ px: 1, py: 1 }}>
       <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
@@ -237,7 +249,11 @@ function CustomQTable({ QInt, setQInt, settings, setSettings, title, index }) {
         <TableBody>
           <TableRow key="newData">
             <TableCell align="center">
-              <TextField variant="outlined" size="small" value={QInt} onChange={(e) => setQInt(parseInput(e.target.value))} />
+              <TextField variant="outlined" size="small" value={QInt} onChange={(e) => setQInt(parseInput(e.target.value))}                 slotProps={{
+                  input: {
+                    endAdornment: <InputAdornment position="end">{unit}</InputAdornment>,
+                  },
+                }}/>
             </TableCell>
             <TableCell align="center" sx={{ py: 0 }}>
               <IconButton

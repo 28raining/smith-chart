@@ -13,16 +13,24 @@ export const arcColors = [
   "#17becf", // blue-teal
 ];
 
-export function one_over_complex(re, im) {
-  var real = re / (re * re + im * im);
-  var imaginary = -im / (re * re + im * im);
+export function one_over_complex(z) {
+  var real = z.real / (z.real * z.real + z.imaginary * z.imaginary);
+  var imaginary = -z.imaginary / (z.real * z.real + z.imaginary * z.imaginary);
   return { real, imaginary };
 }
 
-export function complex_multiply(re1, im1, re2, im2) {
-  var real = re1 * re2 - im1 * im2;
-  var imaginary = re1 * im2 + im1 * re2;
+export function complex_multiply(a, b) {
+  var real = a.real * b.real - a.imaginary * b.imaginary;
+  var imaginary = a.real * b.imaginary + a.imaginary * b.real;
   return { real, imaginary };
+}
+
+export function complex_subtract(a, b) {
+  return { real: a.real-b.real, imaginary: a.imaginary-b.imaginary };
+}
+
+export function complex_add(a, b) {
+  return { real: a.real+b.real, imaginary: a.imaginary+b.imaginary };
 }
 
 export const theme = createTheme({
@@ -94,6 +102,16 @@ export const unitConverter = {
   ...lengthUnits,
   ...frequencyUnits,
 };
+
+//convert from any case (hz, HZ, hZ) to the same case as unitConverter
+export function correctUnitCase(unit) {
+  const lowerUnit = unit.toLowerCase();
+  for (const key of Object.keys(unitConverter)) {
+    if (key.toLowerCase() === lowerUnit) return key;
+  }
+  console.warn(`Unit ${unit} not found in unitConverter, returning original.`);
+  return unit; //if not found, return the original
+}
 
 export const ESLUnit = 1e-9; //series inductor hard-coded unit
 
@@ -171,6 +189,31 @@ export function zToPolar(z) {
   return { magnitude, angle };
 }
 
+// Function to convert polar form to rectangular form
+//FIXME - use angle, not phase?
+export function polarToRectangular(a) {
+  const phaseRadians = a.angle * (Math.PI / 180); // Convert degrees to radians
+  return {
+    real: a.magnitude * Math.cos(phaseRadians),
+    imaginary: a.magnitude * Math.sin(phaseRadians)
+  };
+}
+
+//convert from Reflection coefficient to Z : Z = Zo(1+refl/(1-refl)
+export function reflToZ (refl, zo) {
+  const tmp = one_over_complex({real: 1 - refl.real, imaginary: -refl.imaginary});
+  return complex_multiply(tmp, {real: zo + zo*refl.real, imaginary:zo*refl.imaginary});
+}
+
+// reflection coefficient =  (Z-Zo) / (Z+Zo)
+export function zToRefl(z, zTerm) {
+  var botInv = one_over_complex(complex_add(z, zTerm));
+  return complex_multiply(complex_subtract(z, zTerm), botInv);
+  // var refReal = (z.real - zo) * botInv.real - z.imaginary * botInv.imaginary;
+  // var refImag = z.imaginary * botInv.real + (z.real - zo) * botInv.imaginary;
+  // return { real: refReal, imaginary: refImag };
+}
+
 export function processImpedance(z, zo) {
   var zStr, zPolarStr, refStr, refPolarStr, real, imaginary, admString;
   real = Number(z.real).toFixed(2);
@@ -182,13 +225,14 @@ export function processImpedance(z, zo) {
   zPolarStr = `${polar.magnitude.toFixed(2)} ∠ ${polar.angle.toFixed(2)}°`;
 
   // reflection coefficient =  (Z-Zo) / (Z+Zo)
-  var botInv = one_over_complex(z.real + zo, z.imaginary);
-  var refReal = (z.real - zo) * botInv.real - z.imaginary * botInv.imaginary;
-  var refImag = z.imaginary * botInv.real + (z.real - zo) * botInv.imaginary;
-  if (refImag < 0) refStr = `${refReal.toFixed(3)} - ${(-refImag).toFixed(3)}j`;
-  else refStr = `${refReal.toFixed(3)} + ${refImag.toFixed(3)}j`;
+  var reflection = zToRefl(z, { real: zo, imaginary: 0 });
+  // var botInv = one_over_complex(z.real + zo, z.imaginary);
+  // var refReal = (z.real - zo) * botInv.real - z.imaginary * botInv.imaginary;
+  // var refImag = z.imaginary * botInv.real + (z.real - zo) * botInv.imaginary;
+  if (reflection.imaginary < 0) refStr = `${reflection.real.toFixed(3)} - ${(-reflection.imaginary).toFixed(3)}j`;
+  else refStr = `${reflection.real.toFixed(3)} + ${reflection.imaginary.toFixed(3)}j`;
 
-  var refPolar = zToPolar({ real: refReal, imaginary: refImag });
+  var refPolar = zToPolar({ real: reflection.real, imaginary: reflection.imaginary });
   refPolarStr = `${refPolar.magnitude.toFixed(3)} ∠ ${refPolar.angle.toFixed(1)}°`;
 
   var vswr = ((1 + refPolar.magnitude) / (1 - refPolar.magnitude)).toPrecision(3);
@@ -198,7 +242,7 @@ export function processImpedance(z, zo) {
   else qFactor = qFactor.toFixed(2);
 
   //admittance
-  var admittance = one_over_complex(z.real, z.imaginary);
+  var admittance = one_over_complex(z);
   real = Number(admittance.real).toPrecision(3);
   imaginary = Number(admittance.imaginary).toPrecision(3);
   if (imaginary < 0) admString = `${real} - ${-imaginary}j`;
@@ -211,75 +255,8 @@ export function processImpedance(z, zo) {
     refPolarStr,
     vswr,
     qFactor,
-    refReal,
-    refImag,
+    refReal:reflection.real,
+    refImag:reflection.imaginary,
     admString,
   };
-}
-
-export function parseTouchstoneFile(content) {
-  const optionsRegex = /^\s*#\s+(?<freq_unit>\S+)\s+(?<param>\S+)\s+(?<format>\S+)\s+R\s+(?<z0>\S+)\s*$/;
-  const dataLineRegex = /^(?<freq>\S+)((\s+[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?){2,})$/;
-  const noiseRegex = /^\s*(?<freq>\S+)\s+(?<fmin>\S+)\s+(?<gamma_mag>\S+)\s+(?<gamma_ang>\S+)\s+(?<rn>\S+)\s*$/;
-  
-  const results = {'data': [], 'noise': []};
-  var noiseExists = false;
-  var line;
-
-  const lines = content.trim().split(/\r?\n/); // split by line
-  const match = lines[0].match(optionsRegex);
-  if (match?.groups) {
-    // console.log("parsedSettings", match.groups);
-    results['settings'] = match.groups;
-  } else return { error: "Invalid Touchstone file format" };
-
-  for (line=1; line < lines.length; line++) {
-    if (lines[line].includes("! Noise parameters")) {
-      noiseExists = true;
-      break
-    }
-    const splLine = lines[line].trim().split(/\s+/);
-    if (splLine.length == 9) results['data'].push(splLine.map(x => parseFloat(x)));
-  }
-
-  if (noiseExists) {
-    for (line++; line < lines.length; line++) {
-      const match = lines[line].match(noiseRegex);
-      if (match?.groups) {
-        // console.log("noiseData", match.groups);
-        results['noise'].push(match.groups);
-      } else return { error: "Invalid Touchstone noise data format" };
-    }
-  }
-
-  // const results = {};
-  // for (var line in lines) {
-  //   if (line == 0) {
-  //     match = line.match(optionsRegex);
-  //     if (match?.groups) {
-  //     console.log("parsedSettings", match.groups);
-  //     results['settings'] = match.groups;
-  //     } else return { error: "Invalid Touchstone file format" };
-  //   }
-
-  // for (const line of lines) {
-  //   const match = line.match(optionsRegex);
-  //   if (match?.groups) {
-  //     console.log("parsedSettings", match.groups);
-  //     results['settings'] = match.groups;
-  //     break;
-  //   }
-  // }
-
-  // results['data'] = []
-  // for (const line of lines) {
-  //   const match = line.match(dataLineRegex);
-  //   if (match?.groups) {
-  //     console.log("data", match.groups);
-  //     results['data'].push(match.groups);
-  //     break;
-  //   }
-  // }
-
-  console.log("Touchstone results", results);
 }

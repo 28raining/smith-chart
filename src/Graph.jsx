@@ -10,10 +10,15 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import TextField from "@mui/material/TextField";
 import FormControl from "@mui/material/FormControl";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 import Box from "@mui/material/Box";
 
-import { arcColors, one_over_complex, processImpedance, complex_multiply, parseInput } from "./commonFunctions.js";
+// import sparametersData from "./valid_s1p-output.json" with { type: "json" };
+
+import { arcColors, processImpedance, parseInput, reflToZ, polarToRectangular } from "./commonFunctions.js";
+import { sparamNoiseCircles, sparamGainCircles } from "./sparam.js";
 
 const dashTypes = [
   "5,5", // short dash
@@ -24,7 +29,21 @@ const dashTypes = [
 ];
 // Usage: <path stroke-dasharray={dashTypes[0]} ... />
 
-function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCircles, zMarkers, reflection_real, reflection_imag }) {
+function Graph({
+  impedanceResults,
+  zo,
+  spanResults,
+  qCircles,
+  vswrCircles,
+  nfCircles,
+  gainCircles,
+  zMarkers,
+  reflection_real,
+  reflection_imag,
+  sParameters,
+  plotType,
+  setPlotType,
+}) {
   const svgRef = useRef(null);
   const svgWrapper = useRef(null);
   const topGroupRef = useRef(null);
@@ -33,11 +52,13 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
   const qCirclesRef = useRef(null);
   const zMarkersRef = useRef(null);
   const vswrCirclesRef = useRef(null);
+  const sParamsRef = useRef(null);
   const nfCirclesRef = useRef(null);
   const impedanceArcsRef = useRef(null);
   const dpCirclesRef = useRef(null);
   const [hoverImpedance, setHoverImpedance] = useState([0, 0, 0]);
   const [hSnaps, setHSnaps] = useState([]);
+  const [sSnaps, setSSnaps] = useState([]);
   const [width, setWidth] = useState(650);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [resistanceCircles, setResistanceCircles] = useState([0, 0.2, 0.5, 1, 2, 4, 10]);
@@ -120,6 +141,70 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
     }
   }, [vswrCircles, zo, width]);
 
+  //Plot S11
+  useEffect(() => {
+    const sParamSnap = [];
+    var userSVG = d3.select(sParamsRef.current);
+    userSVG.selectAll("*").remove();
+    if (plotType !== "sparam" || sParameters === null) {
+      setSSnaps([]);
+      return;
+    }
+    const sparametersData = sParameters.data;
+    if (sparametersData.length === 0) return;
+    // console.log('sParameters', sParameters)
+
+    for (const s of [
+      { name: "S11", color: arcColors[0], labelY: -0.5 * width + 10 },
+      { name: "S12", color: arcColors[1], labelY: -0.5 * width + 30 },
+      { name: "S21", color: arcColors[2], labelY: -0.5 * width + 50 },
+      { name: "S22", color: arcColors[3], labelY: -0.5 * width + 70 },
+    ]) {
+      const coord = [];
+      if (!Object.hasOwn(sparametersData[0], s.name)) continue;
+      for (const v of sparametersData) {
+        const rect = polarToRectangular(v[s.name]);
+        // const rect = polarToRectangular(v.S11);
+        const z = reflToZ(rect, sParameters.settings.zo); //FIXME - use s-param zo here
+        const [x, y] = impedanceToSmithChart(z.real / zo, z.imaginary / zo, width);
+
+        coord.push([x, y]);
+        sParamSnap.push({
+          x: x - 0.5*markerRadius,
+          y: y - 0.5*markerRadius,
+          real: z.real,
+          imaginary: z.imaginary,
+          frequency: v.frequency.toLocaleString(),
+        });
+      }
+
+      const newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
+      userSVG
+        .append("path")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round")
+        .attr("fill", "none")
+        .attr("stroke", s.color)
+        .attr("stroke-width", 5)
+        .attr("id", `arc_${s.name}`)
+        .attr("d", newPath);
+
+      userSVG
+        .append("text")
+        .attr("x", -width) // x position
+        .attr("y", s.labelY) // y position
+        .text(s.name) // label content
+        .attr("font-size", "22px")
+        .attr("font-weight", "bold")
+        .attr("fill", s.color)
+        .attr("stroke", "none")
+        .attr("text-anchor", "start")
+        .attr("dominant-baseline", "hanging");
+    }
+
+    setSSnaps(sParamSnap);
+  }, [zo, width, plotType, sParameters]);
+
   //draw the custom markers
   useEffect(() => {
     var userSVG = d3.select(zMarkersRef.current);
@@ -138,39 +223,64 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
     var userSVG = d3.select(nfCirclesRef.current);
     userSVG.selectAll("*").remove();
 
+    const circlesToPlot = [];
+    //the noise circles
+    for (const n of nfCircles) {
+      const [center, radius] = sparamNoiseCircles(n.NFmin, n.NF, n.Rn / zo, reflection_real, reflection_imag);
+      circlesToPlot.push({ center, radius, dash: dashTypes[3], label: `${n.NF}dB` });
+    }
+    //the gain circles
+    for (const g of gainCircles) {
+      // const s11_mag = 0.533;
+      // const s11_phase = 176.6;
+      // const s21_mag = 2.8;
+      // const s21_phase = 64.5;
+      // const s12_mag = 0.06;
+      // const s12_phase = 58.4;
+      // const s22_mag = 0.604;
+      // const s22_phase = -58.3
+      const s11 = { magnitude: 0.533, angle: 176.6 };
+      const s22 = { magnitude: 0.604, angle: -58.3 };
+      const s12 = { magnitude: 0.06, angle: 58.4 };
+      const s21 = { magnitude: 2.8, angle: 64.5 };
+      const result = sparamGainCircles(s11, s21, s12, s22, g);
+      circlesToPlot.push({ ...result, dash: dashTypes[4], label: `${g}dB` }); //FIXME - are these dashtypes OK?
+    }
+
     //Ni = (F - Fmin) * |1 + Go|^2 / 4 * Rn
     //Circle Center = Go / (Ni + 1)
     //Circle Radius = sqrt(Ni(Ni + 1 - |Go|^2)) / (Ni + 1)
-    var Fmin, F, Rn, FminLinear, FLinear, Ni, center_real, center_imag, radius, x, y;
-    const Go_real = reflection_real;
-    const Go_imag = reflection_imag;
-    const GoMag = Go_real * Go_real + Go_imag * Go_imag;
-    const GoMagP1 = (Go_real + 1) * (Go_real + 1) + Go_imag * Go_imag;
+    // var Fmin, F, Rn, FminLinear, FLinear, Ni, center_real, center_imag, radius, x, y;
+    // const Go_real = reflection_real;
+    // const Go_imag = reflection_imag;
+    // const GoMag = Go_real * Go_real + Go_imag * Go_imag;
+    // const GoMagP1 = (Go_real + 1) * (Go_real + 1) + Go_imag * Go_imag;
 
-    for (const n of nfCircles) {
+    for (const c of circlesToPlot) {
       // equations here https://www.allaboutcircuits.com/technical-articles/learn-about-designing-unilateral-low-noise-amplifiers/
       // https://homepages.uc.edu/~ferendam/Courses/EE_611/Amplifier/NFC.html
       // Fmin = 1.3;//units db
       // F = 1.8;
       // Rn = 20/zo;
-      Fmin = n.NFmin;
-      F = n.NF;
-      Rn = n.Rn / zo;
+      // Fmin = n.NFmin;
+      // F = n.NF;
+      // Rn = n.Rn / zo;
+      // const [tempz2, radius] = sparamNoiseCircles(n.NFmin, n.NF, n.Rn / zo, reflection_real, reflection_imag)
 
-      FminLinear = Math.pow(10, Fmin / 10);
-      FLinear = Math.pow(10, F / 10);
-      Ni = ((FLinear - FminLinear) * GoMagP1) / (4 * Rn);
-      center_real = Go_real / (Ni + 1);
-      center_imag = Go_imag / (Ni + 1);
-      radius = Math.sqrt(Ni * (Ni + 1 - GoMag)) / (Ni + 1);
+      // FminLinear = Math.pow(10, Fmin / 10);
+      // FLinear = Math.pow(10, F / 10);
+      // Ni = ((FLinear - FminLinear) * GoMagP1) / (4 * Rn);
+      // center_real = Go_real / (Ni + 1);
+      // center_imag = Go_imag / (Ni + 1);
+      // radius = Math.sqrt(Ni * (Ni + 1 - GoMag)) / (Ni + 1);
 
-      //must conver from center Reflection coefficient to Z : Z = 2*Zo/(1+refl)
-      var tempZ = one_over_complex(1 - center_real, -center_imag);
-      var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1 + center_real, center_imag);
-      // var tempZ = one_over_complex(1-Go_real , -Go_imag);
-      // var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1+Go_real, Go_imag);
+      // //must conver from center Reflection coefficient to Z : Z = 2*Zo/(1+refl)
+      // var tempZ = one_over_complex(1 - center_real, -center_imag);
+      // var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1 + center_real, center_imag);
+      // // var tempZ = one_over_complex(1-Go_real , -Go_imag);
+      // // var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1+Go_real, Go_imag);
 
-      [x, y] = impedanceToSmithChart(tempz2.real, tempz2.imaginary, width);
+      const [x, y] = impedanceToSmithChart(c.center.real, c.center.imaginary, width);
       // // [x, y] = impedanceToSmithCoordinates(tempZ.real, tempZ.imaginary);
 
       // console.log('center, radius', center_real, center_imag, radius, Ni);
@@ -179,13 +289,13 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
         .append("circle")
         .attr("cx", x)
         .attr("cy", y)
-        .attr("r", radius * width * 0.5)
+        .attr("r", c.radius * width * 0.5)
         .attr("stroke-width", 3)
-        .attr("stroke-dasharray", dashTypes[3]);
+        .attr("stroke-dasharray", c.dash);
 
-      createLabel(userSVG, x, Number(y) - radius * width * 0.5, `${F}dB`);
+      createLabel(userSVG, x, Number(y) - c.radius * width * 0.5, c.label);
     }
-  }, [nfCircles, zo, reflection_real, reflection_imag, width]);
+  }, [nfCircles, gainCircles, zo, reflection_real, reflection_imag, width]);
 
   //initializing the smith chart diagrams
   useEffect(() => {
@@ -224,6 +334,16 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
           im = s.imaginary / zo;
           frequency = s.frequency;
           dpCircles.select(`#hover_dp_${index}`).classed("hoverDp", true);
+          snapped = true;
+          break;
+        }
+      }
+      //FIXME - only do this if in S-param mode. And only check hSnaps if not?
+      for (const [_index, s] of sSnaps.entries()) {
+        if (mouseX > s.x && mouseX < s.x + markerRadius && mouseY > s.y && mouseY < s.y + markerRadius) {
+          re = s.real / zo;
+          im = s.imaginary / zo;
+          frequency = s.frequency;
           snapped = true;
           break;
         }
@@ -276,7 +396,7 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
       svg.on("mousemove", null);
       svg.on("mouseleave", null);
     };
-  }, [hSnaps, width, zo]);
+  }, [hSnaps, sSnaps, width, zo]);
 
   function addDpMarker(dpCircles, x, y, tol, point, color, frequency, hoverSnaps) {
     dpCircles
@@ -315,6 +435,11 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
     var dpCircles = d3.select(dpCirclesRef.current);
     dpCircles.selectAll("*").remove();
     var hoverSnaps = [];
+
+    if (plotType !== "impedance") {
+      setHSnaps(hoverSnaps);
+      return;
+    }
 
     var coord = [];
     var tol, dp, point;
@@ -406,7 +531,7 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
         .attr("d", mainSpanArc);
     }
     setHSnaps(hoverSnaps);
-  }, [impedanceResults, zo, spanResults, width]);
+  }, [impedanceResults, zo, spanResults, width, plotType]);
 
   //draw the labels
   useEffect(() => {
@@ -508,6 +633,21 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
           <SaveIcon sx={{ height: "24px", width: "24px", color: "rgba(0, 0, 0, 0.34)" }} />
         </IconButton>
       </Tooltip>
+      {sParameters !== null && (
+        <ToggleButtonGroup
+          value={plotType}
+          exclusive
+          onChange={(e, newP) => setPlotType(newP)}
+          sx={{
+            position: "absolute",
+            bottom: 4,
+            left: 4,
+          }}
+        >
+          <ToggleButton value="sparam">S-Param</ToggleButton>
+          <ToggleButton value="impedance">Impedance</ToggleButton>
+        </ToggleButtonGroup>
+      )}
       <Link
         onClick={() => setDialogOpen(true)}
         sx={{
@@ -543,6 +683,7 @@ function Graph({ impedanceResults, zo, spanResults, qCircles, vswrCircles, nfCir
                 <g id="zMarkers" ref={zMarkersRef} />
                 <g id="qCircles" ref={qCirclesRef} />
                 <g id="vswrCircles" ref={vswrCirclesRef} />
+                <g id="sParams" ref={sParamsRef} />
                 <g id="nfCircles" ref={nfCirclesRef} />
               </g>
               <g id="impedanceArc" ref={impedanceArcsRef} />

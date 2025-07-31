@@ -4,7 +4,7 @@ import "uplot/dist/uPlot.min.css";
 import UplotReact from "uplot-react";
 import { useState, useRef, useEffect } from "react";
 
-import { processImpedance, zToPolar } from "./commonFunctions";
+import { processImpedance, zToPolar, unitConverter } from "./commonFunctions";
 
 function ImpedanceRes({ type, zStr, zPolarStr }) {
   return (
@@ -14,7 +14,7 @@ function ImpedanceRes({ type, zStr, zPolarStr }) {
           border: "1px solid #ccc",
           borderRadius: 1,
           padding: 1,
-          width: { xl: "155px", sm: "default" },
+          width: "155px",
           backgroundColor: "rgb(37, 50, 64)",
           color: "white",
         }}
@@ -169,7 +169,30 @@ function renderChart(setOptions, setOptions2, containerRef, freqUnit) {
   });
 }
 
-export default function Results({ zProc, spanFrequencies, spanResults, freqUnit }) {
+function SPlot ({sparametersData, options, freqUnit, title}) {
+  if (!sparametersData || sparametersData.length === 0) return null;
+    return ["S11", "S12", "S21", "S22"].map((s) => {
+      if (!Object.hasOwn(sparametersData[0], s)) return null;
+      const sParamOpt = JSON.parse(JSON.stringify(options));
+      sParamOpt.series[1].label = `| ${s} | (dB)`;
+      sParamOpt.series[2].label = `∠ ${s} |(°)`;
+      sParamOpt.axes[1].label = `| ${s} | (dB)`;
+      sParamOpt.axes[2].label = `∠ ${s} |(°)`;
+      const f = [];
+      const m = [];
+      const a = [];
+      for (const v of sparametersData) {
+        f.push(v.frequency / unitConverter[freqUnit]);
+        m.push(v[s].magnitude);
+        a.push(v[s].angle);
+      }
+      const sData = [f, m, a];
+      return <div style={{textAlign: "center"}} key={s}><h5 style={{marginTop:15, marginBottom:0}}>{title}: {s} magnitude and angle</h5><UplotReact options={sParamOpt} data={sData} /></div>;
+    });
+
+}
+
+export default function Results({ zProc, spanFrequencies, spanResults, freqUnit, plotType, sParameters }) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
   const [options, setOptions] = useState(optionsInit);
@@ -204,32 +227,52 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit 
       window.removeEventListener("resize", handleResize);
     };
   }, [freqUnit]);
-  return (
-    <>
-      <Typography variant="h5" sx={{ textAlign: "center", mb: 2 }}>
-        Final Results
-      </Typography>
-      <Grid container spacing={1}>
-        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
-          <ImpedanceRes type="Impedance (Ω)" zStr={zStr} zPolarStr={zPolarStr} />
-        </Grid>
-        <Tooltip title="Voltage Standing Wave Ratio" arrow placement="top">
-          <Grid size={{ xs: 12, sm: 12, md: 12, lg: 3 }} sx={{ display: "flex" }}>
-            <MiniRes type="VSWR" res={vswr} />
-          </Grid>
-        </Tooltip>
-        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
-          <ImpedanceRes type="Reflection Coefficient" zStr={refStr} zPolarStr={refPolarStr} />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 3 }} sx={{ display: "flex" }}>
-          <MiniRes type="Q Factor" res={qFactor} />
-        </Grid>
-      </Grid>
 
-      <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-        {!spanResults ? null : <UplotReact options={options} data={data} />}
-        {!spanResults ? null : <UplotReact options={options2} data={data2} />}
-      </div>
-    </>
-  );
+  // plot s-parameters straight from the file
+  if (plotType === "sparam" && sParameters!==null) {
+    const sparametersData = sParameters.data;
+    return (
+    <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
+     <SPlot sparametersData={sparametersData} options={options} freqUnit={freqUnit}  title="Raw data"/>
+    </div>
+    );
+
+  // plot s-parameters when terminated with custom impedance
+  } else if (plotType !== "sparam" && sParameters!==null) {
+    const sparametersData = sParameters.matched;
+    return (
+    <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
+     <SPlot sparametersData={sparametersData} options={options} freqUnit={freqUnit} title="Custom Termination" />
+    </div>
+    );
+
+  } else
+    return (
+      <>
+        <Typography variant="h5" sx={{ textAlign: "center", mb: 2 }}>
+          Final Results
+        </Typography>
+        <Grid container spacing={1}>
+          <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
+            <ImpedanceRes type="Impedance (Ω)" zStr={zStr} zPolarStr={zPolarStr} />
+          </Grid>
+          <Tooltip title="Voltage Standing Wave Ratio" arrow placement="top">
+            <Grid size={{ xs: 12, sm: 12, md: 12, lg: 3 }} sx={{ display: "flex" }}>
+              <MiniRes type="VSWR" res={vswr} />
+            </Grid>
+          </Tooltip>
+          <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
+            <ImpedanceRes type="Reflection Coefficient" zStr={refStr} zPolarStr={refPolarStr} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 12, md: 12, lg: 3 }} sx={{ display: "flex" }}>
+            <MiniRes type="Q Factor" res={qFactor} />
+          </Grid>
+        </Grid>
+
+        <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
+          {!spanResults ? null : <UplotReact options={options} data={data} />}
+          {!spanResults ? null : <UplotReact options={options2} data={data2} />}
+        </div>
+      </>
+    );
 }

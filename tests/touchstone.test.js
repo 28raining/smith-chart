@@ -2,9 +2,12 @@
 import { calculateImpedance } from "../src/impedanceFunctions.js";
 import { parseTouchstoneFile } from "../src/commonFunctions.js";
 import { expect, test } from "vitest";
+import { sparamGainCircles, sparamZout } from "../src/sparam.js";
+import { readFileSync, writeFileSync } from "fs";
+import { join } from "path";
 
-test("Touchstone importer test", () => {
-const exampleTouchstone = `
+test("Touchstone s2p small", () => {
+  const touchstop_S2P = `
 # GHZ    S   RI   R   50.0
 1.0000  0.3926  -0.1211  -0.0003  -0.0021  -0.0003  -0.0021  0.3926  -0.1211
 2.0000  0.3517  -0.3054  -0.0096  -0.0298  -0.0096  -0.0298  0.3517  -0.3054
@@ -20,17 +23,74 @@ const exampleTouchstone = `
  8.0000  5.5000   0.5659   0.1000  .75
  9.0000  6.0000   0.4145   0.0307  .8
 10.0000  6.5000   0.3336   0.0134  .85
-`
-  const sparameters = parseTouchstoneFile(exampleTouchstone);
+`;
+  const sparameters = parseTouchstoneFile(touchstop_S2P);
+});
 
-  // const expected = [
-  //   [{ real: 25, imaginary: -25 }],
-  //   [
-  //     { real: 25, imaginary: -25 },
-  //     { real: 19.127360088725794, imaginary: -1.8022511881224714 },
-  //     { real: 23.13903818769952, imaginary: 20.867214473980738 },
-  //     { real: 46.53103192423643, imaginary: 48.109436254243874 },
-  //   ],
-  // ];
-  // expect(impedance).toEqual(expected);
+test("Touchstone s1p small", () => {
+  // Read from file 'valid.s1p'
+  const filePath = join(process.cwd(), "tests", "valid.s1p");
+  const exampleTouchstone = readFileSync(filePath, "utf8");
+
+  const sparameters = parseTouchstoneFile(exampleTouchstone);
+  console.log(sparameters);
+
+  // Write sparameters.data to a file
+  const outputPath = join(process.cwd(), "tests", "valid_s1p-output.json");
+  const expectedData = JSON.parse(readFileSync(outputPath, "utf8"));
+
+  // writeFileSync(outputPath, JSON.stringify(sparameters.data, null, 1), "utf8");
+
+  expect(sparameters.settings).toEqual({
+    freq_unit: "Hz",
+    param: "S",
+    format: "RI",
+    z0: "50",
+  });
+  expect(sparameters.data).toEqual(expectedData);
+  expect(sparameters.noise).toEqual([]);
+  expect(sparameters.type).toEqual('s1p');
+
+  // Add your assertions here
+});
+
+test("Gain circles", () => {
+  const s11 = { magnitude: 0.533, phase: 176.6 };
+  const s22 = { magnitude: 0.604, phase: -58.3 };
+  const s12 = { magnitude: 0.06, phase: 58.4 };
+  const s21 = { magnitude: 2.8, phase: 64.5 };
+  const gain = sparamGainCircles(s11, s21, s12, s22, 11);
+
+  // const gain = sparamGainCircles(0.533, 176.6, 2.8, 64.5, 0.06, 58.4, 0.604, -58.3, 11);
+  const expectedResult = {
+    center: {
+      imaginary: -0.02033677971469447,
+      real: -0.49774295258948176,
+    },
+    radius: 0.48381883140129156,
+  };
+  expect(gain).toEqual(expectedResult);
+});
+
+test("Rout from sparam", () => {
+  const res = sparamZout(
+    {
+      S11: { magnitude: 0.533, phase: 176.6 },
+      S12: { magnitude: 2.8, phase: 64.5 },
+      S21: { magnitude: 0.06, phase: 58.4 },
+      S22: { magnitude: 0.604, phase: -58.3 },
+    },
+    { magnitude: 0.38, phase: -177.66 },
+  );
+  const expected = {
+    polar: {
+      angle: -57.91737956641843,
+      magnitude: 0.6839346593988852,
+    },
+    rectangular: {
+      imaginary: -0.5794862591862048,
+      real: 0.3632661472549401,
+    },
+  };
+  expect(res).toEqual(expected);
 });
