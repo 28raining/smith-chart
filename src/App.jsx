@@ -19,9 +19,12 @@ import Settings from "./Settings.jsx";
 import Equations from "./Equations.jsx";
 import ReleaseNotes from "./ReleaseNotes.jsx";
 import { Comments } from "@hyvor/hyvor-talk-react";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+
 
 import { syncObjectToUrl, updateObjectFromUrl } from "./urlFunctions.js"; // Import the syncObjectToUrl function
-import { unitConverter, theme, processImpedance } from "./commonFunctions.js";
+import { unitConverter, theme, processImpedance, polarToRectangular, reflToZ, zToPolar, zToRefl } from "./commonFunctions.js";
 
 import { calculateImpedance, createToleranceArray, applySliders, convertLengthToM } from "./impedanceFunctions.js";
 import { sParamFrequencyRange, S11NotMatched } from "./sparam.js"; // Import the sParamFrequencyRange function
@@ -59,8 +62,6 @@ function App() {
   const [urlSnackbar, setUrlSnackbar] = useState(false);
   const [plotType, setPlotType] = useState("impedance");
 
-  // console.log("userCircuit", userCircuit, sParameters)
-
   // syncObjectToUrl(settings, initialState, userCircuit, initialCircuit); // Sync the settings object to the URL
 
   var impedanceResults = [];
@@ -75,40 +76,87 @@ function App() {
 
   var userCircuitWithSliders = applySliders(JSON.parse(JSON.stringify(userCircuit)));
   var userCircuitNoLambda = convertLengthToM(userCircuitWithSliders, numericalFrequency);
-  var circuitArray = createToleranceArray([userCircuitNoLambda]);
-  for (const z of circuitArray) impedanceResults.push(calculateImpedance(z, numericalFrequency, resolution));
-  const noToleranceResult = impedanceResults[impedanceResults.length - 1];
-  const finalDp = noToleranceResult[noToleranceResult.length - 1];
 
-  //for frequency span, don't create arcs, just create the final impedances
-  if (numericalFspan > 0) {
-    var f, span_tol, span_tol_final;
-    for (const z of circuitArray) {
-      spanResults.push([]);
-      for (i = -10; i <= 10; i++) {
-        f = numericalFrequency + i * spanStep;
-        // span_tol = calculateImpedance(z, f, 2);
-        // span_tol_final = span_tol[span_tol.length - 1];
-        spanResults[spanResults.length - 1].push(impedanceAtFrequency(z, f));
+  const sParametersSearch = userCircuit.filter((c) => c.name === "sparam");
+  var sParameters = null;
+
+  //no span, yes to tolerance - fixme - add tolerance later?
+  if (sParametersSearch.length != 0 && Object.hasOwn(sParametersSearch[0], "value")) {
+    sParameters = { ...sParametersSearch[0].value };
+    sParameters.data = sParamFrequencyRange([...sParameters.data], numericalFrequency - numericalFspan, numericalFrequency + numericalFspan);
+    const sParamZ = [...userCircuitNoLambda].reverse();
+    sParamZ.pop(); //remove the blackbox
+    sParameters.matched = [];
+    var finalZ, finalDp ;
+
+    //1 - convert s11 to z at frequency
+    var z;
+    for (const point of sParameters.data) {
+      // if (point.frequency > numericalFrequency) {
+      const s11 = polarToRectangular(point.S11);
+      z = reflToZ(s11, sParameters.settings.zo);
+      //   break;
+      // }
+      // }
+      // if (!z) {
+      //   console.error("Error calculating S11 to Z conversion");
+      //   //create a dummy object to avoid crashing
+      //   z = { real: 0, imaginary: 0 };
+      // }
+      //2 - loop thru circuit array backwards to add impedances
+      sParamZ[0] = z;
+      //remove last element (the blackbox)
+      // console.log("sParamZ", sParamZ);
+      // for (var i = sParamZ.length - 1; i >= 0; i--) {
+      const SystemZ = calculateImpedance(sParamZ, numericalFrequency, resolution);
+      const lastZ = SystemZ[SystemZ.length - 1];
+      const pointZ = lastZ[lastZ.length - 1];
+      // console.log("pointZ", pointZ);
+      if (point.frequency > numericalFrequency && impedanceResults.length === 0) {
+        impedanceResults.push(SystemZ);
+      }
+      // console.log("zzz", pointZ, userCircuitNoLambda[0], zToRefl(SystemZ, userCircuitNoLambda[0]))
+      sParameters.matched.push({
+        ...point,
+        S11: zToPolar(zToRefl(pointZ, userCircuitNoLambda[0])),
+      });
+    }
+     finalDp = impedanceResults[impedanceResults.length - 1];
+     if (finalDp && finalDp.length > 0) {
+    finalZ = finalDp[finalDp.length - 1];
+    } else {
+      console.error("Error calculating S11 to Z conversion");
+      //create a dummy object to avoid crashing
+      finalZ = { real: 0, imaginary: 0 };
+    }
+    // console.log("sParameters", sParameters);
+    // sParameters.matched = sParameters.data.map((d) => {
+    //   return S11NotMatched(d, sParameters.settings.zo, impedanceAtFrequency(circuitArray[circuitArray.length - 1], d.frequency));
+    // });
+  } else {
+    var circuitArray = createToleranceArray([userCircuitNoLambda]);
+    for (const z of circuitArray) impedanceResults.push(calculateImpedance(z, numericalFrequency, resolution));
+    const noToleranceResult = impedanceResults[impedanceResults.length - 1];
+     finalDp = noToleranceResult[noToleranceResult.length - 1];
+    finalZ = finalDp[finalDp.length - 1];
+
+    //for frequency span, don't create arcs, just create the final impedances
+    if (numericalFspan > 0) {
+      var f, span_tol, span_tol_final;
+      for (const z of circuitArray) {
+        spanResults.push([]);
+        for (i = -10; i <= 10; i++) {
+          f = numericalFrequency + i * spanStep;
+          // span_tol = calculateImpedance(z, f, 2);
+          // span_tol_final = span_tol[span_tol.length - 1];
+          spanResults[spanResults.length - 1].push(impedanceAtFrequency(z, f));
+        }
       }
     }
   }
 
-  const sParametersSearch = userCircuit.filter((c) => c.name === "sparam");
-  var sParameters = null;
-  if (sParametersSearch.length != 0 && Object.hasOwn(sParametersSearch[0], "value")) {
-    // console.log("sParametersSearch", sParametersSearch);
-    sParameters = { ...sParametersSearch[0].value };
-    sParameters.data = sParamFrequencyRange([...sParameters.data], numericalFrequency - numericalFspan, numericalFrequency + numericalFspan);
-    // sParameters.matched = S11NotMatched([...sParameters.data], sParameters.settings.zo, finalDp[finalDp.length - 1]);
-    sParameters.matched = sParameters.data.map((d) => {
-      return S11NotMatched(d, sParameters.settings.zo, impedanceAtFrequency(circuitArray[circuitArray.length - 1], d.frequency));
-    });
-    // console.log("sParameters", sParameters);
-  }
-
   // converts real and imaginary into Q, VSWR, reflection coeff, etc
-  const processedImpedanceResults = processImpedance(finalDp[finalDp.length - 1], settings.zo);
+  const processedImpedanceResults = processImpedance(finalZ, settings.zo);
 
   const handleSnackbarClick = () => {
     setSettings({ ...initialState });
@@ -194,6 +242,14 @@ function App() {
           <Grid size={{ xs: 12, sm: 5, md: 6 }}>
             <Card>
               <CardContent>
+                        <ToggleButtonGroup
+          value={plotType}
+          exclusive
+          onChange={(e, newP) => setPlotType(newP)}
+        >
+          <ToggleButton value="sparam">S-Param</ToggleButton>
+          <ToggleButton value="impedance">Impedance</ToggleButton>
+        </ToggleButtonGroup>
                 <Results
                   zProc={processedImpedanceResults}
                   spanFrequencies={spanFrequencies}

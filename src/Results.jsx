@@ -183,7 +183,7 @@ function SPlot ({sparametersData, options, freqUnit, title}) {
       const a = [];
       for (const v of sparametersData) {
         f.push(v.frequency / unitConverter[freqUnit]);
-        m.push(v[s].magnitude);
+        m.push(20 * Math.log10(v[s].magnitude));
         a.push(v[s].angle);
       }
       const sData = [f, m, a];

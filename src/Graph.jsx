@@ -12,10 +12,13 @@ import TextField from "@mui/material/TextField";
 import FormControl from "@mui/material/FormControl";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Stack from "@mui/material/Stack";
+
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
 
 import Box from "@mui/material/Box";
-
-// import sparametersData from "./valid_s1p-output.json" with { type: "json" };
 
 import { arcColors, processImpedance, parseInput, reflToZ, polarToRectangular } from "./commonFunctions.js";
 import { sparamNoiseCircles, sparamGainCircles } from "./sparam.js";
@@ -63,6 +66,7 @@ function Graph({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [resistanceCircles, setResistanceCircles] = useState([0, 0.2, 0.5, 1, 2, 4, 10]);
   const [reactanceCircles, setReactanceCircles] = useState([0.2, 0.5, 1, 2, 4, 10, -0.2, -0.5, -1, -2, -4, -10]);
+  const [showSPlots, setShowSPlots] = useState({ S11: true, S12: true, S21: true, S22: true });
 
   // console.log('resistanceCircles', resistanceCircles);
   // const [snapDetails, setSnapDetails] = useState({ real: 0, imaginary: 0 });
@@ -146,22 +150,20 @@ function Graph({
     const sParamSnap = [];
     var userSVG = d3.select(sParamsRef.current);
     userSVG.selectAll("*").remove();
-    if (plotType !== "sparam" || sParameters === null) {
-      setSSnaps([]);
-      return;
-    }
+    setSSnaps([]);
+    if (sParameters === null) return;
     const sparametersData = sParameters.data;
     if (sparametersData.length === 0) return;
-    // console.log('sParameters', sParameters)
 
     for (const s of [
-      { name: "S11", color: arcColors[0], labelY: -0.5 * width + 10 },
-      { name: "S12", color: arcColors[1], labelY: -0.5 * width + 30 },
-      { name: "S21", color: arcColors[2], labelY: -0.5 * width + 50 },
-      { name: "S22", color: arcColors[3], labelY: -0.5 * width + 70 },
+      { name: "S11", color: arcColors[0] },
+      { name: "S12", color: arcColors[1] },
+      { name: "S21", color: arcColors[2] },
+      { name: "S22", color: arcColors[3] },
     ]) {
       const coord = [];
       if (!Object.hasOwn(sparametersData[0], s.name)) continue;
+      if (showSPlots[s.name] === false) continue; // skip if the plot is not shown
       for (const v of sparametersData) {
         const rect = polarToRectangular(v[s.name]);
         // const rect = polarToRectangular(v.S11);
@@ -170,8 +172,8 @@ function Graph({
 
         coord.push([x, y]);
         sParamSnap.push({
-          x: x - 0.5*markerRadius,
-          y: y - 0.5*markerRadius,
+          x: x - 0.5 * markerRadius,
+          y: y - 0.5 * markerRadius,
           real: z.real,
           imaginary: z.imaginary,
           frequency: v.frequency.toLocaleString(),
@@ -189,21 +191,21 @@ function Graph({
         .attr("id", `arc_${s.name}`)
         .attr("d", newPath);
 
-      userSVG
-        .append("text")
-        .attr("x", -width) // x position
-        .attr("y", s.labelY) // y position
-        .text(s.name) // label content
-        .attr("font-size", "22px")
-        .attr("font-weight", "bold")
-        .attr("fill", s.color)
-        .attr("stroke", "none")
-        .attr("text-anchor", "start")
-        .attr("dominant-baseline", "hanging");
+      // userSVG
+      //   .append("text")
+      //   .attr("x", -width) // x position
+      //   .attr("y", s.labelY) // y position
+      //   .text(s.name) // label content
+      //   .attr("font-size", "22px")
+      //   .attr("font-weight", "bold")
+      //   .attr("fill", s.color)
+      //   .attr("stroke", "none")
+      //   .attr("text-anchor", "start")
+      //   .attr("dominant-baseline", "hanging");
     }
 
     setSSnaps(sParamSnap);
-  }, [zo, width, plotType, sParameters]);
+  }, [zo, width, plotType, sParameters, showSPlots]);
 
   //draw the custom markers
   useEffect(() => {
@@ -435,11 +437,11 @@ function Graph({
     var dpCircles = d3.select(dpCirclesRef.current);
     dpCircles.selectAll("*").remove();
     var hoverSnaps = [];
-
-    if (plotType !== "impedance") {
-      setHSnaps(hoverSnaps);
-      return;
-    }
+    setHSnaps([]);
+    // if (plotType !== "impedance") {
+    //   setHSnaps(hoverSnaps);
+    //   return;
+    // }
 
     var coord = [];
     var tol, dp, point;
@@ -633,21 +635,33 @@ function Graph({
           <SaveIcon sx={{ height: "24px", width: "24px", color: "rgba(0, 0, 0, 0.34)" }} />
         </IconButton>
       </Tooltip>
-      {sParameters !== null && (
-        <ToggleButtonGroup
-          value={plotType}
-          exclusive
-          onChange={(e, newP) => setPlotType(newP)}
-          sx={{
-            position: "absolute",
-            bottom: 4,
-            left: 4,
-          }}
-        >
-          <ToggleButton value="sparam">S-Param</ToggleButton>
-          <ToggleButton value="impedance">Impedance</ToggleButton>
-        </ToggleButtonGroup>
-      )}
+      <Stack
+        spacing={0}
+        sx={{
+          position: "absolute",
+          top: 4,
+          left: 4,
+        }}
+      >
+        {Object.keys(showSPlots).map((s) => {
+          if (sParameters === null) return null;
+          if (sParameters.data.length === 0) return null;
+          if (Object.hasOwn(sParameters.data[0], s))
+            return (
+              <div key={s}>
+                <input
+                  type="checkbox"
+                  id="scales"
+                  name="scales"
+                  checked={showSPlots[s]}
+                  onChange={() => setShowSPlots({ ...showSPlots, [s]: !showSPlots[s] })}
+                />
+                <label>{s}</label>
+              </div>
+            );
+          else return null;
+        })}
+      </Stack>
       <Link
         onClick={() => setDialogOpen(true)}
         sx={{

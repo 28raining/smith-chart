@@ -126,10 +126,7 @@ https://www.kyocera-avx.com/products/antennas/antenna-resources/ - M830320
 
 # S2P files to-do
 1 - Add .s1p and plot S11 just like NanoVNA
--- pop up modal when they add sparam block
--- Plot S11 magnitude and phase when in s-param mode
 -- plot S21 when in IMPEDANCE mode
--- allow variable input impedance
 -- When s1p model added then prevent adding of more blocks
 2 - button to add a termination network (for plotting S21 and for terminating the s-parameter model)
 3 - Plot Zout when doing 2-parameter model - but don't do an arc to it? Create 2 separate arcs?
@@ -138,31 +135,47 @@ https://www.kyocera-avx.com/products/antennas/antenna-resources/ - M830320
 -- allow move components left and right, so user can easier match
 -- option to show or hide S11 & S22
 5 - Allow plotting of gain circles when user adds .s2p file
-6 - Plot gain vs frequency
+
 - custom impedance default is blank now?
 - Prevent adding anything else after the sparameter
 -s-param ico to better reflect s1p too
 - can hide or show just one of the plots
-- fix valid.s1p plot
 - go to s-param plotting mode when add sparam
- 0. Create an S2P icon
- 1. Plot the gain circles with this S2P file
- 2. Ask user if they want to plot gain circles, or add component to the network? I think this is what's needed...
- - test with a different s2p file from a different source
- - then use the default touchstone file to test out stability circles
- - allow enabling of just one plot (s11 or s22)
- -- then user doesn't need to chose between one or other
- -- instead move that plotting to results tab? (implement s2p first)
- - prevent more components being added
- - take example from Youtube person
- - check I didn't screq up reflection coefficient maths
- -- or span frequency & tol
- - create md tutorial in git hub which shows user how to match an antenna like in the youtube
- - show sparam and impedance on the same plot, so user can match to certain points
 
-Extra?
-  - let user move components left and right? at the end shows unused if its after s11? or s-param always goes last? 
+1. Plot the gain circles with this S2P file
+2. Ask user if they want to plot gain circles, or add component to the network? I think this is what's needed...
+- test with a different s2p file from a different source
+- then use the default touchstone file to test out stability circles
+- allow enabling of just one plot (s11 or s22)
+-- then user doesn't need to chose between one or other
+-- instead move that plotting to results tab? (implement s2p first)
+- prevent more components being added
+- take example from Youtube person
+- check I didn't screq up reflection coefficient maths
+-- or span frequency & tol
+- create md tutorial in git hub which shows user how to match an antenna like in the youtube
+- for S11 plot points, not the line. then can get hover effect. Otherwise hovering over the line sometimes doesn't show frequency
 
+# July 31st to-do list
+1 - (s1p) copy the youtube guy, get same results, make tutorial.md
+-- must change from plotting S11 to plotting relfection looking from the black box
+1a - Plot both impedance and s11 on same plot. Doing this because now adding components will come from s-param circle, not from bbox point
+1b - allow hide & show s11
+1c - if sparameter is added then instead plot impedance from s11 (through the circuit backwards)
+1d - change bbox to rTerm
+
+3.65MHz
+20.27uH
+66.6pF
+2 - (s2p) copy the allaboutcircuits guy, get same results, make tutorial.md
+
+
+## To do after adding S2P (when the problem is understood better!)
+- show sparam and impedance on the same plot, so user can match to certain points - 
+- let user move components left and right? at the end shows unused if its after s11? or s-param always goes last? 
+
+## Other ideas (may not do)
+- Add frequecny markers when s-param is plotted
 
 #######################
 - Sparam DONE
@@ -175,5 +188,9 @@ Extra?
 - Graph titles
 - change fspan when sparam is loaded
 - only plot s-param over the frequency range
-
-
+- fix valid.s1p plot
+-- pop up modal when they add sparam block
+-- Plot S11 magnitude and phase when in s-param mode
+-- allow variable input impedance
+0. Create an S2P icon
+6 - Plot gain vs frequency

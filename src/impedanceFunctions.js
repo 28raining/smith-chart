@@ -157,6 +157,7 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
         });
       }
     } else if (component.name == "sparam") {
+      //FIXME - this is a hack to prevent crashing
       // for (j = 0; j <= resolution; j++) {
         impedanceResolution.push({
           real: startReal,

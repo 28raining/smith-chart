@@ -174,6 +174,7 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
 
 function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setPlotType, setSettings }) {
   const [customInput, setCustomInput] = useState(value ? value : "");
+  const [showAllData, setShowAllData] = useState(false);
 
   const parsed = parseTouchstoneFile(customInput);
   const validCheckerResults = parsed.error === null;
@@ -253,8 +254,8 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                 </li>
                 <li>Zo: {parsed.settings.zo}</li>
               </ul>
-              First 300 rows of data:
-              <TableContainer sx={{ maxHeight: 200, border: "1px solid black" }}>
+              {showAllData ? "All rows of data:" : "First 300 rows of data:"} <button onClick={() => setShowAllData((o) => !o)}>{showAllData ? "Show less" : "Show all"}</button>
+              <TableContainer sx={{ maxHeight: 300, border: "1px solid black" }}>
                 <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow>
@@ -268,7 +269,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                   </TableHead>
                   <TableBody>
                     {parsed.data.map((row, i) => {
-                      if (i>300) return null; // limit to 300 rows for performance
+                      if (!showAllData) if (i>300) return null; // limit to 300 rows for performance
                       return (
                         <TableRow hover tabIndex={-1} key={i}>
                           {Object.keys(row).map((column) => {
