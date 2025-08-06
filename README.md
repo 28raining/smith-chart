@@ -30,36 +30,6 @@ As well as a re-write, the following new features are added
   - Move to react + npm. This allows; running lint, more maintainable code, smaller file size, many micro-benefits from joining the mainstream
 
 
- ## The data
- 0.8
-
-0.440 ∠ –157.6 degrees
-
-4.725 ∠ 84.3 degrees
-
-0.06 ∠ 55.4 degrees
-
-0.339 ∠ –51.8 degrees
-
-1.4
-
-0.533 ∠ 176.6 degrees
-
-2.800 ∠ 64.5 degrees
-
-0.06 ∠ 58.4 degrees
-
-0.604 ∠ –58.3 degrees
-
-2.0
-
-0.439 ∠ 159.6 degrees
-
-2.057 ∠ 49.2 degrees
-
-0.17 ∠ 58.1 degrees
-
-0.294 ∠ –68.1 degrees
 
 # Remaining to-do items
 ~~1. Add equations descriptions~~
@@ -75,26 +45,26 @@ As well as a re-write, the following new features are added
 9. Review all the old comments, make any previous requests are present (and in unit test?)
 - check items more thoroughly vs old site
 13. To add Gain, Stability and Noise circles I must add S-parameter inputs
--- Use touchstone S-parameter format
----- chatGPT already wrote me a parser...!
--- Add a complex-conjugate 'ideal match' to the output of the s-parameter block. This load be in the same SVG. The Smith Chart is then used to design the input circut
+~~-- Use touchstone S-parameter format~~
+~~---- chatGPT already wrote me a parser...!~~
+~~-- Add a complex-conjugate 'ideal match' to the output of the s-parameter block. This load be in the same SVG. The Smith Chart is then used to design the input circut~~
 -- Also get Ropt, NFmin and Rn from s-parameter file
--- Users cannot add any more elements after s-parameter file
+~~-- Users cannot add any more elements after s-parameter file~~
 -- Then it's possible to add Noise-Figure, Gain and Stability circles
 -- Add plots for Gain and Noise
----- S11 and S21 should then be plotted looking into s-parameter block (change Zo from 50 in reflection coefficient equation)
+~~---- S11 and S21 should then be plotted looking into s-parameter block (change Zo from 50 in reflection coefficient equation)~~
 -- follow these resources
 ---- https://www.allaboutcircuits.com/technical-articles/learn-about-designing-unilateral-low-noise-amplifiers/
 ---- https://www.allaboutcircuits.com/technical-articles/using-the-available-power-gain-to-design-bilateral-low-noise-amplifiers
 ---- https://www.allaboutcircuits.com/technical-articles/learn-about-unconditional-stability-and-potential-instability-in-rf-amplifier-design/
 14. Prevent NF circles where NF < NFmin, R<0
 15. Add 'tool' into google search queries - it doesn't show up under smith chart tool
-16. allow plotting of s-parameters on smith chart on their own?
-17. bbox on small screens the boxs don't align with sliders
-18. move / eliminate DP0 marker
-19. make impedance and reflection ceofficient boxes the same size
+~~16. allow plotting of s-parameters on smith chart on their own?~~
+~~17. bbox on small screens the boxs don't align with sliders~~
+~~18. move / eliminate DP0 marker~~
+~~19. make impedance and reflection ceofficient boxes the same size~~
 20. I changed a lot of complex maths, much add testing to ensure site matches old site!
-21. rename zToPolar
+~~21. rename zToPolar~~
 
 
 # Low -priority to-do items
@@ -157,18 +127,62 @@ https://www.kyocera-avx.com/products/antennas/antenna-resources/ - M830320
 - for S11 plot points, not the line. then can get hover effect. Otherwise hovering over the line sometimes doesn't show frequency
 
 # July 31st to-do list
-1 - (s1p) copy the youtube guy, get same results, make tutorial.md
--- must change from plotting S11 to plotting relfection looking from the black box
-1a - Plot both impedance and s11 on same plot. Doing this because now adding components will come from s-param circle, not from bbox point
-1b - allow hide & show s11
-1c - if sparameter is added then instead plot impedance from s11 (through the circuit backwards)
 1d - change bbox to rTerm
+1e - in turorial mention complex conjugate matching instead of sparam
+1f - make tutorial.md
+
+- plot f-span and s-param curves as dots, not arcs
+- Tell user whch sparameter was chosen if their frequency is not exact
+- Tell user GsMax? max gain
+- can tooltip be changed to not re-render graph
+- Tell user the maximum gain
+- S11 labes need to have the color of the arc
+- Add custom reflection markers
+- change black box for termination?
+- parallel rlc to series rlc (different merge!)
+
+- Test everything I can! 
+-- gain, noise, stability circles
+-- s1p and s2p parsing
+-- simple circuit z out
+-- s11 matching
+
+- put all the nanovna test data thru the touchstone parser
+- have some test urls with state to ensure they load up properly
+- checkbox to hide z arc, give good label
+
+- gain circles show unit
+- either show span for both arcs or neither, and just for s-param frequencies
 
 3.65MHz
 20.27uH
 66.6pF
-2 - (s2p) copy the allaboutcircuits guy, get same results, make tutorial.md
 
+2 - (s2p) copy the allaboutcircuits guy, get same results, make tutorial.md
+2c - Add 2 arcs for the matching
+2d - Plot the gain
+2d1 - measure Rs and Rl across frequency
+2d2 - calculate gain across frequency
+
+
+- put all the impedance results into one object
+- check if gain changes with characterisitic impedance (obvs it should not)
+- span should be sparam of fspan
+- now default s2p is added then remove some checking protection (which was half assed anyway)
+-- can remove value? so it just goes sparam then data
+
+- Test s-param + tolerance on inductor
+- show hover box when over s-params
+- throws error when hovering on span dp?
+- f markers use f unit to make more readable
+- Add noise figure and stability circles later
+
+
+1 - Get S11 working again
+2 - S22 plot Rin and Rout like Steve Arr's site
+2 - Fix all the many things above
+- create a touchstone generator from the s2p data, populate when modal opens
+- restrict frequency selection to somethign in touchstone file
 
 ## To do after adding S2P (when the problem is understood better!)
 - show sparam and impedance on the same plot, so user can match to certain points - 
@@ -194,3 +208,13 @@ https://www.kyocera-avx.com/products/antennas/antenna-resources/ - M830320
 -- allow variable input impedance
 0. Create an S2P icon
 6 - Plot gain vs frequency
+
+1 - (s1p) copy the youtube guy, get same results, make tutorial.md
+-- must change from plotting S11 to plotting relfection looking from the black box
+1a - Plot both impedance and s11 on same plot. Doing this because now adding components will come from s-param circle, not from bbox point
+1b - allow hide & show s11
+1c - if sparameter is added then instead plot impedance from s11 (through the circuit backwards)
+
+2a - let components move left and right
+2b - Add rTerm
+- fspan not all s11 points, only the restricted points

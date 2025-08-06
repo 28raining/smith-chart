@@ -1,4 +1,5 @@
 import blackbox from "./assets/components/blackbox.svg";
+import termination_load from "./assets/components/termination_load.svg";
 import cap_parallel from "./assets/components/cap_parallel.svg";
 import cap_series from "./assets/components/cap_series.svg";
 import custom from "./assets/components/custom.svg";
@@ -19,7 +20,24 @@ export const circuitComponents = {
     src: blackbox,
     unselectable: true,
     circuitInputs: ["impedance", "complex", "tolerance"],
+    default: { real: 50, imaginary: 0 },
     toURL: (c) => `blackBox_${c.real}_${c.imaginary}_${c.tolerance ? c.tolerance : 0}`,
+    fromURL: (u) => {
+      return {
+        name: u[0],
+        real: Number(u[1]),
+        imaginary: Number(u[2]),
+        tolerance: Number(u[3]),
+      };
+    },
+  },
+  loadTerm: {
+    name: "Load Termination",
+    src: termination_load,
+    unselectable: true,
+    circuitInputs: ["impedance", "complex", "tolerance"],
+    default: { real: 50, imaginary: 0 },
+    toURL: (c) => `loadTerm_${c.real}_${c.imaginary}_${c.tolerance ? c.tolerance : 0}`,
     fromURL: (u) => {
       return {
         name: u[0],
@@ -243,9 +261,80 @@ export const circuitComponents = {
   sparam: {
     name: "S-Parameter",
     src: s2p,
-    //FIXME belowe!
-    circuitInputs: ['sparam'],
-    // default: { l1: 1, unit_l1: "nH", l2: 1, unit_l2: "nH", k: 1 },
+    //FIXME below!
+    circuitInputs: ["sparam"],
+    default: {value:{
+      data: [
+        {
+          frequency: 800000000,
+          S11: {
+            magnitude: 0.44,
+            angle: -157.6,
+          },
+          S12: {
+            magnitude: 4.725,
+            angle: 84.3,
+          },
+          S21: {
+            magnitude: 0,
+            angle: 0,
+          },
+          S22: {
+            magnitude: 0.339,
+            angle: -51.8,
+          },
+        },
+        {
+          frequency: 1400000000,
+          S11: {
+            magnitude: 0.533,
+            angle: 176.6,
+          },
+          S12: {
+            magnitude: 2.8,
+            angle: 64.5,
+          },
+          S21: {
+            magnitude: 0,
+            angle: 0,
+          },
+          S22: {
+            magnitude: 0.604,
+            angle: -58.3,
+          },
+          zo: 50,
+        },
+        {
+          frequency: 2000000000,
+          S11: {
+            magnitude: 0.439,
+            angle: 159.6,
+          },
+          S12: {
+            magnitude: 2.057,
+            angle: 49.2,
+          },
+          S21: {
+            magnitude: 0,
+            angle: 0,
+          },
+          S22: {
+            magnitude: 0.294,
+            angle: -68.1,
+          },
+        },
+      ],
+      noise: [],
+      settings: {
+        freq_unit: "GHz",
+        param: "S",
+        format: "MA",
+        zo: 50,
+      },
+      error: null,
+      type: "s2p",
+    },
+    },
     toURL: (c) => `null`,
     fromURL: (u) => null, //FIXME
   },

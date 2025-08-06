@@ -182,7 +182,7 @@ export function CustomZAtFrequency(customZ, frequency, interpolation) {
   }
 }
 
-export function zToPolar(z) {
+export function rectangularToPolar(z) {
   var magnitude = Math.sqrt(z.real * z.real + z.imaginary * z.imaginary);
   //angle in degrees
   var angle = (Math.atan2(z.imaginary, z.real) * 180) / Math.PI; //in degrees
@@ -221,7 +221,7 @@ export function processImpedance(z, zo) {
   if (imaginary < 0) zStr = `${real} - ${-imaginary}j`;
   else zStr = `${real} + ${imaginary}j`;
 
-  var polar = zToPolar(z);
+  var polar = rectangularToPolar(z);
   zPolarStr = `${polar.magnitude.toFixed(2)} ∠ ${polar.angle.toFixed(2)}°`;
 
   // reflection coefficient =  (Z-Zo) / (Z+Zo)
@@ -232,7 +232,7 @@ export function processImpedance(z, zo) {
   if (reflection.imaginary < 0) refStr = `${reflection.real.toFixed(3)} - ${(-reflection.imaginary).toFixed(3)}j`;
   else refStr = `${reflection.real.toFixed(3)} + ${reflection.imaginary.toFixed(3)}j`;
 
-  var refPolar = zToPolar({ real: reflection.real, imaginary: reflection.imaginary });
+  var refPolar = rectangularToPolar({ real: reflection.real, imaginary: reflection.imaginary });
   refPolarStr = `${refPolar.magnitude.toFixed(3)} ∠ ${refPolar.angle.toFixed(1)}°`;
 
   var vswr = ((1 + refPolar.magnitude) / (1 - refPolar.magnitude)).toPrecision(3);
@@ -260,3 +260,11 @@ export function processImpedance(z, zo) {
     admString,
   };
 }
+
+export function moveArrayItem(array, fromIndex, toIndex) {
+  const arr = [...array]; // optional: copy to avoid mutating original
+  const [item] = arr.splice(fromIndex, 1);
+  arr.splice(toIndex, 0, item);
+  return arr;
+}
+

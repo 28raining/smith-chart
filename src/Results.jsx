@@ -4,7 +4,7 @@ import "uplot/dist/uPlot.min.css";
 import UplotReact from "uplot-react";
 import { useState, useRef, useEffect } from "react";
 
-import { processImpedance, zToPolar, unitConverter } from "./commonFunctions";
+import { processImpedance, rectangularToPolar, unitConverter } from "./commonFunctions";
 
 function ImpedanceRes({ type, zStr, zPolarStr }) {
   return (
@@ -172,7 +172,7 @@ function renderChart(setOptions, setOptions2, containerRef, freqUnit) {
 function SPlot ({sparametersData, options, freqUnit, title}) {
   if (!sparametersData || sparametersData.length === 0) return null;
     return ["S11", "S12", "S21", "S22"].map((s) => {
-      if (!Object.hasOwn(sparametersData[0], s)) return null;
+      if (!(s in Object.values(sparametersData)[0])) return null;
       const sParamOpt = JSON.parse(JSON.stringify(options));
       sParamOpt.series[1].label = `| ${s} | (dB)`;
       sParamOpt.series[2].label = `∠ ${s} |(°)`;
@@ -181,18 +181,45 @@ function SPlot ({sparametersData, options, freqUnit, title}) {
       const f = [];
       const m = [];
       const a = [];
-      for (const v of sparametersData) {
-        f.push(v.frequency / unitConverter[freqUnit]);
-        m.push(20 * Math.log10(v[s].magnitude));
-        a.push(v[s].angle);
+      for (const fx in sparametersData) {
+        f.push(fx / unitConverter[freqUnit]);
+        m.push(20 * Math.log10(sparametersData[fx][s].magnitude));
+        a.push(sparametersData[fx][s].angle);
       }
       const sData = [f, m, a];
       return <div style={{textAlign: "center"}} key={s}><h5 style={{marginTop:15, marginBottom:0}}>{title}: {s} magnitude and angle</h5><UplotReact options={sParamOpt} data={sData} /></div>;
     });
-
+}
+function GainPlot ({gain, options, freqUnit, title}) {
+      const sParamOpt = JSON.parse(JSON.stringify(options));
+      const f = [];
+      const m = [];
+      const a = [];
+      for (const v in gain) {
+        f.push(v / unitConverter[freqUnit]);
+        m.push(10 * Math.log10(gain[v]));
+        a.push(0);
+      }
+      const sData = [f, m, a];
+      return <div style={{textAlign: "center"}}><h5 style={{marginTop:15, marginBottom:0}}>{title}</h5><UplotReact options={sParamOpt} data={sData} /></div>;
+}
+function RPlot ({RefIn, options, freqUnit, title}) {
+      const sParamOpt = JSON.parse(JSON.stringify(options));
+      const f = [];
+      const m = [];
+      const a = [];
+      for (const x in RefIn) {
+      for (const v in RefIn[x]) {
+        f.push(v / unitConverter[freqUnit]);
+        m.push(20 * Math.log10(RefIn[x][v].magnitude));
+        a.push(RefIn[x][v].angle);
+      }
+      }
+      const sData = [f, m, a];
+      return <div style={{textAlign: "center"}}><h5 style={{marginTop:15, marginBottom:0}}>{title}</h5><UplotReact options={sParamOpt} data={sData} /></div>;
 }
 
-export default function Results({ zProc, spanFrequencies, spanResults, freqUnit, plotType, sParameters }) {
+export default function Results({ zProc, spanFrequencies, spanResults, freqUnit, plotType, sParameters, gainResults, RefIn }) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
   const [options, setOptions] = useState(optionsInit);
@@ -202,9 +229,10 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit,
   var s11_ang = [];
   var s21 = [];
   if (spanResults) {
-    for (const s of spanResults) {
-      const { refReal, refImag } = processImpedance(s, 50);
-      const { magnitude, angle } = zToPolar({
+    // console.log("spanResults res", spanResults);
+    for (const f in spanResults) {
+      const { refReal, refImag } = processImpedance(spanResults[f].z, 50);
+      const { magnitude, angle } = rectangularToPolar({
         real: refReal,
         imaginary: refImag,
       });
@@ -242,7 +270,8 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit,
     const sparametersData = sParameters.matched;
     return (
     <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-     <SPlot sparametersData={sparametersData} options={options} freqUnit={freqUnit} title="Custom Termination" />
+     <RPlot RefIn={RefIn} options={options} freqUnit={freqUnit} title="Custom Termination" />
+     <GainPlot gain={gainResults} options={options} freqUnit={freqUnit} title="Gain" />
     </div>
     );
 

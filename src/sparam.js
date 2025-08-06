@@ -8,11 +8,11 @@ import {
   complex_multiply,
   parseInput,
   polarToRectangular,
-  zToPolar,
+  rectangularToPolar,
   unitConverter,
   reflToZ,
   zToRefl,
-  correctUnitCase
+  correctUnitCase,
 } from "./commonFunctions.js";
 
 // Noise circles
@@ -43,9 +43,23 @@ export function sparamNoiseCircles(fMin, F, Rn, reflection_real, reflection_imag
   const radius = Math.sqrt(Ni * (Ni + 1 - GoMag)) / (Ni + 1);
 
   //must conver from center Reflection coefficient to Z : Z = Zo(1+refl/(1-refl)
-  var tempZ = one_over_complex({real: 1 - center_real, imaginary: -center_imag});
+  var tempZ = one_over_complex({ real: 1 - center_real, imaginary: -center_imag });
   var centerImpedance = complex_multiply(tempZ, { real: 1 + center_real, imaginary: center_imag });
   return [centerImpedance, radius];
+}
+
+export function sparamGainCircles(S11, zo, gain) {
+  console.log("sparamGainCircles", S11, gain, zo);
+  const gs_max = 1 / (1 - S11.magnitude ** 2);
+  const gs = 10 ** (gain / 10) / gs_max; // convert gain from dB to linear scale
+  console.log("gs", gs, gs_max);
+  const cs_numerator = complex_multiply({ real: gs, imaginary: 0 }, polarToRectangular({ magnitude: S11.magnitude, angle: -S11.angle }));
+  const cs = complex_multiply(cs_numerator, { real: 1 / (1 - S11.magnitude ** 2 * (1 - gs)), imaginary: 0 });
+  const rs = (Math.sqrt(1 - gs) * (1 - S11.magnitude ** 2)) / (1 - S11.magnitude ** 2 * (1 - gs));
+  console.log("csa", rectangularToPolar(cs), rs, gs);
+  console.log("cs", (Math.sqrt(1 - gs)));
+  console.log({ center: reflToZ(cs, zo), radius: rs });
+  return { center: reflToZ(cs, zo), radius: rs };
 }
 
 // 1.4
@@ -53,25 +67,26 @@ export function sparamNoiseCircles(fMin, F, Rn, reflection_real, reflection_imag
 // 2.800 ∠ 64.5 degrees
 // 0.06 ∠ 58.4 degrees
 // 0.604 ∠ –58.3 degrees
-export function sparamGainCircles(s11, s21, s12, s22, gain) {
+export function sparamGainCircles_bilateral(sparam, gain) {
   // Convert polar form to rectangular form
-  const S11 = polarToRectangular(s11);
-  const S22 = polarToRectangular(s22);
-  const S12 = polarToRectangular(s12);
-  const S21 = polarToRectangular(s21);
+  const S11r = polarToRectangular(sparam.S11);
+  const S22r = polarToRectangular(sparam.S22);
+  const S12r = polarToRectangular(sparam.S12);
+  const S21r = polarToRectangular(sparam.S21);
 
   // Calculate Delta = S11 * S22 - S12 * S21
-  const product1 = complex_multiply(S11, S22);
-  const product2 = complex_multiply(S12, S21);
+  const product1 = complex_multiply(S11r, S22r);
+  const product2 = complex_multiply(S12r, S21r);
   const delta = {
     real: product1.real - product2.real,
     imaginary: product1.imaginary - product2.imaginary,
   };
-  const deltaPolar = zToPolar(delta);
+  const deltaPolar = rectangularToPolar(delta);
 
   // Calculate K factor
-  const k = (1 - s11.magnitude ** 2 - s22.magnitude ** 2 + deltaPolar.magnitude ** 2) / (2 * s21.magnitude * s12.magnitude);
-  console.log("S11", S11, S22);
+  const k =
+    (1 - sparam.S11.magnitude ** 2 - sparam.S22.magnitude ** 2 + deltaPolar.magnitude ** 2) / (2 * sparam.S21.magnitude * sparam.S12.magnitude);
+  console.log("S11", S11r, S22r);
   console.log("product1", product1);
   console.log("K factor:", k);
   console.log("Delta:", delta);
@@ -80,23 +95,23 @@ export function sparamGainCircles(s11, s21, s12, s22, gain) {
   // var ga = (s21.magnitude / s12.magnitude) * (k - Math.sqrt(k ** 2 - 1));
   // console.log("Gain:", ga);
 
-  const ga = 10 ** (gain / 10) / s21.magnitude ** 2;
+  const ga = 10 ** (gain / 10) / sparam.S21.magnitude ** 2;
 
-  const deltaS22 = complex_multiply(S22, delta);
-  const c1 = complex_subtract(S11, deltaS22);
-  const centerGain = ga / (1 + ga * (s11.magnitude ** 2 - deltaPolar.magnitude ** 2));
+  const deltaS22 = complex_multiply(S22r, delta);
+  const c1 = complex_subtract(S11r, deltaS22);
+  const centerGain = ga / (1 + ga * (sparam.S11.magnitude ** 2 - deltaPolar.magnitude ** 2));
   const centerReflection = { real: centerGain * c1.real, imaginary: centerGain * -c1.imaginary };
   const radius =
-    Math.sqrt(1 - 2 * k * s12.magnitude * s21.magnitude * ga + (s12.magnitude * s21.magnitude * ga) ** 2) /
-    Math.abs(1 + ga * (s11.magnitude ** 2 - deltaPolar.magnitude ** 2));
+    Math.sqrt(1 - 2 * k * sparam.S12.magnitude * sparam.S21.magnitude * ga + (sparam.S12.magnitude * sparam.S21.magnitude * ga) ** 2) /
+    Math.abs(1 + ga * (sparam.S11.magnitude ** 2 - deltaPolar.magnitude ** 2));
 
   console.log("Gain:", ga, centerGain, c1);
 
   //must conver from center Reflection coefficient to Z : Z = Zo(1+refl/(1-refl) //FIXME replace qith cmn function
-  var tempZ = one_over_complex({real: 1 - centerReflection.real, imaginary: -centerReflection.imaginary});
+  var tempZ = one_over_complex({ real: 1 - centerReflection.real, imaginary: -centerReflection.imaginary });
   var center = complex_multiply(tempZ, { real: 1 + centerReflection.real, imaginary: centerReflection.imaginary });
 
-  console.log("center, radius", zToPolar(centerReflection), radius);
+  console.log("center, radius", rectangularToPolar(centerReflection), radius);
   console.log("centerImpedance", center);
   return { center, radius };
 }
@@ -118,61 +133,61 @@ export function sparamZout(sparamPolar, reflSourcePolar) {
   const inv_denomenator = one_over_complex(denomenator);
   const rout = complex_add(sparam.S22, complex_multiply(numerator, inv_denomenator));
   // console.log('sparamZout', rout)
-  const polar = zToPolar(rout);
+  const polar = rectangularToPolar(rout);
   // console.log('sparamZout polar', {polar: polar, rectangular: rout})
   return { polar: polar, rectangular: rout };
 }
 
-function sParamDataToPolar(splLine, format, fUnit) {
+function sParamDataToPolar(splLine, format, fUnit, zo) {
   const frequency = parseFloat(splLine[0]) * unitConverter[fUnit];
+  var sparam = {};
   if (format == "RI") {
     if (splLine.length == 3) {
-      return {
-        frequency: frequency,
-        S11: zToPolar({ real: parseFloat(splLine[1]), imaginary: parseFloat(splLine[2]) }),
+      sparam = {
+        S11: rectangularToPolar({ real: parseFloat(splLine[1]), imaginary: parseFloat(splLine[2]) }),
       };
     } else if (splLine.length == 9) {
-      return {
-        frequency: frequency,
-        S11: zToPolar({ real: parseFloat(splLine[1]), imaginary: parseFloat(splLine[2]) }),
-        S12: zToPolar({ real: parseFloat(splLine[3]), imaginary: parseFloat(splLine[4]) }),
-        S21: zToPolar({ real: parseFloat(splLine[5]), imaginary: parseFloat(splLine[6]) }),
-        S22: zToPolar({ real: parseFloat(splLine[7]), imaginary: parseFloat(splLine[8]) }),
+      sparam = {
+        S11: rectangularToPolar({ real: parseFloat(splLine[1]), imaginary: parseFloat(splLine[2]) }),
+        S21: rectangularToPolar({ real: parseFloat(splLine[3]), imaginary: parseFloat(splLine[4]) }),
+        S12: rectangularToPolar({ real: parseFloat(splLine[5]), imaginary: parseFloat(splLine[6]) }),
+        S22: rectangularToPolar({ real: parseFloat(splLine[7]), imaginary: parseFloat(splLine[8]) }),
       };
     }
   } else if (format == "MA") {
     //the data format is magnitude-angle
     if (splLine.length == 3) {
-      return {
-        frequency: frequency,
+      sparam = {
         S11: { magnitude: parseFloat(splLine[1]), angle: parseFloat(splLine[2]) },
       };
     } else if (splLine.length == 9) {
-      return {
-        frequency: frequency,
+      sparam = {
         S11: { magnitude: parseFloat(splLine[1]), angle: parseFloat(splLine[2]) },
-        S12: { magnitude: parseFloat(splLine[3]), angle: parseFloat(splLine[4]) },
-        S21: { magnitude: parseFloat(splLine[5]), angle: parseFloat(splLine[6]) },
+        S21: { magnitude: parseFloat(splLine[3]), angle: parseFloat(splLine[4]) },
+        S12: { magnitude: parseFloat(splLine[5]), angle: parseFloat(splLine[6]) },
         S22: { magnitude: parseFloat(splLine[7]), angle: parseFloat(splLine[8]) },
       };
     }
   } else if (format == "DB") {
     //the data format is magnitude-angle
     if (splLine.length == 3) {
-      return {
-        frequency: frequency,
+      sparam = {
         S11: { magnitude: 10 ** (parseFloat(splLine[1]) / 20), angle: parseFloat(splLine[2]) },
       };
     } else if (splLine.length == 9) {
-      return {
-        frequency: frequency,
+      sparam = {
         S11: { magnitude: 10 ** (parseFloat(splLine[1]) / 20), angle: parseFloat(splLine[2]) },
-        S12: { magnitude: 10 ** (parseFloat(splLine[3]) / 20), angle: parseFloat(splLine[4]) },
-        S21: { magnitude: 10 ** (parseFloat(splLine[5]) / 20), angle: parseFloat(splLine[6]) },
+        S21: { magnitude: 10 ** (parseFloat(splLine[3]) / 20), angle: parseFloat(splLine[4]) },
+        S12: { magnitude: 10 ** (parseFloat(splLine[5]) / 20), angle: parseFloat(splLine[6]) },
         S22: { magnitude: 10 ** (parseFloat(splLine[7]) / 20), angle: parseFloat(splLine[8]) },
       };
     }
   }
+  //convert S11 to a Z for s1p matching
+  const rS11 = polarToRectangular(sparam.S11);
+  sparam.zS11 = reflToZ(rS11, zo);
+
+  return [frequency, sparam];
 }
 
 export function parseTouchstoneFile(content) {
@@ -180,7 +195,7 @@ export function parseTouchstoneFile(content) {
   // const dataLineRegex = /^(?<freq>\S+)((\s+[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?){2,})$/;
   const noiseRegex = /^\s*(?<freq>\S+)\s+(?<fmin>\S+)\s+(?<gamma_mag>\S+)\s+(?<gamma_ang>\S+)\s+(?<rn>\S+)\s*$/;
 
-  const results = { data: [], noise: [], settings: {}, error: null };
+  const results = { data: {}, noise: [], settings: {}, error: null };
   var noiseExists = false;
   var line;
 
@@ -190,7 +205,7 @@ export function parseTouchstoneFile(content) {
     return results;
   }
 
-  var lines = content.trim().split(/\r?\n/); // split by line
+  var lines = content.trim().replace(/–/g, "-").split(/\r?\n/); // split by line, remove empty lines and replace long dash with short dash
   lines = lines.filter((line) => !line.trim().startsWith("!")); //remove comments
   const match = lines[0].match(optionsRegex);
   if (match?.groups) {
@@ -217,9 +232,10 @@ export function parseTouchstoneFile(content) {
       results.error = "This line contains the wrong number of data points: " + lines[line];
       return results;
     }
-    results["data"].push(sParamDataToPolar(splLine, results["settings"].format, results["settings"].freq_unit));
+    const [f,d] = sParamDataToPolar(splLine, results["settings"].format, results["settings"].freq_unit, results["settings"].zo)
+    results["data"][f] = d;
+    results["type"] = splLine.length == 0 ? null : splLine.length == 9 ? "s2p" : "s1p";
   }
-  results["type"] = results["data"].length == 0 ? null : results["data"][0].length == 9 ? "s2p" : "s1p";
   if (results["type"] === null) {
     results.error = "Data is not .s1p or .s2p format?";
     return results;
@@ -243,16 +259,22 @@ export function parseTouchstoneFile(content) {
 }
 
 // takes the whole s-parameter data and returns only the data within the frequency range
-export function sParamFrequencyRange (data, fmin, fmax) {
-  return data.filter(point => point.frequency >= fmin && point.frequency <= fmax);
+export function sParamFrequencyRange(data, fmin, fmax) {
+    // console.log('filta', data, fmin, fmax)
+    return Object.fromEntries(
+    Object.entries(data)
+      .filter(([key]) => Number(key) >= fmin && Number(key) <= fmax)
+  );
+
+  // return data.filter((point) => point.frequency >= fmin && point.frequency <= fmax);
 }
 
 //convert from 50ohm termination to users termination
-export function S11NotMatched (point, zo, rTermination) {
+export function S11NotMatched(point, zo, rTermination) {
   // return data.map(point => {
-      const s11 = polarToRectangular(point.S11);
-      const z = reflToZ(s11, zo);
-      const newZ = zToRefl(z, rTermination);
-      return {...point, S11: zToPolar(newZ)};
+  const s11 = polarToRectangular(point.S11);
+  const z = reflToZ(s11, zo);
+  const newZ = zToRefl(z, rTermination);
+  return { ...point, S11: rectangularToPolar(newZ) };
   // });
 }

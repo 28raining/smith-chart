@@ -25,6 +25,9 @@ import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 
+import ArrowLeftRoundedIcon from "@mui/icons-material/ArrowLeftRounded";
+import ArrowRightRoundedIcon from "@mui/icons-material/ArrowRightRounded";
+
 import {
   arcColors,
   inductorUnits,
@@ -38,8 +41,7 @@ import {
   parseInput,
   checkCustomZValid,
   CustomZAtFrequency,
-                
-
+  moveArrayItem,
 } from "./commonFunctions.js";
 
 import { parseTouchstoneFile } from "./sparam.js";
@@ -173,13 +175,17 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
 }
 
 function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setPlotType, setSettings }) {
-  const [customInput, setCustomInput] = useState(value ? value : "");
+  const [customInput, setCustomInput] = useState(`# GHz S MA R 50
+0.8	0.44  –157.6 4.725 84.3	0 0	0.339 –51.8
+1.4	0.533 176.6	2.800 64.5	0 0	0.604 –58.3
+2.0	0.439 159.6	2.057 49.2	0 0	0.294 –68.1`);
   const [showAllData, setShowAllData] = useState(false);
+  const allcols = ['S11', 'S21', 'S12', 'S22']
 
   const parsed = parseTouchstoneFile(customInput);
   const validCheckerResults = parsed.error === null;
   const helperText =
-    customInput == "" ? "Copy in a file" : validCheckerResults ? `${parsed.data.length} data points parsed succesfully` : parsed.error;
+    customInput == "" ? "Copy in a file" : validCheckerResults ? `${Object.keys(parsed.data).length} data points parsed succesfully` : parsed.error;
   return (
     <>
       <Button
@@ -205,19 +211,28 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
               color={customInput == "" ? "secondary" : validCheckerResults ? "primary" : "error"}
               onClick={() => {
                 if (validCheckerResults) {
-                  const fMin = parsed.data[0].frequency;
-                  const fMax = parsed.data[parsed.data.length - 1].frequency;
+                  const allF = Object.keys(parsed.data);
+                  const midF = allF[Math.floor(allF.length / 2)];
+                  const fMin = allF[0]; //[0].frequency;
+                  const fMax = allF[allF.length - 1]; //[parsed.data.length - 1].frequency;
+                  // console.log("fmin", fMin, Object.keys(parsed.data).map(x=>Number(x)), Math.min(Object.keys(parsed.data).map(x=>Number(x))) )
                   setUserCircuit((c) => {
                     const newCircuit = [...c];
                     newCircuit[index].value = parsed;
+                    newCircuit[index].type = parsed.type; //FIXME - deprecate
+                    //if it's .s2p and the last item is not termination load, add it
+                    if (parsed.type === "s2p" && newCircuit[newCircuit.length - 1].name !== "loadTerm") {
+                      newCircuit.push({ ...circuitComponents.loadTerm.default, name: "loadTerm" });
+                    }
+                    console.log("newCircuit", newCircuit);
                     return newCircuit;
                   });
-                  setPlotType("sparam")
+                  setPlotType("sparam");
                   setSettings((s) => {
                     s.frequencyUnit = parsed.settings.freq_unit;
                     s.fSpanUnit = parsed.settings.freq_unit;
-                    s.frequency = (fMax + fMin)/2
-                    s.fSpan = (fMax - fMin) / 2;
+                    s.frequency = midF / unitConverter[parsed.settings.freq_unit];
+                    s.fSpan = (2 * Math.max(fMax - midF, midF - fMin)) / unitConverter[parsed.settings.freq_unit];
                     return s;
                   });
                 } else {
@@ -254,32 +269,31 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                 </li>
                 <li>Zo: {parsed.settings.zo}</li>
               </ul>
-              {showAllData ? "All rows of data:" : "First 300 rows of data:"} <button onClick={() => setShowAllData((o) => !o)}>{showAllData ? "Show less" : "Show all"}</button>
+              {showAllData ? "All rows of data:" : `First ${Math.min(300,Object.keys(parsed.data).length)} rows of data:`}
+              <button onClick={() => setShowAllData((o) => !o)}>{showAllData ? "Show less" : "Show all"}</button>
               <TableContainer sx={{ maxHeight: 300, border: "1px solid black" }}>
                 <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow>
                       <TableCell key="frequency">Frequency ({parsed.settings.freq_unit})</TableCell>
-                      {Object.keys(parsed.data[0]).map((column) => {
-                        if (column !== "frequency") {
+                      {allcols.map((column) => {
+                        if (!(column in Object.values(parsed.data)[0])) return null
                           return [<TableCell key="mag">|{column}|</TableCell>, <TableCell key="ang">∠{column}</TableCell>];
-                        }
                       })}
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {parsed.data.map((row, i) => {
-                      if (!showAllData) if (i>300) return null; // limit to 300 rows for performance
+                    {Object.keys(parsed.data).map((f, i) => {
+                      if (!showAllData) if (i > 300) return null; // limit to 300 rows for performance
                       return (
-                        <TableRow hover tabIndex={-1} key={i}>
-                          {Object.keys(row).map((column) => {
-                            if (column == "frequency") return <TableCell key="freq">{row[column].toLocaleString()}</TableCell>;
-                            else {
-                              return [
-                                <TableCell key="mag">{row[column].magnitude.toFixed(4)}</TableCell>,
-                                <TableCell key="ang">{row[column].angle.toFixed(4)}</TableCell>,
-                              ];
-                            }
+                        <TableRow hover tabIndex={-1} key={f}>
+                          <TableCell key="freq">{(f / unitConverter[parsed.settings.freq_unit]).toLocaleString()}</TableCell>
+                          {allcols.map((column) => {
+                            if (!(column in parsed.data[f])) return null;
+                            return [
+                              <TableCell key="mag">{parsed.data[f][column].magnitude.toFixed(4)}</TableCell>,
+                              <TableCell key="ang">{parsed.data[f][column].angle.toFixed(4)}</TableCell>,
+                            ];
                           })}
                         </TableRow>
                       );
@@ -339,7 +353,7 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
           label="Re"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, width: "9ch", padding: 0 }}
+          sx={{ mx: 0.5, p: 0, minWidth: "6ch", padding: 0 }}
           value={real}
           onChange={(e) => setValue(e.target.value, "real", setUserCircuit, index)}
         />
@@ -348,7 +362,7 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
           label="Im"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, width: "9ch", padding: 0 }}
+          sx={{ mx: 0.5, p: 0, minWidth: "6ch", padding: 0 }}
           value={imaginary}
           onChange={(e) => setValue(e.target.value, "imaginary", setUserCircuit, index)}
         />
@@ -643,10 +657,10 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
           var zj =
             (w * component.value_l * unitConverter[component.unit_l]) /
             (1 - w * w * component.value_l * component.value_c * unitConverter[component.unit_l] * unitConverter[component.unit_c]);
-          var z = one_over_complex({real:1 / (component.value * unitConverter[component.unit]), imaginary:-1 / zj});
+          var z = one_over_complex({ real: 1 / (component.value * unitConverter[component.unit]), imaginary: -1 / zj });
           real = z.real * (1 + slider / 100);
           imaginary = z.imaginary;
-        } else if (component.name == "blackBox") {
+        } else if (component.name == "blackBox" || component.name == "loadTerm") {
           real = component.real * (1 + slider_re / 100); //for black box this will be correct
           imaginary = component.imaginary * (1 + slider_im / 100);
         }
@@ -758,6 +772,9 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
     }
   }
 
+  const lastElIsFixed = userCircuit[userCircuit.length - 1].name == "loadTerm" || userCircuit[userCircuit.length - 1].type == "s1p";
+  const lastElement = lastElIsFixed ? userCircuit.length - 2 : userCircuit.length - 1;
+
   return (
     <ThemeProvider theme={theme}>
       <Grid container spacing={0} columns={{ xs: 6, sm: 12, md: 8, lg: 12 }}>
@@ -770,7 +787,10 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
                 <Button
                   variant="contained"
                   onClick={() => {
-                    setUserCircuit([...userCircuit, { ...c.default, name: k }]);
+                    //if last element is load term or s1p insert before it
+                    if (lastElIsFixed) {
+                      setUserCircuit((z) => [...z.slice(0, -1), { ...c.default, name: k }, z[z.length - 1]]);
+                    } else setUserCircuit([...userCircuit, { ...c.default, name: k }]);
                     if (k == "custom") {
                       setModalOpen(true);
                     } else if (k == "sparam") {
@@ -811,19 +831,25 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
             <Grid size={2} key={i} sx={{ display: "flex", flexDirection: "column", borderRadius: 1 }} className="circuitDrawing">
               <Box position="relative">
                 <img src={comp.src} width="100%" />
-                {i == 0 ? null : (
+                {i == 0 || userCircuit[i].name == "loadTerm" ? null : (
                   <IconButton
-                    aria-label="delete"
                     onClick={() => {
-                      setUserCircuit((z) => [
-                        ...z.slice(0, i), // Items before the index `i`
-                        ...z.slice(i + 1),
-                      ]);
+                      setUserCircuit((z) => {
+                        var newZ = [
+                          ...z.slice(0, i), // Items before the index `i`
+                          ...z.slice(i + 1),
+                        ];
+                        //if sparam and last element is loadTerm, remove it
+                        if (c.name == "sparam" && newZ[newZ.length - 1].name == "loadTerm") {
+                          newZ = [...newZ.slice(0, -1)];
+                        }
+                        return newZ;
+                      });
                     }}
                     sx={{
                       position: "absolute",
                       top: -6,
-                      right: -8,
+                      right: 0,
                     }}
                   >
                     <DeleteIcon
@@ -835,11 +861,51 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
                     />
                   </IconButton>
                 )}
+                {i < 2 || (lastElIsFixed && i == userCircuit.length - 1) ? null : (
+                  <IconButton
+                    onClick={() => {
+                      setUserCircuit((z) => moveArrayItem(z, i, i - 1));
+                    }}
+                    sx={{
+                      position: "absolute",
+                      bottom: -6,
+                      left: 8,
+                    }}
+                  >
+                    <ArrowLeftRoundedIcon
+                      sx={{
+                        height: 32,
+                        width: 32,
+                        color: "rgba(0, 0, 0, 0.34)",
+                      }}
+                    />
+                  </IconButton>
+                )}
+                {i == 0 || i >= lastElement ? null : (
+                  <IconButton
+                    onClick={() => {
+                      setUserCircuit((z) => moveArrayItem(z, i, i + 1));
+                    }}
+                    sx={{
+                      position: "absolute",
+                      bottom: -6,
+                      right: 8,
+                    }}
+                  >
+                    <ArrowRightRoundedIcon
+                      sx={{
+                        height: 32,
+                        width: 32,
+                        color: "rgba(0, 0, 0, 0.34)",
+                      }}
+                    />
+                  </IconButton>
+                )}
                 <Typography
                   sx={{
                     position: "absolute",
-                    top: 1,
-                    left: 1,
+                    bottom: 3,
+                    left: 3,
                     color: { color },
                   }}
                 >

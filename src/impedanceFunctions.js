@@ -30,7 +30,8 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
   var component;
   var prevResult;
   var esr, esl;
-  var impedanceResults = [[{ real: userCircuit[0].real, imaginary: userCircuit[0].imaginary }]];
+  var impedanceResults = userCircuit[0].type === 's1p' ? [[{ real: userCircuit[0].value.data[frequency].zS11.real, imaginary: userCircuit[0].value.data[frequency].zS11.imaginary }]] : [[{ real: userCircuit[0].real, imaginary: userCircuit[0].imaginary }]];
+  // console.log('impedanceResults', impedanceResults)
   var w = 2 * Math.PI * frequency;
   var i, j;
   for (i = 1; i < userCircuit.length; i++) {
@@ -156,8 +157,9 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
           imaginary: startImaginary + (newImpedance.imaginary * j) / resolution,
         });
       }
-    } else if (component.name == "sparam") {
+    } else if (component.name == "sparam" || component.name == "loadTerm") {
       //FIXME - this is a hack to prevent crashing
+      console.warn("sparam, loadTerm, s1p and s2p components are not supported in impedance calculations");
       // for (j = 0; j <= resolution; j++) {
         impedanceResolution.push({
           real: startReal,

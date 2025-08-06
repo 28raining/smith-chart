@@ -23,6 +23,13 @@ import Box from "@mui/material/Box";
 import { arcColors, processImpedance, parseInput, reflToZ, polarToRectangular } from "./commonFunctions.js";
 import { sparamNoiseCircles, sparamGainCircles } from "./sparam.js";
 
+const sParamColorLut = {
+  S11: arcColors[0],
+  S21: arcColors[2],
+  S12: arcColors[1],
+  S22: arcColors[3],
+};
+
 const dashTypes = [
   "5,5", // short dash
   "10,5", // medium dash
@@ -33,19 +40,21 @@ const dashTypes = [
 // Usage: <path stroke-dasharray={dashTypes[0]} ... />
 
 function Graph({
-  impedanceResults,
+  zResultsSrc,
   zo,
   spanResults,
   qCircles,
   vswrCircles,
   nfCircles,
-  gainCircles,
+  gainInCircles,
+  gainOutCircles,
   zMarkers,
   reflection_real,
   reflection_imag,
   sParameters,
   plotType,
   setPlotType,
+  chosenSparameter,
 }) {
   const svgRef = useRef(null);
   const svgWrapper = useRef(null);
@@ -66,12 +75,13 @@ function Graph({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [resistanceCircles, setResistanceCircles] = useState([0, 0.2, 0.5, 1, 2, 4, 10]);
   const [reactanceCircles, setReactanceCircles] = useState([0.2, 0.5, 1, 2, 4, 10, -0.2, -0.5, -1, -2, -4, -10]);
-  const [showSPlots, setShowSPlots] = useState({ S11: true, S12: true, S21: true, S22: true });
+  const [showSPlots, setShowSPlots] = useState({ S11: true, S21: true, S12: true, S22: true });
 
   // console.log('resistanceCircles', resistanceCircles);
   // const [snapDetails, setSnapDetails] = useState({ real: 0, imaginary: 0 });
   const markerRadius = 6;
 
+  // console.log("chosenSparameter", chosenSparameter);
   function updateWidth() {
     var newWidth = svgWrapper.current.offsetWidth;
     // console.log('neww', newWidth);
@@ -149,35 +159,35 @@ function Graph({
   useEffect(() => {
     const sParamSnap = [];
     var userSVG = d3.select(sParamsRef.current);
+    console.log('clensing')
     userSVG.selectAll("*").remove();
     setSSnaps([]);
+    console.log("sparam plot", sParameters);
     if (sParameters === null) return;
     const sparametersData = sParameters.data;
-    if (sparametersData.length === 0) return;
+    // if (sparametersData.length === 0) return;
 
-    for (const s of [
-      { name: "S11", color: arcColors[0] },
-      { name: "S12", color: arcColors[1] },
-      { name: "S21", color: arcColors[2] },
-      { name: "S22", color: arcColors[3] },
-    ]) {
+    for (const s in sParamColorLut) {
       const coord = [];
-      if (!Object.hasOwn(sparametersData[0], s.name)) continue;
-      if (showSPlots[s.name] === false) continue; // skip if the plot is not shown
-      for (const v of sparametersData) {
-        const rect = polarToRectangular(v[s.name]);
+      if (!(s in Object.values(sparametersData)[0])) continue;
+      if (showSPlots[s] === false) continue; // skip if the plot is not shown
+      for (const v in sparametersData) {
+        const rect = polarToRectangular(sparametersData[v][s]);
         // const rect = polarToRectangular(v.S11);
         const z = reflToZ(rect, sParameters.settings.zo); //FIXME - use s-param zo here
         const [x, y] = impedanceToSmithChart(z.real / zo, z.imaginary / zo, width);
 
+        addDpMarker(userSVG, x, y, `${s}_${v}`, z, sParamColorLut[s], v, sParamSnap, 0.7*markerRadius, `sparam_dp_${sParamSnap.length}`);
+
+
         coord.push([x, y]);
-        sParamSnap.push({
-          x: x - 0.5 * markerRadius,
-          y: y - 0.5 * markerRadius,
-          real: z.real,
-          imaginary: z.imaginary,
-          frequency: v.frequency.toLocaleString(),
-        });
+        // sParamSnap.push({
+        //   x: x - 0.5 * markerRadius,
+        //   y: y - 0.5 * markerRadius,
+        //   real: z.real,
+        //   imaginary: z.imaginary,
+        //   frequency: v.toLocaleString(),
+        // });
       }
 
       const newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
@@ -186,9 +196,9 @@ function Graph({
         .attr("stroke-linecap", "round")
         .attr("stroke-linejoin", "round")
         .attr("fill", "none")
-        .attr("stroke", s.color)
-        .attr("stroke-width", 5)
-        .attr("id", `arc_${s.name}`)
+        .attr("stroke", sParamColorLut[s])
+        .attr("stroke-width", 1)
+        .attr("id", `arc_${s}`)
         .attr("d", newPath);
 
       // userSVG
@@ -224,6 +234,8 @@ function Graph({
   useEffect(() => {
     var userSVG = d3.select(nfCirclesRef.current);
     userSVG.selectAll("*").remove();
+    console.log("nfCircles", chosenSparameter);
+    if (!chosenSparameter) return;
 
     const circlesToPlot = [];
     //the noise circles
@@ -232,21 +244,15 @@ function Graph({
       circlesToPlot.push({ center, radius, dash: dashTypes[3], label: `${n.NF}dB` });
     }
     //the gain circles
-    for (const g of gainCircles) {
-      // const s11_mag = 0.533;
-      // const s11_phase = 176.6;
-      // const s21_mag = 2.8;
-      // const s21_phase = 64.5;
-      // const s12_mag = 0.06;
-      // const s12_phase = 58.4;
-      // const s22_mag = 0.604;
-      // const s22_phase = -58.3
-      const s11 = { magnitude: 0.533, angle: 176.6 };
-      const s22 = { magnitude: 0.604, angle: -58.3 };
-      const s12 = { magnitude: 0.06, angle: 58.4 };
-      const s21 = { magnitude: 2.8, angle: 64.5 };
-      const result = sparamGainCircles(s11, s21, s12, s22, g);
-      circlesToPlot.push({ ...result, dash: dashTypes[4], label: `${g}dB` }); //FIXME - are these dashtypes OK?
+    for (const g of gainInCircles) {
+      const result = sparamGainCircles(chosenSparameter.S11, chosenSparameter.zo, g);
+      console.log('result', result)
+      circlesToPlot.push({ ...result, dash: dashTypes[4], label: `${g}dB (in)` });
+    }
+    for (const g of gainOutCircles) {
+      const result = sparamGainCircles(chosenSparameter.S22, chosenSparameter.zo, g);
+      console.log('result2', result)
+      circlesToPlot.push({ ...result, dash: dashTypes[4], label: `${g}dB (out)` });
     }
 
     //Ni = (F - Fmin) * |1 + Go|^2 / 4 * Rn
@@ -257,7 +263,7 @@ function Graph({
     // const Go_imag = reflection_imag;
     // const GoMag = Go_real * Go_real + Go_imag * Go_imag;
     // const GoMagP1 = (Go_real + 1) * (Go_real + 1) + Go_imag * Go_imag;
-
+    console.log("circlesToPlot", circlesToPlot);
     for (const c of circlesToPlot) {
       // equations here https://www.allaboutcircuits.com/technical-articles/learn-about-designing-unilateral-low-noise-amplifiers/
       // https://homepages.uc.edu/~ferendam/Courses/EE_611/Amplifier/NFC.html
@@ -282,7 +288,7 @@ function Graph({
       // // var tempZ = one_over_complex(1-Go_real , -Go_imag);
       // // var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1+Go_real, Go_imag);
 
-      const [x, y] = impedanceToSmithChart(c.center.real, c.center.imaginary, width);
+      const [x, y] = impedanceToSmithChart(c.center.real / 50, c.center.imaginary / 50, width);
       // // [x, y] = impedanceToSmithCoordinates(tempZ.real, tempZ.imaginary);
 
       // console.log('center, radius', center_real, center_imag, radius, Ni);
@@ -297,7 +303,7 @@ function Graph({
 
       createLabel(userSVG, x, Number(y) - c.radius * width * 0.5, c.label);
     }
-  }, [nfCircles, gainCircles, zo, reflection_real, reflection_imag, width]);
+  }, [nfCircles, gainInCircles, gainOutCircles, zo, reflection_real, reflection_imag, width, chosenSparameter]);
 
   //initializing the smith chart diagrams
   useEffect(() => {
@@ -325,6 +331,9 @@ function Graph({
     svg.on("mousemove", (event) => {
       var dpCircles = d3.select(dpCirclesRef.current);
       dpCircles.selectAll(".hoverDp").classed("hoverDp", false);
+      var sparamSVG = d3.select(sParamsRef.current);
+      sparamSVG.selectAll(".hoverDp").classed("hoverDp", false);
+
       const [mouseX, mouseY] = d3.pointer(event, svgGroup.node());
       var x = mouseX / (0.5 * width);
       var y = mouseY / (0.5 * width);
@@ -335,21 +344,31 @@ function Graph({
           re = s.real / zo;
           im = s.imaginary / zo;
           frequency = s.frequency;
-          dpCircles.select(`#hover_dp_${index}`).classed("hoverDp", true);
+          dpCircles.select(`#${s.id}`).classed("hoverDp", true);
           snapped = true;
           break;
         }
       }
-      //FIXME - only do this if in S-param mode. And only check hSnaps if not?
-      for (const [_index, s] of sSnaps.entries()) {
-        if (mouseX > s.x && mouseX < s.x + markerRadius && mouseY > s.y && mouseY < s.y + markerRadius) {
+      for (const [index, s] of sSnaps.entries()) {
+        if (mouseX > s.x && mouseX < s.x + 2 * markerRadius && mouseY > s.y && mouseY < s.y + 2 * markerRadius) {
           re = s.real / zo;
           im = s.imaginary / zo;
           frequency = s.frequency;
+          sparamSVG.select(`#${s.id}`).classed("hoverDp", true);
           snapped = true;
           break;
         }
       }
+      // //FIXME - only do this if in S-param mode. And only check hSnaps if not?
+      // for (const [_index, s] of sSnaps.entries()) {
+      //   if (mouseX > s.x && mouseX < s.x + markerRadius && mouseY > s.y && mouseY < s.y + markerRadius) {
+      //     re = s.real / zo;
+      //     im = s.imaginary / zo;
+      //     frequency = s.frequency;
+      //     snapped = true;
+      //     break;
+      //   }
+      // }
       if (!snapped) {
         [re, im] = smithCoordinatesToImpedance(x, y);
       }
@@ -400,31 +419,32 @@ function Graph({
     };
   }, [hSnaps, sSnaps, width, zo]);
 
-  function addDpMarker(dpCircles, x, y, tol, point, color, frequency, hoverSnaps) {
+  function addDpMarker(dpCircles, x, y, tol, point, color, frequency, hoverSnaps, radius=markerRadius, id) {
     dpCircles
       .append("circle")
       .attr("cx", x)
       .attr("cy", y)
-      .attr("r", markerRadius)
+      .attr("r", radius)
       .attr("fill", color)
       .attr("id", `tol_marker_${tol}`)
       .attr("stroke", "none");
     dpCircles
       .append("rect")
-      .attr("x", x - markerRadius)
-      .attr("y", y - markerRadius)
-      .attr("width", 2 * markerRadius)
-      .attr("height", 2 * markerRadius)
+      .attr("x", x - radius)
+      .attr("y", y - radius)
+      .attr("width", 2 * radius)
+      .attr("height", 2 * radius)
       .attr("fill", "none")
       .attr("stroke-width", "2")
       .attr("stroke", "none")
-      .attr("id", `hover_dp_${hoverSnaps.length}`);
+      .attr("id", id);
     hoverSnaps.push({
-      x: x - markerRadius,
-      y: y - markerRadius,
+      x: x - radius,
+      y: y - radius,
       real: point.real,
       imaginary: point.imaginary,
       frequency: frequency,
+      id: id,
     });
   }
 
@@ -443,97 +463,106 @@ function Graph({
     //   return;
     // }
 
-    var coord = [];
-    var tol, dp, point;
-    var path = "";
-    var newPath = "";
-    var spanArc = "";
-    var mainSpanArc = "";
-    for (tol = 0; tol < impedanceResults.length; tol++) {
-      for (dp = 0; dp < impedanceResults[tol].length; dp++) {
+    for (const zz of zResultsSrc) {
+      const z = zz.arcs;
+      console.log("zResultsSrc", z);
+      var coord = [];
+      var tol, dp, point;
+      var path = "";
+      var newPath = "";
+      var spanArc = "";
+      var mainSpanArc = "";
+      for (tol = 0; tol < z.length; tol++) {
+        for (dp = 0; dp < z[tol].length; dp++) {
+          coord = [];
+          for (point of z[tol][dp]) {
+            coord.push(impedanceToSmithChart(point.real / zo, point.imaginary / zo, width));
+          }
+          newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
+          if (tol != z.length - 1) {
+            path = `${path} ${newPath}`;
+            //add a circle at the last dp of the tol curves
+            if (dp == z[tol].length - 1) {
+              addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], tol, point, "#8a8a8a", null, hoverSnaps, markerRadius, `hover_dp_${hoverSnaps.length}`);
+            }
+          } else {
+            //the last entry in z array is the circuit without any tolerance applied
+            impedanceArc
+              .append("path")
+              .attr("stroke-linecap", "round")
+              .attr("stroke-linejoin", "round")
+              .attr("fill", "none")
+              .attr("stroke", arcColors[dp % 10])
+              .attr("stroke-width", 5)
+              .attr("id", `dp_${dp}`)
+              .attr("d", newPath);
+
+            addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], tol, point, arcColors[dp % 10], null, hoverSnaps, markerRadius, `hover_dp_${hoverSnaps.length}`);
+          }
+        }
+      }
+      // the tolerance curves are all in one path
+      if (path != "") {
+        impedanceArc
+          .append("path")
+          .attr("stroke-linecap", "round")
+          .attr("stroke-linejoin", "round")
+          .attr("fill", "none")
+          .attr("stroke", "#8a8a8a")
+          .attr("stroke-width", 2)
+          .attr("d", path);
+      }
+      // }
+
+      // add the span arcs
+      const spanResults = zz.ZvsF;
+      console.log("spanResults", spanResults);
+      spanResults.forEach((s, i) => {
         coord = [];
-        for (point of impedanceResults[tol][dp]) {
-          coord.push(impedanceToSmithChart(point.real / zo, point.imaginary / zo, width));
+        for (const f in s) {
+          const co = impedanceToSmithChart(s[f].z.real / zo, s[f].z.imaginary / zo, width);
+          coord.push(co);
+          addDpMarker(dpCircles, co[0], co[1], `${i}_${f}`, co, "red", f, hoverSnaps, markerRadius, `hover_dp_${hoverSnaps.length}`);
         }
         newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
-        if (tol != impedanceResults.length - 1) {
-          path = `${path} ${newPath}`;
-          //add a circle at the last dp of the tol curves
-          if (dp == impedanceResults[tol].length - 1) {
-            addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], tol, point, "#8a8a8a", null, hoverSnaps);
-          }
+        const firstPoint = s[0];
+        const lastPoint = s[s.length - 1];
+
+        //FIXME - compress this code! optimize
+        if (i != spanResults.length - 1) {
+          spanArc = `${spanArc} ${newPath}`;
+          // addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], `${i}_span_0`, lastPoint, "#8a8a8a", "F + span", hoverSnaps);
+          // addDpMarker(dpCircles, coord[0][0], coord[0][1], `${i}_span_1`, firstPoint, "#8a8a8a", "F - span", hoverSnaps);
         } else {
-          //the last entry in impedanceResults array is the circuit without any tolerance applied
-          impedanceArc
-            .append("path")
-            .attr("stroke-linecap", "round")
-            .attr("stroke-linejoin", "round")
-            .attr("fill", "none")
-            .attr("stroke", arcColors[dp % 10])
-            .attr("stroke-width", 5)
-            .attr("id", `dp_${dp}`)
-            .attr("d", newPath);
-
-          addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], tol, point, arcColors[dp % 10], null, hoverSnaps);
+          mainSpanArc = newPath;
+          // addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], `${i}_span_0`, lastPoint, "red", "F + span", hoverSnaps);
+          // addDpMarker(dpCircles, coord[0][0], coord[0][1], `${i}_span_1`, firstPoint, "red", "F - span", hoverSnaps);
         }
+      });
+      if (spanArc != "") {
+        impedanceArc
+          .append("path")
+          .attr("stroke-linecap", "round")
+          .attr("stroke-linejoin", "round")
+          .attr("fill", "none")
+          .attr("stroke", "#8a8a8a")
+          .attr("stroke-width", 1)
+          .attr("d", spanArc);
       }
-    }
-    // the tolerance curves are all in one path
-    if (path != "") {
-      impedanceArc
-        .append("path")
-        .attr("stroke-linecap", "round")
-        .attr("stroke-linejoin", "round")
-        .attr("fill", "none")
-        .attr("stroke", "#8a8a8a")
-        .attr("stroke-width", 2)
-        .attr("d", path);
-    }
-
-    // add the span arcs
-    // for (const s of spanResults) {
-    spanResults.forEach((s, i) => {
-      // console.log("span arc", s);
-      coord = [];
-      for (point of s) {
-        coord.push(impedanceToSmithChart(point.real / zo, point.imaginary / zo, width));
+      if (mainSpanArc != "") {
+        impedanceArc
+          .append("path")
+          .attr("stroke-linecap", "round")
+          .attr("stroke-linejoin", "round")
+          .attr("fill", "none")
+          .attr("stroke", "red")
+          // .attr("stroke", arcColors[zResultsSrc[0].length - (1 % 10)])
+          .attr("stroke-width", 1)
+          .attr("d", mainSpanArc);
       }
-      newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
-
-      // console.log("span arc", s, coord, spanArc);
-      if (i != spanResults.length - 1) {
-        spanArc = `${spanArc} ${newPath}`;
-        addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], `${i}_span_0`, point, "#8a8a8a", "F + span", hoverSnaps);
-        addDpMarker(dpCircles, coord[0][0], coord[0][1], `${i}_span_1`, point, "#8a8a8a", "F - span", hoverSnaps);
-      } else {
-        mainSpanArc = newPath;
-        addDpMarker(dpCircles, coord[coord.length - 1][0], coord[coord.length - 1][1], `${i}_span_0`, point, "red", "F + span", hoverSnaps);
-        addDpMarker(dpCircles, coord[0][0], coord[0][1], `${i}_span_1`, point, "red", "F - span", hoverSnaps);
-      }
-    });
-    if (spanArc != "") {
-      impedanceArc
-        .append("path")
-        .attr("stroke-linecap", "round")
-        .attr("stroke-linejoin", "round")
-        .attr("fill", "none")
-        .attr("stroke", "#8a8a8a")
-        .attr("stroke-width", 3)
-        .attr("d", spanArc);
-    }
-    if (mainSpanArc != "") {
-      impedanceArc
-        .append("path")
-        .attr("stroke-linecap", "round")
-        .attr("stroke-linejoin", "round")
-        .attr("fill", "none")
-        .attr("stroke", "red")
-        // .attr("stroke", arcColors[impedanceResults[0].length - (1 % 10)])
-        .attr("stroke-width", 3)
-        .attr("d", mainSpanArc);
     }
     setHSnaps(hoverSnaps);
-  }, [impedanceResults, zo, spanResults, width, plotType]);
+  }, [zResultsSrc, zo, spanResults, width, plotType]);
 
   //draw the labels
   useEffect(() => {
@@ -646,16 +675,10 @@ function Graph({
         {Object.keys(showSPlots).map((s) => {
           if (sParameters === null) return null;
           if (sParameters.data.length === 0) return null;
-          if (Object.hasOwn(sParameters.data[0], s))
+          if (s in Object.values(sParameters.data)[0])
             return (
-              <div key={s}>
-                <input
-                  type="checkbox"
-                  id="scales"
-                  name="scales"
-                  checked={showSPlots[s]}
-                  onChange={() => setShowSPlots({ ...showSPlots, [s]: !showSPlots[s] })}
-                />
+              <div key={s} style={{ fontWeight: "bold", color: sParamColorLut[s] }}>
+                <input type="checkbox" name="scales" checked={showSPlots[s]} onChange={() => setShowSPlots({ ...showSPlots, [s]: !showSPlots[s] })} />
                 <label>{s}</label>
               </div>
             );
