@@ -72,11 +72,11 @@ function toEngineeringNotation(num) {
 }
 
 function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, frequency, interpolation }) {
-  const [customInput, setCustomInput] = useState("");
-
   const textInput = Object.keys(value)
     .map((x) => `${toEngineeringNotation(x)}, ${value[x].real}, ${value[x].imaginary}`)
     .join("\n");
+
+  const [customInput, setCustomInput] = useState(textInput);
 
   const validCheckerResults = checkCustomZValid(customInput);
   const helperText =
@@ -180,7 +180,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
 1.4	0.533 176.6	2.800 64.5	0 0	0.604 –58.3
 2.0	0.439 159.6	2.057 49.2	0 0	0.294 –68.1`);
   const [showAllData, setShowAllData] = useState(false);
-  const allcols = ['S11', 'S21', 'S12', 'S22']
+  const allcols = ["S11", "S21", "S12", "S22"];
 
   const parsed = parseTouchstoneFile(customInput);
   const validCheckerResults = parsed.error === null;
@@ -188,6 +188,9 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
     customInput == "" ? "Copy in a file" : validCheckerResults ? `${Object.keys(parsed.data).length} data points parsed succesfully` : parsed.error;
   return (
     <>
+      <Typography variant="caption" align="center" sx={{ display: "block" }}>
+        .{value.type}
+      </Typography>
       <Button
         sx={{ m: 2 }}
         variant="contained"
@@ -215,16 +218,15 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                   const midF = allF[Math.floor(allF.length / 2)];
                   const fMin = allF[0]; //[0].frequency;
                   const fMax = allF[allF.length - 1]; //[parsed.data.length - 1].frequency;
-                  // console.log("fmin", fMin, Object.keys(parsed.data).map(x=>Number(x)), Math.min(Object.keys(parsed.data).map(x=>Number(x))) )
                   setUserCircuit((c) => {
                     const newCircuit = [...c];
-                    newCircuit[index].value = parsed;
-                    newCircuit[index].type = parsed.type; //FIXME - deprecate
+                    newCircuit[index] = parsed;
                     //if it's .s2p and the last item is not termination load, add it
                     if (parsed.type === "s2p" && newCircuit[newCircuit.length - 1].name !== "loadTerm") {
                       newCircuit.push({ ...circuitComponents.loadTerm.default, name: "loadTerm" });
+                    } else if (parsed.type === "s1p" && newCircuit[newCircuit.length - 1].name === "loadTerm") {
+                      newCircuit.splice(index + 1); //remove anything after s1p
                     }
-                    console.log("newCircuit", newCircuit);
                     return newCircuit;
                   });
                   setPlotType("sparam");
@@ -236,6 +238,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                     return s;
                   });
                 } else {
+                  //user has asked to remove it
                   setUserCircuit((z) => [
                     ...z.slice(0, index), // Items before the index `i`
                     ...z.slice(index + 1),
@@ -269,7 +272,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                 </li>
                 <li>Zo: {parsed.settings.zo}</li>
               </ul>
-              {showAllData ? "All rows of data:" : `First ${Math.min(300,Object.keys(parsed.data).length)} rows of data:`}
+              {showAllData ? "All rows of data:" : `First ${Math.min(300, Object.keys(parsed.data).length)} rows of data:`}
               <button onClick={() => setShowAllData((o) => !o)}>{showAllData ? "Show less" : "Show all"}</button>
               <TableContainer sx={{ maxHeight: 300, border: "1px solid black" }}>
                 <Table stickyHeader size="small">
@@ -277,8 +280,8 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                     <TableRow>
                       <TableCell key="frequency">Frequency ({parsed.settings.freq_unit})</TableCell>
                       {allcols.map((column) => {
-                        if (!(column in Object.values(parsed.data)[0])) return null
-                          return [<TableCell key="mag">|{column}|</TableCell>, <TableCell key="ang">∠{column}</TableCell>];
+                        if (!(column in Object.values(parsed.data)[0])) return null;
+                        return [<TableCell key="mag">|{column}|</TableCell>, <TableCell key="ang">∠{column}</TableCell>];
                       })}
                     </TableRow>
                   </TableHead>
@@ -635,6 +638,9 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
   const w = 2 * Math.PI * frequency;
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSparam, setModalSparam] = useState(false);
+
+  const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
+
   // console.log(userCircuit);
 
   function componentMap(type, component, index) {
@@ -695,7 +701,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
           <SparamComponent
             modalOpen={modalSparam}
             setModalOpen={setModalSparam}
-            value={component.value}
+            value={component}
             index={index}
             setUserCircuit={setUserCircuit}
             setPlotType={setPlotType}
@@ -781,6 +787,8 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
         {Object.keys(circuitComponents).map((k, i) => {
           const c = circuitComponents[k];
           if ("unselectable" in c) return null;
+          else if (c.name == "S-Parameter" && sParamIndex !== -1)
+            return null; //only one s-parameter component allowed
           else
             return (
               <Grid size={2} key={i}>
@@ -902,9 +910,10 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
                   </IconButton>
                 )}
                 <Typography
+                  variant="body2"
                   sx={{
                     position: "absolute",
-                    bottom: 3,
+                    top: 0,
                     left: 3,
                     color: { color },
                   }}

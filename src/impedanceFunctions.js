@@ -7,7 +7,7 @@ export function calculateTlineZ(resolution, component, line_length, beta, startI
     else tan_beta = Math.tan((beta * j * line_length) / resolution);
 
     if (component.name == "transmissionLine") {
-      zBottom_inv = one_over_complex({real: component.zo - startImaginary * tan_beta, imaginary: startReal * tan_beta});
+      zBottom_inv = one_over_complex({ real: component.zo - startImaginary * tan_beta, imaginary: startReal * tan_beta });
       zTop = {
         real: startReal * component.zo,
         imaginary: startImaginary * component.zo + tan_beta * component.zo * component.zo,
@@ -17,7 +17,7 @@ export function calculateTlineZ(resolution, component, line_length, beta, startI
         imaginary: zTop.real * zBottom_inv.imaginary + zTop.imaginary * zBottom_inv.real,
       });
     } else if (component.name == "stub" || component.name == "shortedStub") {
-      impedanceResolution.push(one_over_complex({real: startAdmittance.real, imaginary: startAdmittance.imaginary + tan_beta / component.zo}));
+      impedanceResolution.push(one_over_complex({ real: startAdmittance.real, imaginary: startAdmittance.imaginary + tan_beta / component.zo }));
     }
   }
 }
@@ -30,7 +30,10 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
   var component;
   var prevResult;
   var esr, esl;
-  var impedanceResults = userCircuit[0].type === 's1p' ? [[{ real: userCircuit[0].value.data[frequency].zS11.real, imaginary: userCircuit[0].value.data[frequency].zS11.imaginary }]] : [[{ real: userCircuit[0].real, imaginary: userCircuit[0].imaginary }]];
+  var impedanceResults =
+    userCircuit[0].type === "s1p"
+      ? [[{ real: userCircuit[0].data[frequency].zS11.real, imaginary: userCircuit[0].data[frequency].zS11.imaginary }]]
+      : [[{ real: userCircuit[0].real, imaginary: userCircuit[0].imaginary }]];
   // console.log('impedanceResults', impedanceResults)
   var w = 2 * Math.PI * frequency;
   var i, j;
@@ -47,11 +50,13 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
       //this impedance is in parallel with the existing impedance
       //expanding the equation 1/((1/z1) + (1/z2)). To plot the arc we sweep the ADMITTANCE (1/z) from 0 -> value
 
-      startAdmittance = one_over_complex({real:startReal, imaginary:startImaginary});
-      if (component.name === "shortedInd") newAdmittance = one_over_complex({real:esr, imaginary:w * component.value * unitConverter[component.unit]});
+      startAdmittance = one_over_complex({ real: startReal, imaginary: startImaginary });
+      if (component.name === "shortedInd")
+        newAdmittance = one_over_complex({ real: esr, imaginary: w * component.value * unitConverter[component.unit] });
       else if (component.name === "shortedCap")
-        newAdmittance = one_over_complex({real:esr, imaginary:w * esl * ESLUnit - 1 / (w * component.value * unitConverter[component.unit])});
-      else if (component.name === "shortedRes") newAdmittance = one_over_complex({real:component.value * unitConverter[component.unit], imaginary:w * esl * ESLUnit});
+        newAdmittance = one_over_complex({ real: esr, imaginary: w * esl * ESLUnit - 1 / (w * component.value * unitConverter[component.unit]) });
+      else if (component.name === "shortedRes")
+        newAdmittance = one_over_complex({ real: component.value * unitConverter[component.unit], imaginary: w * esl * ESLUnit });
 
       for (j = 0; j <= resolution; j++) {
         impedanceResolution.push(
@@ -77,7 +82,7 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
         var zj =
           (w * component.value_l * unitConverter[component.unit_l]) /
           (1 - w * w * component.value_l * unitConverter[component.unit_l] * component.value_c * unitConverter[component.unit_c]);
-        newImpedance = one_over_complex({real: 1 / (component.value * unitConverter[component.unit]), imaginary: -1 / zj});
+        newImpedance = one_over_complex({ real: 1 / (component.value * unitConverter[component.unit]), imaginary: -1 / zj });
       } else if (component.name === "seriesRes")
         newImpedance = {
           real: component.value * unitConverter[component.unit],
@@ -99,7 +104,7 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
       var beta = w / speedOfLight;
       var line_length;
       var lengthLambda;
-      startAdmittance = one_over_complex({real:startReal, imaginary:startImaginary});
+      startAdmittance = one_over_complex({ real: startReal, imaginary: startImaginary });
 
       //convert length into lambdas (it was already converted to meters at f0, now converted to lambda at f0 + fspan)
       lengthLambda = (component.value * unitConverter[component.unit] * frequency) / speedOfLight;
@@ -142,7 +147,7 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
         };
         //Lm
         newStartAdmittance = one_over_complex(i1z);
-        i2z = one_over_complex({real:newStartAdmittance.real, imaginary:newStartAdmittance.imaginary - ((1 / lmw) * j) / resolution});
+        i2z = one_over_complex({ real: newStartAdmittance.real, imaginary: newStartAdmittance.imaginary - ((1 / lmw) * j) / resolution });
         //L2
         impedanceResolution.push({
           real: i2z.real,
@@ -161,10 +166,10 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
       //FIXME - this is a hack to prevent crashing
       console.warn("sparam, loadTerm, s1p and s2p components are not supported in impedance calculations");
       // for (j = 0; j <= resolution; j++) {
-        impedanceResolution.push({
-          real: startReal,
-          imaginary: startImaginary,
-        });
+      impedanceResolution.push({
+        real: startReal,
+        imaginary: startImaginary,
+      });
       // }
     }
 

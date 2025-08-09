@@ -35,15 +35,18 @@ function setUnit(value, field, setX) {
   });
 }
 
-export default function Settings({ settings, setSettings, usedF }) {
+export default function Settings({ settings, setSettings, usedF, chosenSparameter }) {
   const [zMarkersInt, setZMarkersInt] = useState([25, 25]);
   const [QInt, setQInt] = useState(0);
   const [VSWRInt, setVSWRInt] = useState(0);
   const [gainInInt, setGainInInt] = useState(0);
   const [gainOutInt, setGainOutInt] = useState(0);
-  const [NFInt, setNFInt] = useState({ NFmin: 1, NF: 1.5, Rn: 20 });
+  // const [NFInt, setNFInt] = useState({ NFmin: 1, NF: 1.5, Rn: 20 });
 
   const userFrequency = settings.frequency * unitConverter[settings.frequencyUnit];
+  const s2p = chosenSparameter ? "S22" in chosenSparameter : false;
+  const gInMax = s2p ? 10 * Math.log10(1 / (1 - chosenSparameter.S11.magnitude ** 2)) : null;
+  const gOutMax = s2p ? 10 * Math.log10(1 / (1 - chosenSparameter.S22.magnitude ** 2)) : null;
 
   return (
     <>
@@ -71,8 +74,8 @@ export default function Settings({ settings, setSettings, usedF }) {
             label="Frequency"
             variant="outlined"
             size="small"
-            error={usedF!==userFrequency}
-            helperText={usedF===userFrequency ? "" : `f not in s-param. Using ${usedF}Hz`}
+            error={usedF !== userFrequency}
+            helperText={usedF === userFrequency ? "" : `f not in s-param. Using ${usedF}Hz`}
             sx={{ m: 0, p: 0, flex: 1 }}
             value={settings.frequency}
             onChange={(e) => setValue(e.target.value, "frequency", setSettings)}
@@ -112,14 +115,15 @@ export default function Settings({ settings, setSettings, usedF }) {
           />
         </Grid>
         <Grid size={{ xs: 12, lg: 7 }} sx={{ display: "flex" }}>
-          <CustomNFTable
+          {/* FIXME - temporariliy commented whilst adding sparameters for first time */}
+          {/* <CustomNFTable
             QInt={NFInt}
             setQInt={setNFInt}
             settings={settings}
             setSettings={setSettings}
             title="Constant Noise Figure circles"
             index="nfCircles"
-          />
+          /> */}
         </Grid>
         <Grid size={{ xs: 12, lg: 5 }} sx={{ display: "flex" }}>
           <CustomQTable
@@ -131,28 +135,34 @@ export default function Settings({ settings, setSettings, usedF }) {
             index="vswrCircles"
           />
         </Grid>
-        <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
-          <CustomQTable
-            QInt={gainInInt}
-            setQInt={setGainInInt}
-            settings={settings}
-            setSettings={setSettings}
-            title="Input Gain Circles"
-            index="gainInCircles"
-            unit="dB"
-          />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
-          <CustomQTable
-            QInt={gainOutInt}
-            setQInt={setGainOutInt}
-            settings={settings}
-            setSettings={setSettings}
-            title="Output Gain Circles"
-            index="gainOutCircles"
-            unit="dB"
-          />
-        </Grid>
+        {s2p && (
+          <>
+            <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
+              <CustomQTable
+                QInt={gainInInt}
+                gmax={gInMax}
+                setQInt={setGainInInt}
+                settings={settings}
+                setSettings={setSettings}
+                title="Input Gain Circles"
+                index="gainInCircles"
+                unit="dB"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
+              <CustomQTable
+                QInt={gainOutInt}
+                gmax={gOutMax}
+                setQInt={setGainOutInt}
+                settings={settings}
+                setSettings={setSettings}
+                title="Output Gain Circles"
+                index="gainOutCircles"
+                unit="dB"
+              />
+            </Grid>
+          </>
+        )}
       </Grid>
     </>
   );
@@ -245,11 +255,11 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
     </TableContainer>
   );
 }
-function CustomQTable({ QInt, setQInt, settings, setSettings, title, index, unit }) {
+function CustomQTable({ QInt, gmax, setQInt, settings, setSettings, title, index, unit }) {
   return (
     <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1, backgroundColor: "#effffd" }}>
       <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
-        {title}
+        {title} {gmax ? ` (Gmax = ${gmax.toPrecision(3)}dB)` : ""}
       </Typography>
       <Table size="small">
         <TableHead>
@@ -279,6 +289,7 @@ function CustomQTable({ QInt, setQInt, settings, setSettings, title, index, unit
             </TableCell>
             <TableCell align="center" sx={{ py: 0 }}>
               <IconButton
+                disabled={gmax && QInt > gmax}
                 sx={{ p: 1 }}
                 onClick={() => {
                   setSettings((z) => {

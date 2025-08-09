@@ -8,7 +8,7 @@ export function syncObjectToUrl(settings, defaultSettings, circuit, defaultCircu
     let value = settings[key];
     let defaultValue = defaultSettings[key];
 
-    if (key == "vswrCircles" || key == "qCircles") {
+    if (key == "vswrCircles" || key == "qCircles" || key == "gainInCircles" || key == "gainOutCircles") {
       if (value.length > 0) {
         const arrString = value.join("_");
         params.set(key, arrString);
@@ -64,7 +64,7 @@ export function updateObjectFromUrl(settings, initialCircuit) {
     if (params.has(key)) {
       urlContainsState = true;
       let value = params.get(key);
-      if (key == "vswrCircles" || key == "qCircles") {
+      if (key == "vswrCircles" || key == "qCircles" || key == "gainInCircles" || key == "gainOutCircles") {
         settingsFromURL[key] = value ? value.split("_").map(Number) : [];
       } else if (key == "zMarkers") {
         const markers = value ? value.split("__") : [];

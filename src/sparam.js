@@ -1,12 +1,9 @@
 //Calculate gain and noise circles from s-parameter data
 import {
-  arcColors,
   one_over_complex,
-  processImpedance,
   complex_add,
   complex_subtract,
   complex_multiply,
-  parseInput,
   polarToRectangular,
   rectangularToPolar,
   unitConverter,
@@ -57,7 +54,7 @@ export function sparamGainCircles(S11, zo, gain) {
   const cs = complex_multiply(cs_numerator, { real: 1 / (1 - S11.magnitude ** 2 * (1 - gs)), imaginary: 0 });
   const rs = (Math.sqrt(1 - gs) * (1 - S11.magnitude ** 2)) / (1 - S11.magnitude ** 2 * (1 - gs));
   console.log("csa", rectangularToPolar(cs), rs, gs);
-  console.log("cs", (Math.sqrt(1 - gs)));
+  console.log("cs", Math.sqrt(1 - gs));
   console.log({ center: reflToZ(cs, zo), radius: rs });
   return { center: reflToZ(cs, zo), radius: rs };
 }
@@ -107,9 +104,8 @@ export function sparamGainCircles_bilateral(sparam, gain) {
 
   console.log("Gain:", ga, centerGain, c1);
 
-  //must conver from center Reflection coefficient to Z : Z = Zo(1+refl/(1-refl) //FIXME replace qith cmn function
-  var tempZ = one_over_complex({ real: 1 - centerReflection.real, imaginary: -centerReflection.imaginary });
-  var center = complex_multiply(tempZ, { real: 1 + centerReflection.real, imaginary: centerReflection.imaginary });
+  //must conver from center Reflection coefficient to Z :
+  const center = reflToZ(centerReflection, { real: 1, imaginary: 0 });
 
   console.log("center, radius", rectangularToPolar(centerReflection), radius);
   console.log("centerImpedance", center);
@@ -195,7 +191,7 @@ export function parseTouchstoneFile(content) {
   // const dataLineRegex = /^(?<freq>\S+)((\s+[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?){2,})$/;
   const noiseRegex = /^\s*(?<freq>\S+)\s+(?<fmin>\S+)\s+(?<gamma_mag>\S+)\s+(?<gamma_ang>\S+)\s+(?<rn>\S+)\s*$/;
 
-  const results = { data: {}, noise: [], settings: {}, error: null };
+  const results = { data: {}, noise: [], settings: {}, error: null, name: "sparam" };
   var noiseExists = false;
   var line;
 
@@ -232,7 +228,7 @@ export function parseTouchstoneFile(content) {
       results.error = "This line contains the wrong number of data points: " + lines[line];
       return results;
     }
-    const [f,d] = sParamDataToPolar(splLine, results["settings"].format, results["settings"].freq_unit, results["settings"].zo)
+    const [f, d] = sParamDataToPolar(splLine, results["settings"].format, results["settings"].freq_unit, results["settings"].zo);
     results["data"][f] = d;
     results["type"] = splLine.length == 0 ? null : splLine.length == 9 ? "s2p" : "s1p";
   }
@@ -260,11 +256,8 @@ export function parseTouchstoneFile(content) {
 
 // takes the whole s-parameter data and returns only the data within the frequency range
 export function sParamFrequencyRange(data, fmin, fmax) {
-    // console.log('filta', data, fmin, fmax)
-    return Object.fromEntries(
-    Object.entries(data)
-      .filter(([key]) => Number(key) >= fmin && Number(key) <= fmax)
-  );
+  // console.log('filta', data, fmin, fmax)
+  return Object.fromEntries(Object.entries(data).filter(([key]) => Number(key) >= fmin && Number(key) <= fmax));
 
   // return data.filter((point) => point.frequency >= fmin && point.frequency <= fmax);
 }

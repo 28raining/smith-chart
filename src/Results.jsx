@@ -75,25 +75,34 @@ function MiniRes({ type, res }) {
   );
 }
 
+const commonOptionsInit = {
+  width: 500,
+  height: 300,
+  series: [
+    { label: "Frequency (unit undefined)" }, // x
+  ],
+  axes: [
+    { label: "Frequency (unit undefined)" }, // x
+  ],
+};
+
 const optionsInit = {
   height: 300,
   series: [
-    { label: "Frequency" }, // x
     {
-      label: "| S11 | (dB)",
+      label: "|S11| (dB)",
       stroke: "blue",
       width: 2,
       scale: "y",
     },
     {
-      label: "∠ S11 (°)",
+      label: "∠S11 (°)",
       stroke: "red",
       width: 2,
       scale: "y2", // assign to second y axis
     },
   ],
   axes: [
-    { label: "Frequency" },
     {
       // left y-axis
       scale: "y",
@@ -114,18 +123,15 @@ const optionsInit = {
 };
 
 const options2Init = {
-  height: 300,
   series: [
-    { label: "Frequency" }, // x
     {
-      label: "| S21 | (dB)",
+      label: "|S21| (dB)",
       stroke: "green",
       width: 2,
       scale: "y",
     },
   ],
   axes: [
-    { label: "Frequency" },
     {
       // left y-axis
       scale: "y",
@@ -138,22 +144,54 @@ const options2Init = {
   },
 };
 
-function renderChart(setOptions, setOptions2, containerRef, freqUnit) {
-  setOptions((o) => {
-    return {
-      ...o,
-      width: containerRef.current.offsetWidth,
-      series: o.series.map((s, i) => {
-        if (i === 0) return { ...s, label: `Frequency (${freqUnit})` };
-        return s;
-      }),
-      axes: o.axes.map((a, i) => {
-        if (i === 0) return { ...a, label: `Frequency (${freqUnit})` };
-        return a;
-      }),
-    };
-  });
-  setOptions2((o) => {
+const optionsGainInit = {
+  series: [],
+  axes: [
+    {
+      // left y-axis
+      scale: "y",
+      label: "gain (dB)",
+    },
+  ],
+  scales: {
+    x: { time: false },
+    y: { auto: true },
+  },
+};
+
+// function renderChart(setOptions, setOptions2, containerRef, freqUnit) {
+//   setOptions((o) => {
+//     return {
+//       ...o,
+//       width: containerRef.current.offsetWidth,
+//       series: o.series.map((s, i) => {
+//         if (i === 0) return { ...s, label: `Frequency (${freqUnit})` };
+//         return s;
+//       }),
+//       axes: o.axes.map((a, i) => {
+//         if (i === 0) return { ...a, label: `Frequency (${freqUnit})` };
+//         return a;
+//       }),
+//     };
+//   });
+//   setOptions2((o) => {
+//     return {
+//       ...o,
+//       width: containerRef.current.offsetWidth,
+//       series: o.series.map((s, i) => {
+//         if (i === 0) return { ...s, label: `Frequency (${freqUnit})` };
+//         return s;
+//       }),
+//       axes: o.axes.map((a, i) => {
+//         if (i === 0) return { ...a, label: `Frequency (${freqUnit})` };
+//         return a;
+//       }),
+//     };
+//   });
+// }
+
+function renderChart_new(setCommon, containerRef, freqUnit) {
+  setCommon((o) => {
     return {
       ...o,
       width: containerRef.current.offsetWidth,
@@ -169,61 +207,134 @@ function renderChart(setOptions, setOptions2, containerRef, freqUnit) {
   });
 }
 
-function SPlot ({sparametersData, options, freqUnit, title}) {
+function SPlot({ sparametersData, options, freqUnit, title }) {
   if (!sparametersData || sparametersData.length === 0) return null;
-    return ["S11", "S12", "S21", "S22"].map((s) => {
-      if (!(s in Object.values(sparametersData)[0])) return null;
-      const sParamOpt = JSON.parse(JSON.stringify(options));
-      sParamOpt.series[1].label = `| ${s} | (dB)`;
-      sParamOpt.series[2].label = `∠ ${s} |(°)`;
-      sParamOpt.axes[1].label = `| ${s} | (dB)`;
-      sParamOpt.axes[2].label = `∠ ${s} |(°)`;
-      const f = [];
-      const m = [];
-      const a = [];
-      for (const fx in sparametersData) {
-        f.push(fx / unitConverter[freqUnit]);
-        m.push(20 * Math.log10(sparametersData[fx][s].magnitude));
-        a.push(sparametersData[fx][s].angle);
-      }
-      const sData = [f, m, a];
-      return <div style={{textAlign: "center"}} key={s}><h5 style={{marginTop:15, marginBottom:0}}>{title}: {s} magnitude and angle</h5><UplotReact options={sParamOpt} data={sData} /></div>;
+  return ["S11", "S12", "S21", "S22"].map((s) => {
+    if (!(s in Object.values(sparametersData)[0])) return null;
+    const sParamOpt = JSON.parse(JSON.stringify(options));
+    sParamOpt.series[1].label = `| ${s} | (dB)`;
+    sParamOpt.series[2].label = `∠ ${s} |(°)`;
+    sParamOpt.axes[1].label = `| ${s} | (dB)`;
+    sParamOpt.axes[2].label = `∠ ${s} |(°)`;
+    const f = [];
+    const m = [];
+    const a = [];
+    for (const fx in sparametersData) {
+      f.push(fx / unitConverter[freqUnit]);
+      m.push(20 * Math.log10(sparametersData[fx][s].magnitude));
+      a.push(sparametersData[fx][s].angle);
+    }
+    const sData = [f, m, a];
+    return (
+      <div style={{ textAlign: "center" }} key={s}>
+        <h5 style={{ marginTop: 15, marginBottom: 0 }}>
+          {title}: {s} magnitude and angle
+        </h5>
+        <UplotReact options={sParamOpt} data={sData} />
+      </div>
+    );
+  });
+}
+function GainPlot({ gain, options, freqUnit, title }) {
+  if (!gain || Object.keys(gain).length === 0) return null;
+  const sParamOpt = JSON.parse(JSON.stringify(options));
+  const sData = [];
+  for (const i in gain) {
+    const m = [];
+    for (const v in gain[i]) {
+      m.push(10 * Math.log10(gain[i][v]));
+    }
+    sData.push(m);
+    sParamOpt.series.push({
+      label: i == gain.length - 1 ? "ideal" : `tol ${i}`,
+      stroke: i == gain.length - 1 ? "blue" : "gray",
+      width: 2,
+      scale: "y",
     });
+  }
+  const f = Object.keys(gain[0]).map((x) => x / unitConverter[freqUnit]);
+  const gData = [f, ...sData];
+  return (
+    <div style={{ textAlign: "center" }}>
+      <h5 style={{ marginTop: 15, marginBottom: 0 }}>{title}</h5>
+      <UplotReact options={sParamOpt} data={gData} />
+    </div>
+  );
 }
-function GainPlot ({gain, options, freqUnit, title}) {
-      const sParamOpt = JSON.parse(JSON.stringify(options));
-      const f = [];
-      const m = [];
-      const a = [];
-      for (const v in gain) {
-        f.push(v / unitConverter[freqUnit]);
-        m.push(10 * Math.log10(gain[v]));
-        a.push(0);
-      }
-      const sData = [f, m, a];
-      return <div style={{textAlign: "center"}}><h5 style={{marginTop:15, marginBottom:0}}>{title}</h5><UplotReact options={sParamOpt} data={sData} /></div>;
-}
-function RPlot ({RefIn, options, freqUnit, title}) {
-      const sParamOpt = JSON.parse(JSON.stringify(options));
-      const f = [];
-      const m = [];
-      const a = [];
-      for (const x in RefIn) {
-      for (const v in RefIn[x]) {
-        f.push(v / unitConverter[freqUnit]);
-        m.push(20 * Math.log10(RefIn[x][v].magnitude));
-        a.push(RefIn[x][v].angle);
-      }
-      }
-      const sData = [f, m, a];
-      return <div style={{textAlign: "center"}}><h5 style={{marginTop:15, marginBottom:0}}>{title}</h5><UplotReact options={sParamOpt} data={sData} /></div>;
+function RPlot({ RefIn, options, freqUnit, title }) {
+  if (!RefIn || Object.keys(RefIn).length === 0) return null;
+  const sParamOpt = JSON.parse(JSON.stringify(options));
+  // const f = [];
+  const plotData = [Object.keys(RefIn[0]).map((x) => x / unitConverter[freqUnit])];
+  for (const i in RefIn) {
+    const m = [];
+    const a = [];
+    for (const v in RefIn[i]) {
+      m.push(20 * Math.log10(RefIn[i][v].magnitude));
+      a.push(RefIn[i][v].angle);
+    }
+    plotData.push(m, a);
+    sParamOpt.series.push(
+      {
+        label: i == RefIn.length - 1 ? "|S11| (dB)" : `|tol${i}|`,
+        stroke: i == RefIn.length - 1 ? "blue" : "#4b4c80",
+        width: 2,
+        scale: "y",
+      },
+      {
+        label: i == RefIn.length - 1 ? "∠S11 (°)" : `∠tol${i}`,
+        stroke: i == RefIn.length - 1 ? "red" : "#9c5656",
+        width: 2,
+        scale: "y2",
+      },
+    );
+  }
+  return (
+    <div style={{ textAlign: "center" }}>
+      <h5 style={{ marginTop: 15, marginBottom: 0 }}>{title}</h5>
+      <UplotReact options={sParamOpt} data={plotData} />
+    </div>
+  );
 }
 
 export default function Results({ zProc, spanFrequencies, spanResults, freqUnit, plotType, sParameters, gainResults, RefIn }) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
-  const [options, setOptions] = useState(optionsInit);
-  const [options2, setOptions2] = useState(options2Init);
+  // const [options, setOptions] = useState(optionsInit);
+  // const [options2, setOptions2] = useState(options2Init);
+  const [commonOptions, setCommonOptions] = useState(commonOptionsInit);
+
+  const options3 = {
+    width: commonOptions.width,
+    height: commonOptions.height,
+    series: [...commonOptions.series, ...options2Init.series],
+    axes: [...commonOptions.axes, ...options2Init.axes],
+    scales: options2Init.scales,
+  };
+
+  const options4 = {
+    width: commonOptions.width,
+    height: commonOptions.height,
+    series: [...commonOptions.series, ...optionsInit.series],
+    axes: [...commonOptions.axes, ...optionsInit.axes],
+    scales: optionsInit.scales,
+  };
+
+  const optionsGain = {
+    width: commonOptions.width,
+    height: commonOptions.height,
+    series: [...commonOptions.series, ...optionsGainInit.series],
+    axes: [...commonOptions.axes, ...optionsGainInit.axes],
+    scales: optionsGainInit.scales,
+  };
+
+  const optionsS11 = {
+    width: commonOptions.width,
+    height: commonOptions.height,
+    series: commonOptions.series,
+    axes: [...commonOptions.axes, ...optionsInit.axes],
+    scales: optionsInit.scales,
+  };
 
   var s11 = [];
   var s11_ang = [];
@@ -242,12 +353,14 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit,
       s21.push(20 * Math.log10(Math.sqrt(1 - magnitude ** 2)));
     }
   }
-  const data = [spanFrequencies, s11, s11_ang];
-  const data2 = [spanFrequencies, s21];
+  const absSpanFrequencies = spanFrequencies.map((f) => f / unitConverter[freqUnit]);
+  const data = [absSpanFrequencies, s11, s11_ang];
+  const data2 = [absSpanFrequencies, s21];
 
   useEffect(() => {
     function handleResize() {
-      renderChart(setOptions, setOptions2, containerRef, freqUnit);
+      // renderChart(setOptions, setOptions2, containerRef, freqUnit);
+      renderChart_new(setCommonOptions, containerRef, freqUnit);
     }
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -257,24 +370,22 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit,
   }, [freqUnit]);
 
   // plot s-parameters straight from the file
-  if (plotType === "sparam" && sParameters!==null) {
+  if (plotType === "sparam" && sParameters !== null) {
     const sparametersData = sParameters.data;
     return (
-    <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-     <SPlot sparametersData={sparametersData} options={options} freqUnit={freqUnit}  title="Raw data"/>
-    </div>
+      <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
+        <SPlot sparametersData={sparametersData} options={options4} freqUnit={freqUnit} title="Raw data" />
+      </div>
     );
 
-  // plot s-parameters when terminated with custom impedance
-  } else if (plotType !== "sparam" && sParameters!==null) {
-    const sparametersData = sParameters.matched;
+    // plot s-parameters when terminated with custom impedance
+  } else if (plotType !== "sparam" && sParameters !== null) {
     return (
-    <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-     <RPlot RefIn={RefIn} options={options} freqUnit={freqUnit} title="Custom Termination" />
-     <GainPlot gain={gainResults} options={options} freqUnit={freqUnit} title="Gain" />
-    </div>
+      <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
+        <RPlot RefIn={RefIn} options={optionsS11} freqUnit={freqUnit} title="Custom Termination" />
+        <GainPlot gain={gainResults} options={optionsGain} freqUnit={freqUnit} title="System Gain" />
+      </div>
     );
-
   } else
     return (
       <>
@@ -299,8 +410,8 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit,
         </Grid>
 
         <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-          {!spanResults ? null : <UplotReact options={options} data={data} />}
-          {!spanResults ? null : <UplotReact options={options2} data={data2} />}
+          {!spanResults ? null : <UplotReact options={options4} data={data} />}
+          {!spanResults ? null : <UplotReact options={options3} data={data2} />}
         </div>
       </>
     );

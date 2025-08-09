@@ -14,6 +14,112 @@ import transformer from "./assets/components/transformer.svg";
 import transmissionLine from "./assets/components/transmission_line.svg";
 import s2p from "./assets/components/s2p.svg";
 
+const sparamDefaultS1P = {
+  data: {
+    1500000: {
+      S11: {
+        magnitude: 0.99,
+        angle: 6.2,
+      },
+      zS11: {
+        real: 42.7,
+        imaginary: 908.7,
+      },
+    },
+  },
+  noise: [],
+  settings: {
+    freq_unit: "Hz",
+    param: "S",
+    format: "RI",
+    zo: 50,
+  },
+  error: null,
+  name: "sparam",
+  type: "s1p",
+};
+
+const sparamDefaultS2P = {
+  data: {
+    800000000: {
+      S11: {
+        magnitude: 0.44,
+        angle: -157.6,
+      },
+      S21: {
+        magnitude: 4.725,
+        angle: 84.3,
+      },
+      S12: {
+        magnitude: 0,
+        angle: 0,
+      },
+      S22: {
+        magnitude: 0.339,
+        angle: -51.8,
+      },
+      zS11: {
+        real: 20.087679236620072,
+        imaginary: -8.353473646203017,
+      },
+    },
+    1400000000: {
+      S11: {
+        magnitude: 0.533,
+        angle: 176.6,
+      },
+      S21: {
+        magnitude: 2.8,
+        angle: 64.5,
+      },
+      S12: {
+        magnitude: 0,
+        angle: 0,
+      },
+      S22: {
+        magnitude: 0.604,
+        angle: -58.3,
+      },
+      zS11: {
+        real: 15.243742895217943,
+        imaginary: 1.3461428643436497,
+      },
+    },
+    2000000000: {
+      S11: {
+        magnitude: 0.439,
+        angle: 159.6,
+      },
+      S21: {
+        magnitude: 2.057,
+        angle: 49.2,
+      },
+      S12: {
+        magnitude: 0,
+        angle: 0,
+      },
+      S22: {
+        magnitude: 0.294,
+        angle: -68.1,
+      },
+      zS11: {
+        real: 20.025231636837034,
+        imaginary: 7.591733711637334,
+      },
+    },
+  },
+  noise: [],
+  settings: {
+    freq_unit: "GHz",
+    param: "S",
+    format: "MA",
+    zo: 50,
+  },
+  error: null,
+  name: "sparam",
+  type: "s2p",
+};
+
 export const circuitComponents = {
   blackBox: {
     name: "Black Box",
@@ -171,7 +277,7 @@ export const circuitComponents = {
     },
   },
   custom: {
-    name: "Custom Z()",
+    name: "Custom Z(f)",
     src: custom,
     circuitInputs: ["custom"],
     default: {
@@ -261,81 +367,14 @@ export const circuitComponents = {
   sparam: {
     name: "S-Parameter",
     src: s2p,
-    //FIXME below!
     circuitInputs: ["sparam"],
-    default: {value:{
-      data: [
-        {
-          frequency: 800000000,
-          S11: {
-            magnitude: 0.44,
-            angle: -157.6,
-          },
-          S12: {
-            magnitude: 4.725,
-            angle: 84.3,
-          },
-          S21: {
-            magnitude: 0,
-            angle: 0,
-          },
-          S22: {
-            magnitude: 0.339,
-            angle: -51.8,
-          },
-        },
-        {
-          frequency: 1400000000,
-          S11: {
-            magnitude: 0.533,
-            angle: 176.6,
-          },
-          S12: {
-            magnitude: 2.8,
-            angle: 64.5,
-          },
-          S21: {
-            magnitude: 0,
-            angle: 0,
-          },
-          S22: {
-            magnitude: 0.604,
-            angle: -58.3,
-          },
-          zo: 50,
-        },
-        {
-          frequency: 2000000000,
-          S11: {
-            magnitude: 0.439,
-            angle: 159.6,
-          },
-          S12: {
-            magnitude: 2.057,
-            angle: 49.2,
-          },
-          S21: {
-            magnitude: 0,
-            angle: 0,
-          },
-          S22: {
-            magnitude: 0.294,
-            angle: -68.1,
-          },
-        },
-      ],
-      noise: [],
-      settings: {
-        freq_unit: "GHz",
-        param: "S",
-        format: "MA",
-        zo: 50,
-      },
-      error: null,
-      type: "s2p",
+    //note this default data is immediately overwritten by the sparam modal.
+    //s2p data gives more features, but will crash the tool because load must also be added
+    default: { ...sparamDefaultS1P },
+    //sparameters are not saved in the URL because URL has 4K limit, and sparam can be very large.
+    toURL: (c) => `sparam_${c.type}`,
+    fromURL: (u) => {
+      return u[1] == "s1p" ? { ...sparamDefaultS1P } : { ...sparamDefaultS2P };
     },
-    },
-    toURL: (c) => `null`,
-    fromURL: (u) => null, //FIXME
   },
 };

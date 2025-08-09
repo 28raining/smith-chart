@@ -26,11 +26,11 @@ export function complex_multiply(a, b) {
 }
 
 export function complex_subtract(a, b) {
-  return { real: a.real-b.real, imaginary: a.imaginary-b.imaginary };
+  return { real: a.real - b.real, imaginary: a.imaginary - b.imaginary };
 }
 
 export function complex_add(a, b) {
-  return { real: a.real+b.real, imaginary: a.imaginary+b.imaginary };
+  return { real: a.real + b.real, imaginary: a.imaginary + b.imaginary };
 }
 
 export const theme = createTheme({
@@ -190,19 +190,18 @@ export function rectangularToPolar(z) {
 }
 
 // Function to convert polar form to rectangular form
-//FIXME - use angle, not phase?
 export function polarToRectangular(a) {
   const phaseRadians = a.angle * (Math.PI / 180); // Convert degrees to radians
   return {
     real: a.magnitude * Math.cos(phaseRadians),
-    imaginary: a.magnitude * Math.sin(phaseRadians)
+    imaginary: a.magnitude * Math.sin(phaseRadians),
   };
 }
 
 //convert from Reflection coefficient to Z : Z = Zo(1+refl/(1-refl)
-export function reflToZ (refl, zo) {
-  const tmp = one_over_complex({real: 1 - refl.real, imaginary: -refl.imaginary});
-  return complex_multiply(tmp, {real: zo + zo*refl.real, imaginary:zo*refl.imaginary});
+export function reflToZ(refl, zo) {
+  const tmp = one_over_complex({ real: 1 - refl.real, imaginary: -refl.imaginary });
+  return complex_multiply(tmp, { real: zo + zo * refl.real, imaginary: zo * refl.imaginary });
 }
 
 // reflection coefficient =  (Z-Zo) / (Z+Zo)
@@ -255,8 +254,8 @@ export function processImpedance(z, zo) {
     refPolarStr,
     vswr,
     qFactor,
-    refReal:reflection.real,
-    refImag:reflection.imaginary,
+    refReal: reflection.real,
+    refImag: reflection.imaginary,
     admString,
   };
 }
@@ -267,4 +266,3 @@ export function moveArrayItem(array, fromIndex, toIndex) {
   arr.splice(toIndex, 0, item);
   return arr;
 }
-
