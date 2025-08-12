@@ -46,16 +46,16 @@ export function sparamNoiseCircles(fMin, F, Rn, reflection_real, reflection_imag
 }
 
 export function sparamGainCircles(S11, zo, gain) {
-  console.log("sparamGainCircles", S11, gain, zo);
+  // console.log("sparamGainCircles", S11, gain, zo);
   const gs_max = 1 / (1 - S11.magnitude ** 2);
   const gs = 10 ** (gain / 10) / gs_max; // convert gain from dB to linear scale
-  console.log("gs", gs, gs_max);
+  // console.log("gs", gs, gs_max);
   const cs_numerator = complex_multiply({ real: gs, imaginary: 0 }, polarToRectangular({ magnitude: S11.magnitude, angle: -S11.angle }));
   const cs = complex_multiply(cs_numerator, { real: 1 / (1 - S11.magnitude ** 2 * (1 - gs)), imaginary: 0 });
   const rs = (Math.sqrt(1 - gs) * (1 - S11.magnitude ** 2)) / (1 - S11.magnitude ** 2 * (1 - gs));
-  console.log("csa", rectangularToPolar(cs), rs, gs);
-  console.log("cs", Math.sqrt(1 - gs));
-  console.log({ center: reflToZ(cs, zo), radius: rs });
+  // console.log("csa", rectangularToPolar(cs), rs, gs);
+  // console.log("cs", Math.sqrt(1 - gs));
+  // console.log({ center: reflToZ(cs, zo), radius: rs });
   return { center: reflToZ(cs, zo), radius: rs };
 }
 
@@ -83,10 +83,10 @@ export function sparamGainCircles_bilateral(sparam, gain) {
   // Calculate K factor
   const k =
     (1 - sparam.S11.magnitude ** 2 - sparam.S22.magnitude ** 2 + deltaPolar.magnitude ** 2) / (2 * sparam.S21.magnitude * sparam.S12.magnitude);
-  console.log("S11", S11r, S22r);
-  console.log("product1", product1);
-  console.log("K factor:", k);
-  console.log("Delta:", delta);
+  // console.log("S11", S11r, S22r);
+  // console.log("product1", product1);
+  // console.log("K factor:", k);
+  // console.log("Delta:", delta);
 
   //this is the max gain. What to do with it?
   // var ga = (s21.magnitude / s12.magnitude) * (k - Math.sqrt(k ** 2 - 1));
@@ -107,8 +107,8 @@ export function sparamGainCircles_bilateral(sparam, gain) {
   //must conver from center Reflection coefficient to Z :
   const center = reflToZ(centerReflection, { real: 1, imaginary: 0 });
 
-  console.log("center, radius", rectangularToPolar(centerReflection), radius);
-  console.log("centerImpedance", center);
+  // console.log("center, radius", rectangularToPolar(centerReflection), radius);
+  // console.log("centerImpedance", center);
   return { center, radius };
 }
 
@@ -121,7 +121,7 @@ export function sparamZout(sparamPolar, reflSourcePolar) {
   };
   const reflSource = polarToRectangular(reflSourcePolar);
   const s12s21 = complex_multiply(sparam.S12, sparam.S21);
-  console.log("sparamZout", sparam);
+  // console.log("sparamZout", sparam, sparamPolar.S11, polarToRectangular(sparamPolar.S11));
 
   const s11rs = complex_multiply(sparam.S11, reflSource);
   const numerator = complex_multiply(s12s21, reflSource);

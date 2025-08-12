@@ -174,7 +174,7 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
   );
 }
 
-function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setPlotType, setSettings }) {
+function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setPlotType, setSettings, frequency }) {
   const [customInput, setCustomInput] = useState(`# GHz S MA R 50
 0.8	0.44  –157.6 4.725 84.3	0 0	0.339 –51.8
 1.4	0.533 176.6	2.800 64.5	0 0	0.604 –58.3
@@ -182,6 +182,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
   const [showAllData, setShowAllData] = useState(false);
   const allcols = ["S11", "S21", "S12", "S22"];
 
+  const gs0 = value.data[frequency] ? value.data[frequency].S21 ? 10*Math.log10(value.data[frequency].S21.magnitude**2) : 0 : 0;
   const parsed = parseTouchstoneFile(customInput);
   const validCheckerResults = parsed.error === null;
   const helperText =
@@ -189,7 +190,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
   return (
     <>
       <Typography variant="caption" align="center" sx={{ display: "block" }}>
-        .{value.type}
+        .{value.type} ~ GS0 = {gs0.toPrecision(3)}dB
       </Typography>
       <Button
         sx={{ m: 2 }}
@@ -640,6 +641,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
   const [modalSparam, setModalSparam] = useState(false);
 
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
+  const s1pIndex = userCircuit.findIndex((c) => c.type === "s1p");
 
   // console.log(userCircuit);
 
@@ -704,6 +706,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
             value={component}
             index={index}
             setUserCircuit={setUserCircuit}
+            frequency={frequency}
             setPlotType={setPlotType}
             key={type}
             setSettings={setSettings}
@@ -828,7 +831,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
         })}
       </Grid>
       <div style={{ display: "flex", width: "100%" }}>
-        <p>Clicking components above will add them to the circuit below. Impedance is looking towards the BLACK BOX</p>
+        <p>Click components above to add them to the circuit below. Impedance is looking {s1pIndex === -1 ? "towards the BLACK BOX" : "into DP1"}</p>
       </div>
 
       <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 4, lg: 8, xl: 12 }}>

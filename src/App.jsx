@@ -23,15 +23,13 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 import { syncObjectToUrl, updateObjectFromUrl } from "./urlFunctions.js"; // Import the syncObjectToUrl function
-import { unitConverter, theme, processImpedance, polarToRectangular, rectangularToPolar, zToRefl } from "./commonFunctions.js";
+import { unitConverter, theme, polarToRectangular, rectangularToPolar, zToRefl } from "./commonFunctions.js";
 import { circuitComponents } from "./circuitComponents.js";
 
-import { calculateImpedance, createToleranceArray, applySliders, convertLengthToM } from "./impedanceFunctions.js";
-import { sParamFrequencyRange } from "./sparam.js"; // Import the sParamFrequencyRange function
+import { allImpedanceCalculations } from "./impedanceFunctions.js";
+// import { sParamFrequencyRange } from "./sparam.js"; // Import the sParamFrequencyRange function
 
-const resolution = 50;
-
-var initialState = {
+const initialState = {
   zo: 50,
   frequency: 2440,
   frequencyUnit: "MHz",
@@ -45,29 +43,12 @@ var initialState = {
   gainOutCircles: [],
 };
 
-//mini part of gain equation which is duplicated
-// (1 - |Rs|^2) / (|1 - S11Rs|^2)
-function subEq(Rs, S11) {
-  const numerator = 1 - Rs.real ** 2 - Rs.imaginary ** 2;
-  const denominator = (1 - S11.real * Rs.real + S11.imaginary * Rs.imaginary) ** 2 + (S11.imaginary * Rs.real + S11.real * Rs.imaginary) ** 2;
-  return numerator / denominator;
-}
-
 const initialCircuit = [{ name: "blackBox", ...circuitComponents.blackBox.default }];
 
-var [stateInURL, defaultCircuit, urlContainsState] = updateObjectFromUrl(initialState, initialCircuit);
-for (const c of defaultCircuit)
-  if (c.name === "sparam")
-    alert(
-      "You're loading a circuit containing s-parameters. Because URL's have a 4k character limit and sparameter files are very big, the sparameter data was not saved (dummy data is used instead). Please manually re-enter s-param data.",
-    );
+const params = new URLSearchParams(window.location.search);
+var [stateInURL, defaultCircuit, urlContainsState] = updateObjectFromUrl(initialState, initialCircuit, params);
+console.log("stateInURL", stateInURL, defaultCircuit, urlContainsState);
 
-//calculate impedance at a specific frequency
-function impedanceAtFrequency(circuit, frequency) {
-  const span_tol = calculateImpedance(circuit, frequency, 2);
-  const span_tol_final = span_tol[span_tol.length - 1];
-  return span_tol_final[span_tol_final.length - 1];
-}
 
 function App() {
   const [userCircuit, setUserCircuit] = useState(defaultCircuit);
@@ -78,111 +59,16 @@ function App() {
 
   syncObjectToUrl(settings, initialState, userCircuit, initialCircuit); // Sync the settings object to the URL
 
-  //get index of sparam in userCircuit
-  // const sParametersSearch = userCircuit.filter((c) => c.name === "sparam");
+  const [processedImpedanceResults, spanResults, multiZResults, gainArray, numericalFrequency, RefIn] = allImpedanceCalculations(
+    userCircuit,
+    settings,
+  );
+
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
-  const s2pIndex = userCircuit.findIndex((c) => c.type === "s2p");
+  const sParameters = sParamIndex === -1 ? null : userCircuit[sParamIndex];
   const s1pIndex = userCircuit.findIndex((c) => c.type === "s1p");
-  const RefIn = [];
-  var spanFrequencies = [];
-  const numericalFrequencyTemp = settings.frequency * unitConverter[settings.frequencyUnit];
-  var numericalFrequency = numericalFrequencyTemp;
-  //frequency must be one of the numbers in sparam
-  if (sParamIndex !== -1) {
-    const allF = Object.keys(userCircuit[sParamIndex].data);
-    numericalFrequency = allF[allF.length - 1];
-    for (const f in userCircuit[sParamIndex].data) {
-      if (Number(f) >= numericalFrequencyTemp) {
-        numericalFrequency = Number(f);
-        break;
-      }
-    }
-  }
-
-  const numericalFspan = settings.fSpan * unitConverter[settings.fSpanUnit];
-  const spanStep = numericalFspan / 10;
-  var i;
-
-  var userCircuitWithSliders = applySliders(JSON.parse(JSON.stringify(userCircuit)));
-  var userCircuitNoLambda = convertLengthToM(userCircuitWithSliders, numericalFrequency);
-
-  //reduce s-param data to the frequency range of interest
-  if (sParamIndex !== -1) {
-    userCircuitNoLambda[sParamIndex].data = sParamFrequencyRange(
-      userCircuitNoLambda[sParamIndex].data,
-      numericalFrequency - numericalFspan,
-      numericalFrequency + numericalFspan,
-    );
-  }
-  const sParameters = sParamIndex === -1 ? null : userCircuitNoLambda[sParamIndex];
-
   const chosenSparameter =
-    sParamIndex === -1 ? null : { ...userCircuitNoLambda[sParamIndex].data[numericalFrequency], zo: userCircuitNoLambda[sParamIndex].settings.zo };
-  var finalZ, finalDp;
-
-  if (sParamIndex !== -1)
-    spanFrequencies = Object.keys(userCircuitNoLambda[sParamIndex].data); //.map((x) => x.frequency);
-  else if (settings.fSpan > 0) for (i = -10; i <= 10; i++) spanFrequencies.push(numericalFrequency + i * spanStep);
-
-  //if there's a s2p block then create 2 impedance arcs
-  const multiZCircuits =
-    s2pIndex === -1 ? [userCircuitNoLambda] : [userCircuitNoLambda.slice(0, s2pIndex), [...userCircuitNoLambda.slice(s2pIndex + 1)].reverse()];
-  const multiZResults = [];
-  for (var c of multiZCircuits) {
-    var zResultsSrc = [];
-    if (s1pIndex !== -1) {
-      const cReversed = [...c].reverse();
-      cReversed.pop(); //remove the blackbox
-      c = cReversed;
-    }
-    var circuitArray = createToleranceArray([c]);
-    for (const z of circuitArray) zResultsSrc.push(calculateImpedance(z, numericalFrequency, resolution));
-    const noToleranceResult = zResultsSrc[zResultsSrc.length - 1];
-    finalDp = noToleranceResult[noToleranceResult.length - 1];
-    finalZ = finalDp[finalDp.length - 1];
-
-    //for frequency span, don't create arcs, just create the final impedances
-    var spanResults = [];
-
-    if (numericalFspan > 0) {
-      for (const c of circuitArray) {
-        const fRes = {};
-        const RefInVsF = {};
-        for (const f of spanFrequencies) {
-          const z = impedanceAtFrequency(c, f);
-          fRes[f] = { z };
-          if (sParamIndex !== -1) fRes[f].reflAtSZo = zToRefl(z, { real: userCircuitNoLambda[sParamIndex].settings.zo, imaginary: 0 });
-          if (s1pIndex !== -1) RefInVsF[f] = rectangularToPolar(zToRefl(z, userCircuitNoLambda[0])); //userCircuitNoLambda[0] is the termination
-        }
-        spanResults.push(fRes);
-        if (s1pIndex !== -1) RefIn.push(RefInVsF);
-      }
-    }
-    multiZResults.push({ arcs: zResultsSrc, ZvsF: spanResults });
-  }
-
-  //if its s2p then create the gain results. Must do this after the multiZResults are created
-  const gainArray = [];
-  if (s2pIndex !== -1) {
-    for (const x in multiZResults[0].ZvsF) {
-      for (const y in multiZResults[1].ZvsF) {
-        // console.log("x", x, multiZResults[0].ZvsF);
-        const gainResults = {};
-        for (const f in userCircuitNoLambda[s2pIndex].data) {
-          const p = userCircuitNoLambda[s2pIndex].data[f];
-          const gain =
-            subEq(multiZResults[0].ZvsF[x][f].reflAtSZo, polarToRectangular(p.S11)) *
-            subEq(multiZResults[1].ZvsF[y][f].reflAtSZo, polarToRectangular(p.S22)) *
-            p.S21.magnitude ** 2;
-          gainResults[f] = gain;
-        }
-        gainArray.push(gainResults);
-      }
-    }
-  }
-
-  // converts real and imaginary into Q, VSWR, reflection coeff, etc
-  const processedImpedanceResults = processImpedance(finalZ, settings.zo);
+    sParamIndex === -1 ? null : { ...userCircuit[sParamIndex].data[numericalFrequency], zo: userCircuit[sParamIndex].settings.zo };
 
   const handleSnackbarClick = () => {
     setSettings({ ...initialState });
@@ -283,7 +169,6 @@ function App() {
                 )}
                 <Results
                   zProc={processedImpedanceResults}
-                  spanFrequencies={spanFrequencies}
                   spanResults={spanResults[spanResults.length - 1]}
                   freqUnit={settings.frequencyUnit}
                   plotType={plotType}

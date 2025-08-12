@@ -94,28 +94,15 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 - plot input gain, output gain and middle gain thing
 - when tol + fspan, make the gray markers gray
 - Add noise figure and stability circles later
+- Series RLC should be named parallel RLC
+-- test ESL as it's broken rn
+
 
 # To do just before merging sparam
-1e - in turorial mention complex conjugate matching instead of sparam
-1f - make tutorial.md
-3.65MHz
-20.27uH
-66.6pF
-- Test everything I can! 
--- gain, noise, stability circles
--- s1p and s2p parsing
--- simple circuit z out
--- s11 matching
-- have some test urls with state to ensure they load up properly
-2 - (s2p) copy the allaboutcircuits guy, get same results, make tutorial.md
 - add used equations
-- re-add URL saving
 - compare a few legacy test cases vs site
 - check I didn't screq up reflection coefficient maths
 -- or span frequency & tol
-- create md tutorial in git hub which shows user how to match an antenna like in the youtube
-
-
 
 ## #####################
 ## ## Sparam DONE ## ##
@@ -200,3 +187,19 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 - run lint and prettier
 - for S11 plot points, not the line. then can get hover effect. Otherwise hovering over the line sometimes doesn't show frequency
 - check performance on slower device
+-- Must show G0 for s2p gain matching to be possible
+1e - in turorial mention complex conjugate matching instead of sparam
+1f - make tutorial.md
+2 - (s2p) copy the allaboutcircuits guy, get same results, make tutorial.md
+- re-add URL saving
+- create md tutorial in git hub which shows user how to match an antenna like in the youtube
+- graph title custom termination
+-- fix comment about imedance looking into black box when s1p file
+- Move impedance calcutions into one function, to allow testing
+- Test everything I can! 
+-- gain, noise, stability circles
+-- s1p and s2p parsing
+-- simple circuit z out
+-- s2p matching
+-- s11 matching
+- have some test urls with state to ensure they load up properly

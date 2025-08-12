@@ -297,7 +297,12 @@ function RPlot({ RefIn, options, freqUnit, title }) {
   );
 }
 
-export default function Results({ zProc, spanFrequencies, spanResults, freqUnit, plotType, sParameters, gainResults, RefIn }) {
+//FIXME - move these lines and their calculations to a separate compoenent
+          // {!spanResults ? null : <UplotReact options={options4} data={data} />}
+          // {!spanResults ? null : <UplotReact options={options3} data={data2} />}
+
+
+export default function Results({ zProc, spanResults, freqUnit, plotType, sParameters, gainResults, RefIn }) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
   // const [options, setOptions] = useState(optionsInit);
@@ -339,6 +344,7 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit,
   var s11 = [];
   var s11_ang = [];
   var s21 = [];
+  var data, data2;
   if (spanResults) {
     // console.log("spanResults res", spanResults);
     for (const f in spanResults) {
@@ -352,10 +358,10 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit,
       s11_ang.push(angle);
       s21.push(20 * Math.log10(Math.sqrt(1 - magnitude ** 2)));
     }
+    const absSpanFrequencies = Object.keys(spanResults).map((f) => f / unitConverter[freqUnit]);
+    data = [absSpanFrequencies, s11, s11_ang];
+    data2 = [absSpanFrequencies, s21];
   }
-  const absSpanFrequencies = spanFrequencies.map((f) => f / unitConverter[freqUnit]);
-  const data = [absSpanFrequencies, s11, s11_ang];
-  const data2 = [absSpanFrequencies, s21];
 
   useEffect(() => {
     function handleResize() {
@@ -382,7 +388,7 @@ export default function Results({ zProc, spanFrequencies, spanResults, freqUnit,
   } else if (plotType !== "sparam" && sParameters !== null) {
     return (
       <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-        <RPlot RefIn={RefIn} options={optionsS11} freqUnit={freqUnit} title="Custom Termination" />
+        <RPlot RefIn={RefIn} options={optionsS11} freqUnit={freqUnit} title="Z looking into DP1" />
         <GainPlot gain={gainResults} options={optionsGain} freqUnit={freqUnit} title="System Gain" />
       </div>
     );

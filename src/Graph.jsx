@@ -710,7 +710,7 @@ function Graph({
         })}
         <div style={{ fontWeight: "bold" }}>
           <input type="checkbox" name="scales" checked={showZPlots} onChange={() => setShowZPlots(!showZPlots)} />
-          <label>{sParameters ? (sParameters.type == "s1p" ? "z looking into DP1" : "z") : "z"}</label>
+          <label>{sParameters ? (sParameters.type == "s1p" ? "Z looking into DP1" : "Z") : "Z"}</label>
         </div>
       </Stack>
       <Link
