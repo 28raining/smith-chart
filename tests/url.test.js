@@ -1,10 +1,5 @@
 // const { calculateImpedance } = require('../src/impedanceFunctions.js');
-import { calculateImpedance } from "../src/impedanceFunctions.js";
 import { expect, test } from "vitest";
-import { calculateImpedance } from "../src/impedanceFunctions.js";
-import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
-import { allImpedanceCalculations } from "../src/impedanceFunctions.js";
 import { circuitComponents } from "../src/circuitComponents.js";
 import { updateObjectFromUrl } from "../src/urlFunctions.js"; // Import the syncObjectToUrl function
 

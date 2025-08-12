@@ -298,9 +298,8 @@ function RPlot({ RefIn, options, freqUnit, title }) {
 }
 
 //FIXME - move these lines and their calculations to a separate compoenent
-          // {!spanResults ? null : <UplotReact options={options4} data={data} />}
-          // {!spanResults ? null : <UplotReact options={options3} data={data2} />}
-
+// {!spanResults ? null : <UplotReact options={options4} data={data} />}
+// {!spanResults ? null : <UplotReact options={options3} data={data2} />}
 
 export default function Results({ zProc, spanResults, freqUnit, plotType, sParameters, gainResults, RefIn }) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;

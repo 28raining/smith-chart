@@ -182,7 +182,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
   const [showAllData, setShowAllData] = useState(false);
   const allcols = ["S11", "S21", "S12", "S22"];
 
-  const gs0 = value.data[frequency] ? value.data[frequency].S21 ? 10*Math.log10(value.data[frequency].S21.magnitude**2) : 0 : 0;
+  const gs0 = value.data[frequency] ? (value.data[frequency].S21 ? 10 * Math.log10(value.data[frequency].S21.magnitude ** 2) : 0) : 0;
   const parsed = parseTouchstoneFile(customInput);
   const validCheckerResults = parsed.error === null;
   const helperText =

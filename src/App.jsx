@@ -23,7 +23,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 import { syncObjectToUrl, updateObjectFromUrl } from "./urlFunctions.js"; // Import the syncObjectToUrl function
-import { unitConverter, theme, polarToRectangular, rectangularToPolar, zToRefl } from "./commonFunctions.js";
+import { theme } from "./commonFunctions.js";
 import { circuitComponents } from "./circuitComponents.js";
 
 import { allImpedanceCalculations } from "./impedanceFunctions.js";
@@ -48,7 +48,6 @@ const initialCircuit = [{ name: "blackBox", ...circuitComponents.blackBox.defaul
 const params = new URLSearchParams(window.location.search);
 var [stateInURL, defaultCircuit, urlContainsState] = updateObjectFromUrl(initialState, initialCircuit, params);
 console.log("stateInURL", stateInURL, defaultCircuit, urlContainsState);
-
 
 function App() {
   const [userCircuit, setUserCircuit] = useState(defaultCircuit);

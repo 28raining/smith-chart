@@ -1,8 +1,7 @@
 // const { calculateImpedance } = require('../src/impedanceFunctions.js');
-import { calculateImpedance } from "../src/impedanceFunctions.js";
 import { expect, test } from "vitest";
 import { sparamGainCircles, sparamZout, parseTouchstoneFile } from "../src/sparam.js";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync/*, writeFileSync*/ } from "fs";
 import { join } from "path";
 
 test("Touchstone s2p small", () => {
@@ -58,9 +57,6 @@ test("Touchstone s1p small", () => {
 
 test("Gain circles", () => {
   const s11 = { magnitude: 0.533, angle: 176.6 };
-  const s22 = { magnitude: 0.604, angle: -58.3 };
-  const s12 = { magnitude: 0.06, angle: 58.4 };
-  const s21 = { magnitude: 2.8, angle: 64.5 };
   const gain = sparamGainCircles(s11, 50, 1);
 
   const expectedResult = {

@@ -1,10 +1,8 @@
 // const { calculateImpedance } = require('../src/impedanceFunctions.js');
-import { calculateImpedance } from "../src/impedanceFunctions.js";
 import { expect, test } from "vitest";
-import { calculateImpedance } from "../src/impedanceFunctions.js";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync/*, writeFileSync*/ } from "fs";
 import { join } from "path";
-import { allImpedanceCalculations } from "../src/impedanceFunctions.js";
+import { allImpedanceCalculations, calculateImpedance } from "../src/impedanceFunctions.js";
 
 test("Transmission line impedance test", () => {
   const circuit = [
@@ -64,7 +62,7 @@ test("Impedance L-R-Shorted-Stub", () => {
     gainInCircles: [],
     gainOutCircles: [],
   };
-  const [processedImpedanceResults, spanResults, multiZResults, gainArray, numericalFrequency, RefIn] = allImpedanceCalculations(circuit, settings);
+  const [processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, _RefIn] = allImpedanceCalculations(circuit, settings);
 
   expect(processedImpedanceResults).toEqual({
     zStr: "27.88 - 11.2j",
@@ -145,7 +143,7 @@ test("Impedance s1p", () => {
     gainInCircles: [],
     gainOutCircles: [],
   };
-  const [processedImpedanceResults, spanResults, multiZResults, gainArray, numericalFrequency, RefIn] = allImpedanceCalculations(circuit, settings);
+  const [_processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, RefIn] = allImpedanceCalculations(circuit, settings);
 
   expect(RefIn).toEqual([
     {
@@ -198,7 +196,7 @@ test("Matched s2p circuit", () => {
     gainOutCircles: [1],
   };
 
-  const [processedImpedanceResults, spanResults, multiZResults, gainArray, numericalFrequency, RefIn] = allImpedanceCalculations(circuit, settings);
+  const [_processedImpedanceResults, spanResults, multiZResults, gainArray, numericalFrequency, _RefIn] = allImpedanceCalculations(circuit, settings);
 
   // const tmpPath = join(process.cwd(), "tests", "tmp.json");
   // writeFileSync(tmpPath, JSON.stringify(multiZResults, null, 1), "utf8");
