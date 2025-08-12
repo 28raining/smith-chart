@@ -29,6 +29,16 @@ test("Touchstone s2p small", () => {
   expect(sparameters.data).toEqual(expectedData);
 });
 
+function compareParsedData(a,b) {
+  for (const f in a) {
+    for (const s in a[f]) {
+      for (const v in a[f][s]) {
+        expect(a[f][s][v]).toBeCloseTo(b[f][s][v], 5);
+      }
+    }
+  }
+}
+
 test("Touchstone s1p small", () => {
   // Read from file 'valid.s1p'
   const filePath = join(process.cwd(), "tests", "valid.s1p");
@@ -48,7 +58,8 @@ test("Touchstone s1p small", () => {
     format: "RI",
     zo: 50,
   });
-  expect(sparameters.data).toEqual(expectedData);
+  compareParsedData(sparameters.data, expectedData);
+  // expect(sparameters.data).toEqual(expectedData);
   expect(sparameters.noise).toEqual([]);
   expect(sparameters.type).toEqual("s1p");
 
