@@ -18,16 +18,19 @@ import Results from "./Results.jsx";
 import Settings from "./Settings.jsx";
 import Equations from "./Equations.jsx";
 import ReleaseNotes from "./ReleaseNotes.jsx";
+import Tutorials from "./Tutorials.jsx";
 import { Comments } from "@hyvor/hyvor-talk-react";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 import { syncObjectToUrl, updateObjectFromUrl } from "./urlFunctions.js"; // Import the syncObjectToUrl function
-import { unitConverter, theme, processImpedance } from "./commonFunctions.js";
+import { theme } from "./commonFunctions.js";
+import { circuitComponents } from "./circuitComponents.js";
 
-import { calculateImpedance, createToleranceArray, applySliders, convertLengthToM } from "./impedanceFunctions.js";
+import { allImpedanceCalculations } from "./impedanceFunctions.js";
+// import { sParamFrequencyRange } from "./sparam.js"; // Import the sParamFrequencyRange function
 
-const resolution = 50;
-
-var initialState = {
+const initialState = {
   zo: 50,
   frequency: 2440,
   frequencyUnit: "MHz",
@@ -37,53 +40,35 @@ var initialState = {
   vswrCircles: [],
   qCircles: [],
   nfCircles: [],
+  gainInCircles: [],
+  gainOutCircles: [],
 };
 
-const initialCircuit = [{ name: "blackBox", real: 25, imaginary: -25 }];
+const initialCircuit = [{ name: "blackBox", ...circuitComponents.blackBox.default }];
 
-var [stateInURL, defaultCircuit, urlContainsState] = updateObjectFromUrl(initialState, initialCircuit);
+const params = new URLSearchParams(window.location.search);
+var [stateInURL, defaultCircuit, urlContainsState] = updateObjectFromUrl(initialState, initialCircuit, params);
+console.log("stateInURL", stateInURL, defaultCircuit, urlContainsState);
 
 function App() {
   const [userCircuit, setUserCircuit] = useState(defaultCircuit);
 
   const [settings, setSettings] = useState(stateInURL);
   const [urlSnackbar, setUrlSnackbar] = useState(false);
+  const [plotType, setPlotType] = useState("impedance");
 
   syncObjectToUrl(settings, initialState, userCircuit, initialCircuit); // Sync the settings object to the URL
 
-  var impedanceResults = [];
-  var spanResults = [];
-  var spanFrequencies = [];
-  const numericalFrequency = settings.frequency * unitConverter[settings.frequencyUnit];
-  const numericalFspan = settings.fSpan * unitConverter[settings.fSpanUnit];
-  const spanStep = numericalFspan / 10;
-  var i;
+  const [processedImpedanceResults, spanResults, multiZResults, gainArray, numericalFrequency, RefIn] = allImpedanceCalculations(
+    userCircuit,
+    settings,
+  );
 
-  for (i = -10; i <= 10; i++) spanFrequencies.push((numericalFrequency + i * spanStep) / unitConverter[settings.frequencyUnit]);
-
-  var userCircuitWithSliders = applySliders(JSON.parse(JSON.stringify(userCircuit)));
-  var userCircuitNoLambda = convertLengthToM(userCircuitWithSliders, numericalFrequency);
-  var circuitArray = createToleranceArray([userCircuitNoLambda]);
-  for (const z of circuitArray) impedanceResults.push(calculateImpedance(z, numericalFrequency, resolution));
-  const noToleranceResult = impedanceResults[impedanceResults.length - 1];
-  const finalDp = noToleranceResult[noToleranceResult.length - 1];
-
-  //for frequency span, don't create arcs, just create the final impedances
-  if (numericalFspan > 0) {
-    var f, span_tol, span_tol_final;
-    for (const z of circuitArray) {
-      spanResults.push([]);
-      for (i = -10; i <= 10; i++) {
-        f = numericalFrequency + i * spanStep;
-        span_tol = calculateImpedance(z, f, 2);
-        span_tol_final = span_tol[span_tol.length - 1];
-        spanResults[spanResults.length - 1].push(span_tol_final[span_tol_final.length - 1]);
-      }
-    }
-  }
-
-  // converts real and imaginary into Q, VSWR, reflection coeff, etc
-  const processedImpedanceResults = processImpedance(finalDp[finalDp.length - 1], settings.zo);
+  const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
+  const sParameters = sParamIndex === -1 ? null : userCircuit[sParamIndex];
+  const s1pIndex = userCircuit.findIndex((c) => c.type === "s1p");
+  const chosenSparameter =
+    sParamIndex === -1 ? null : { ...userCircuit[sParamIndex].data[numericalFrequency], zo: userCircuit[sParamIndex].settings.zo };
 
   const handleSnackbarClick = () => {
     setSettings({ ...initialState });
@@ -130,40 +115,66 @@ function App() {
       <LetUserKnowAboutURL />
       <NavBar />
       <Typography sx={{ color: "rgb(37, 50, 64)", mx: 3, mt: 1 }}>
-        Smith charts can help you design matching networks and obtain maximum power transfer between your source and load
+        Smith charts can help you design matching networks and obtain maximum power transfer between your source and load. Plot s-parameters.
       </Typography>
       <Box sx={{ flexGrow: 1, mx: { xs: 0, sm: 1, lg: 2 }, mt: 1 }}>
         <Grid container spacing={{ lg: 2, xs: 1 }}>
           <Grid size={{ sm: 12, md: 6 }}>
             <Card>
               <CardContent>
-                <Circuit userCircuit={userCircuit} setUserCircuit={setUserCircuit} frequency={numericalFrequency} />
+                <Circuit
+                  userCircuit={userCircuit}
+                  setUserCircuit={setUserCircuit}
+                  frequency={numericalFrequency}
+                  setPlotType={setPlotType}
+                  setSettings={setSettings}
+                />
               </CardContent>
             </Card>
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 6, lg: 6 }}>
             <Card sx={{ padding: 0 }}>
               <Graph
-                impedanceResults={impedanceResults}
+                zResultsSrc={multiZResults}
                 zo={settings.zo}
                 spanResults={spanResults}
                 qCircles={settings.qCircles}
                 vswrCircles={settings.vswrCircles}
                 nfCircles={settings.nfCircles}
+                gainInCircles={settings.gainInCircles}
+                gainOutCircles={settings.gainOutCircles}
                 zMarkers={settings.zMarkers}
                 reflection_real={processedImpedanceResults.refReal}
                 reflection_imag={processedImpedanceResults.refImag}
+                plotType={plotType}
+                sParameters={sParameters}
+                chosenSparameter={chosenSparameter}
+                freqUnit={settings.frequencyUnit}
+                frequency={numericalFrequency}
               />
             </Card>
           </Grid>
           <Grid size={{ xs: 12, sm: 5, md: 6 }}>
             <Card>
               <CardContent>
+                {sParamIndex !== -1 && (
+                  <Box display="flex" justifyContent="center" sx={{ mb: 2 }}>
+                    <ToggleButtonGroup value={plotType} exclusive onChange={(e, newP) => setPlotType(newP)}>
+                      <ToggleButton value="sparam">Plot Raw S-Parameter Data</ToggleButton>
+                      <ToggleButton value="impedance">
+                        {s1pIndex !== -1 ? "Plot Reflection Coefficient Looking Into DP1" : "Plot System Gain"}
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  </Box>
+                )}
                 <Results
                   zProc={processedImpedanceResults}
-                  spanFrequencies={spanFrequencies}
                   spanResults={spanResults[spanResults.length - 1]}
                   freqUnit={settings.frequencyUnit}
+                  plotType={plotType}
+                  sParameters={sParameters}
+                  gainResults={gainArray}
+                  RefIn={RefIn}
                 />
               </CardContent>
             </Card>
@@ -171,9 +182,12 @@ function App() {
           <Grid size={{ xs: 12, sm: 7, md: 6 }}>
             <Card>
               <CardContent>
-                <Settings settings={settings} setSettings={setSettings} />
+                <Settings settings={settings} setSettings={setSettings} usedF={numericalFrequency} chosenSparameter={chosenSparameter} />
               </CardContent>
             </Card>
+          </Grid>
+          <Grid size={12}>
+            <Tutorials />
           </Grid>
           <Grid size={12}>
             <Equations />

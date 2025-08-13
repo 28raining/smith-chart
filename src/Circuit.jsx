@@ -16,6 +16,18 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+
+import ArrowLeftRoundedIcon from "@mui/icons-material/ArrowLeftRounded";
+import ArrowRightRoundedIcon from "@mui/icons-material/ArrowRightRounded";
+
 import {
   arcColors,
   inductorUnits,
@@ -29,7 +41,10 @@ import {
   parseInput,
   checkCustomZValid,
   CustomZAtFrequency,
+  moveArrayItem,
 } from "./commonFunctions.js";
+
+import { parseTouchstoneFile } from "./sparam.js";
 
 import { circuitComponents } from "./circuitComponents.js";
 
@@ -57,11 +72,11 @@ function toEngineeringNotation(num) {
 }
 
 function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, frequency, interpolation }) {
-  const [customInput, setCustomInput] = useState("");
-
   const textInput = Object.keys(value)
     .map((x) => `${toEngineeringNotation(x)}, ${value[x].real}, ${value[x].imaginary}`)
     .join("\n");
+
+  const [customInput, setCustomInput] = useState(textInput);
 
   const validCheckerResults = checkCustomZValid(customInput);
   const helperText =
@@ -87,7 +102,7 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
       >
         Set Impedance vs Frequency
       </Button>
-      <Dialog open={modalOpen}>
+      <Dialog open={modalOpen} fullScreen>
         <Box sx={{ p: 2 }}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
             Custom Impedance input box
@@ -152,8 +167,147 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
             setModalOpen(false);
           }}
         >
-          {validCheckerResults[0] ? "Save" : "Input Error - remove component"}
+          {validCheckerResults[0] ? "Save" : "Input error - remove component"}
         </Button>
+      </Dialog>
+    </>
+  );
+}
+
+function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setPlotType, setSettings, frequency }) {
+  const [customInput, setCustomInput] = useState(`# GHz S MA R 50
+0.8	0.44  –157.6 4.725 84.3	0 0	0.339 –51.8
+1.4	0.533 176.6	2.800 64.5	0 0	0.604 –58.3
+2.0	0.439 159.6	2.057 49.2	0 0	0.294 –68.1`);
+  const [showAllData, setShowAllData] = useState(false);
+  const allcols = ["S11", "S21", "S12", "S22"];
+
+  const gs0 = value.data[frequency] ? (value.data[frequency].S21 ? 10 * Math.log10(value.data[frequency].S21.magnitude ** 2) : 0) : 0;
+  const parsed = parseTouchstoneFile(customInput);
+  const validCheckerResults = parsed.error === null;
+  const helperText =
+    customInput == "" ? "Copy in a file" : validCheckerResults ? `${Object.keys(parsed.data).length} data points parsed succesfully` : parsed.error;
+  return (
+    <>
+      <Typography variant="caption" align="center" sx={{ display: "block" }}>
+        .{value.type} ~ GS0 = {gs0.toPrecision(3)}dB
+      </Typography>
+      <Button
+        sx={{ m: 2 }}
+        variant="contained"
+        color="primary"
+        onClick={() => {
+          // setCustomInput();
+          setModalOpen((o) => !o);
+        }}
+      >
+        Enter S-param file
+      </Button>
+      <Dialog open={modalOpen} fullScreen>
+        <Box sx={{ p: 4 }}>
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Paste .s1p or .s2p file contents below
+            </Typography>
+            <Button
+              sx={{ m: 0, ml: 1 }}
+              variant="contained"
+              color={customInput == "" ? "secondary" : validCheckerResults ? "primary" : "error"}
+              onClick={() => {
+                if (validCheckerResults) {
+                  const allF = Object.keys(parsed.data);
+                  const midF = allF[Math.floor(allF.length / 2)];
+                  const fMin = allF[0]; //[0].frequency;
+                  const fMax = allF[allF.length - 1]; //[parsed.data.length - 1].frequency;
+                  setUserCircuit((c) => {
+                    const newCircuit = [...c];
+                    newCircuit[index] = parsed;
+                    //if it's .s2p and the last item is not termination load, add it
+                    if (parsed.type === "s2p" && newCircuit[newCircuit.length - 1].name !== "loadTerm") {
+                      newCircuit.push({ ...circuitComponents.loadTerm.default, name: "loadTerm" });
+                    } else if (parsed.type === "s1p" && newCircuit[newCircuit.length - 1].name === "loadTerm") {
+                      newCircuit.splice(index + 1); //remove anything after s1p
+                    }
+                    return newCircuit;
+                  });
+                  setPlotType("sparam");
+                  setSettings((s) => {
+                    s.frequencyUnit = parsed.settings.freq_unit;
+                    s.fSpanUnit = parsed.settings.freq_unit;
+                    s.frequency = midF / unitConverter[parsed.settings.freq_unit];
+                    s.fSpan = (2 * Math.max(fMax - midF, midF - fMin)) / unitConverter[parsed.settings.freq_unit];
+                    return s;
+                  });
+                } else {
+                  //user has asked to remove it
+                  setUserCircuit((z) => [
+                    ...z.slice(0, index), // Items before the index `i`
+                    ...z.slice(index + 1),
+                  ]);
+                }
+                setModalOpen(false);
+              }}
+            >
+              {validCheckerResults ? "Save" : customInput == "" ? "No input - remove component?" : "Input error - remove component?"}
+            </Button>
+          </Box>
+          <TextField
+            sx={{ width: "100%", p: 1 }}
+            error={!validCheckerResults}
+            size="small"
+            multiline
+            minRows="3"
+            maxRows="10"
+            value={customInput}
+            onChange={(e) => setCustomInput(e.target.value)}
+            helperText={helperText}
+          />
+          {validCheckerResults && (
+            <>
+              <ul style={{ marginTop: 0 }}>
+                <li>File type: .{parsed.type}</li>
+                <li>Frequency Unit: {parsed.settings.freq_unit}</li>
+                <li>Data Type: {parsed.settings.param}</li>
+                <li>
+                  Format: {parsed.settings.format} ({parsed.settings.format == "RI" ? "Rectangular" : "Polar"})
+                </li>
+                <li>Zo: {parsed.settings.zo}</li>
+              </ul>
+              {showAllData ? "All rows of data:" : `First ${Math.min(300, Object.keys(parsed.data).length)} rows of data:`}
+              <button onClick={() => setShowAllData((o) => !o)}>{showAllData ? "Show less" : "Show all"}</button>
+              <TableContainer sx={{ maxHeight: 300, border: "1px solid black" }}>
+                <Table stickyHeader size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell key="frequency">Frequency ({parsed.settings.freq_unit})</TableCell>
+                      {allcols.map((column) => {
+                        if (!(column in Object.values(parsed.data)[0])) return null;
+                        return [<TableCell key="mag">|{column}|</TableCell>, <TableCell key="ang">∠{column}</TableCell>];
+                      })}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.keys(parsed.data).map((f, i) => {
+                      if (!showAllData) if (i > 300) return null; // limit to 300 rows for performance
+                      return (
+                        <TableRow hover tabIndex={-1} key={f}>
+                          <TableCell key="freq">{(f / unitConverter[parsed.settings.freq_unit]).toLocaleString()}</TableCell>
+                          {allcols.map((column) => {
+                            if (!(column in parsed.data[f])) return null;
+                            return [
+                              <TableCell key="mag">{parsed.data[f][column].magnitude.toFixed(4)}</TableCell>,
+                              <TableCell key="ang">{parsed.data[f][column].angle.toFixed(4)}</TableCell>,
+                            ];
+                          })}
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
+        </Box>
       </Dialog>
     </>
   );
@@ -203,7 +357,7 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
           label="Re"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, width: "9ch", padding: 0 }}
+          sx={{ mx: 0.5, p: 0, minWidth: "6ch", padding: 0 }}
           value={real}
           onChange={(e) => setValue(e.target.value, "real", setUserCircuit, index)}
         />
@@ -212,7 +366,7 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
           label="Im"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, width: "9ch", padding: 0 }}
+          sx={{ mx: 0.5, p: 0, minWidth: "6ch", padding: 0 }}
           value={imaginary}
           onChange={(e) => setValue(e.target.value, "imaginary", setUserCircuit, index)}
         />
@@ -481,9 +635,14 @@ function ToleranceComponent({ tol, index, setUserCircuit }) {
   );
 }
 
-function Circuit({ userCircuit, setUserCircuit, frequency }) {
+function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSettings }) {
   const w = 2 * Math.PI * frequency;
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalSparam, setModalSparam] = useState(false);
+
+  const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
+  const s1pIndex = userCircuit.findIndex((c) => c.type === "s1p");
+
   // console.log(userCircuit);
 
   function componentMap(type, component, index) {
@@ -491,7 +650,6 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
     const slider_re = component.slider_re === undefined ? 0 : component.slider_re;
     const slider_im = component.slider_im === undefined ? 0 : component.slider_im;
     const slider = component.slider === undefined ? 0 : component.slider;
-
     switch (type) {
       case "impedance":
         if (component.name == "shortedInd" || component.name == "seriesInd") {
@@ -507,10 +665,10 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
           var zj =
             (w * component.value_l * unitConverter[component.unit_l]) /
             (1 - w * w * component.value_l * component.value_c * unitConverter[component.unit_l] * unitConverter[component.unit_c]);
-          var z = one_over_complex(1 / (component.value * unitConverter[component.unit]), -1 / zj);
+          var z = one_over_complex({ real: 1 / (component.value * unitConverter[component.unit]), imaginary: -1 / zj });
           real = z.real * (1 + slider / 100);
           imaginary = z.imaginary;
-        } else if (component.name == "blackBox") {
+        } else if (component.name == "blackBox" || component.name == "loadTerm") {
           real = component.real * (1 + slider_re / 100); //for black box this will be correct
           imaginary = component.imaginary * (1 + slider_im / 100);
         }
@@ -538,6 +696,20 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
             setUserCircuit={setUserCircuit}
             frequency={frequency}
             key={type}
+          />
+        );
+      case "sparam":
+        return (
+          <SparamComponent
+            modalOpen={modalSparam}
+            setModalOpen={setModalSparam}
+            value={component}
+            index={index}
+            setUserCircuit={setUserCircuit}
+            frequency={frequency}
+            setPlotType={setPlotType}
+            key={type}
+            setSettings={setSettings}
           />
         );
       case "transformer":
@@ -609,18 +781,33 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
     }
   }
 
+  const lastElIsFixed = userCircuit[userCircuit.length - 1].name == "loadTerm" || userCircuit[userCircuit.length - 1].type == "s1p";
+  const lastElement = lastElIsFixed ? userCircuit.length - 2 : userCircuit.length - 1;
+
   return (
     <ThemeProvider theme={theme}>
       <Grid container spacing={0} columns={{ xs: 6, sm: 12, md: 8, lg: 12 }}>
         {Object.keys(circuitComponents).map((k, i) => {
           const c = circuitComponents[k];
           if ("unselectable" in c) return null;
+          else if (c.name == "S-Parameter" && sParamIndex !== -1)
+            return null; //only one s-parameter component allowed
           else
             return (
               <Grid size={2} key={i}>
                 <Button
                   variant="contained"
-                  onClick={() => setUserCircuit([...userCircuit, { ...c.default, name: k }])}
+                  onClick={() => {
+                    //if last element is load term or s1p insert before it
+                    if (lastElIsFixed) {
+                      setUserCircuit((z) => [...z.slice(0, -1), { ...c.default, name: k }, z[z.length - 1]]);
+                    } else setUserCircuit([...userCircuit, { ...c.default, name: k }]);
+                    if (k == "custom") {
+                      setModalOpen(true);
+                    } else if (k == "sparam") {
+                      setModalSparam(true);
+                    }
+                  }}
                   color="bland"
                   style={{
                     flex: 1,
@@ -644,7 +831,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
         })}
       </Grid>
       <div style={{ display: "flex", width: "100%" }}>
-        <p>Clicking components above will add them to the circuit below. Impedance is looking towards the BLACK BOX</p>
+        <p>Click components above to add them to the circuit below. Impedance is looking {s1pIndex === -1 ? "towards the BLACK BOX" : "into DP1"}</p>
       </div>
 
       <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 4, lg: 8, xl: 12 }}>
@@ -655,19 +842,25 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
             <Grid size={2} key={i} sx={{ display: "flex", flexDirection: "column", borderRadius: 1 }} className="circuitDrawing">
               <Box position="relative">
                 <img src={comp.src} width="100%" />
-                {i == 0 ? null : (
+                {i == 0 || userCircuit[i].name == "loadTerm" ? null : (
                   <IconButton
-                    aria-label="delete"
                     onClick={() => {
-                      setUserCircuit((z) => [
-                        ...z.slice(0, i), // Items before the index `i`
-                        ...z.slice(i + 1),
-                      ]);
+                      setUserCircuit((z) => {
+                        var newZ = [
+                          ...z.slice(0, i), // Items before the index `i`
+                          ...z.slice(i + 1),
+                        ];
+                        //if sparam and last element is loadTerm, remove it
+                        if (c.name == "sparam" && newZ[newZ.length - 1].name == "loadTerm") {
+                          newZ = [...newZ.slice(0, -1)];
+                        }
+                        return newZ;
+                      });
                     }}
                     sx={{
                       position: "absolute",
                       top: -6,
-                      right: -8,
+                      right: 0,
                     }}
                   >
                     <DeleteIcon
@@ -679,11 +872,52 @@ function Circuit({ userCircuit, setUserCircuit, frequency }) {
                     />
                   </IconButton>
                 )}
+                {i < 2 || (lastElIsFixed && i == userCircuit.length - 1) ? null : (
+                  <IconButton
+                    onClick={() => {
+                      setUserCircuit((z) => moveArrayItem(z, i, i - 1));
+                    }}
+                    sx={{
+                      position: "absolute",
+                      bottom: -6,
+                      left: 8,
+                    }}
+                  >
+                    <ArrowLeftRoundedIcon
+                      sx={{
+                        height: 32,
+                        width: 32,
+                        color: "rgba(0, 0, 0, 0.34)",
+                      }}
+                    />
+                  </IconButton>
+                )}
+                {i == 0 || i >= lastElement ? null : (
+                  <IconButton
+                    onClick={() => {
+                      setUserCircuit((z) => moveArrayItem(z, i, i + 1));
+                    }}
+                    sx={{
+                      position: "absolute",
+                      bottom: -6,
+                      right: 8,
+                    }}
+                  >
+                    <ArrowRightRoundedIcon
+                      sx={{
+                        height: 32,
+                        width: 32,
+                        color: "rgba(0, 0, 0, 0.34)",
+                      }}
+                    />
+                  </IconButton>
+                )}
                 <Typography
+                  variant="body2"
                   sx={{
                     position: "absolute",
-                    top: 2,
-                    left: 6,
+                    top: 0,
+                    left: 3,
                     color: { color },
                   }}
                 >

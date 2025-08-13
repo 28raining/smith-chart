@@ -13,16 +13,24 @@ export const arcColors = [
   "#17becf", // blue-teal
 ];
 
-export function one_over_complex(re, im) {
-  var real = re / (re * re + im * im);
-  var imaginary = -im / (re * re + im * im);
+export function one_over_complex(z) {
+  var real = z.real / (z.real * z.real + z.imaginary * z.imaginary);
+  var imaginary = -z.imaginary / (z.real * z.real + z.imaginary * z.imaginary);
   return { real, imaginary };
 }
 
-export function complex_multiply(re1, im1, re2, im2) {
-  var real = re1 * re2 - im1 * im2;
-  var imaginary = re1 * im2 + im1 * re2;
+export function complex_multiply(a, b) {
+  var real = a.real * b.real - a.imaginary * b.imaginary;
+  var imaginary = a.real * b.imaginary + a.imaginary * b.real;
   return { real, imaginary };
+}
+
+export function complex_subtract(a, b) {
+  return { real: a.real - b.real, imaginary: a.imaginary - b.imaginary };
+}
+
+export function complex_add(a, b) {
+  return { real: a.real + b.real, imaginary: a.imaginary + b.imaginary };
 }
 
 export const theme = createTheme({
@@ -95,6 +103,16 @@ export const unitConverter = {
   ...frequencyUnits,
 };
 
+//convert from any case (hz, HZ, hZ) to the same case as unitConverter
+export function correctUnitCase(unit) {
+  const lowerUnit = unit.toLowerCase();
+  for (const key of Object.keys(unitConverter)) {
+    if (key.toLowerCase() === lowerUnit) return key;
+  }
+  console.warn(`Unit ${unit} not found in unitConverter, returning original.`);
+  return unit; //if not found, return the original
+}
+
 export const ESLUnit = 1e-9; //series inductor hard-coded unit
 
 export const speedOfLight = 299792458; // m/s
@@ -164,11 +182,35 @@ export function CustomZAtFrequency(customZ, frequency, interpolation) {
   }
 }
 
-export function zToPolar(z) {
+export function rectangularToPolar(z) {
   var magnitude = Math.sqrt(z.real * z.real + z.imaginary * z.imaginary);
   //angle in degrees
   var angle = (Math.atan2(z.imaginary, z.real) * 180) / Math.PI; //in degrees
   return { magnitude, angle };
+}
+
+// Function to convert polar form to rectangular form
+export function polarToRectangular(a) {
+  const phaseRadians = a.angle * (Math.PI / 180); // Convert degrees to radians
+  return {
+    real: a.magnitude * Math.cos(phaseRadians),
+    imaginary: a.magnitude * Math.sin(phaseRadians),
+  };
+}
+
+//convert from Reflection coefficient to Z : Z = Zo(1+refl/(1-refl)
+export function reflToZ(refl, zo) {
+  const tmp = one_over_complex({ real: 1 - refl.real, imaginary: -refl.imaginary });
+  return complex_multiply(tmp, { real: zo + zo * refl.real, imaginary: zo * refl.imaginary });
+}
+
+// reflection coefficient =  (Z-Zo) / (Z+Zo)
+export function zToRefl(z, zTerm) {
+  var botInv = one_over_complex(complex_add(z, zTerm));
+  return complex_multiply(complex_subtract(z, zTerm), botInv);
+  // var refReal = (z.real - zo) * botInv.real - z.imaginary * botInv.imaginary;
+  // var refImag = z.imaginary * botInv.real + (z.real - zo) * botInv.imaginary;
+  // return { real: refReal, imaginary: refImag };
 }
 
 export function processImpedance(z, zo) {
@@ -178,17 +220,18 @@ export function processImpedance(z, zo) {
   if (imaginary < 0) zStr = `${real} - ${-imaginary}j`;
   else zStr = `${real} + ${imaginary}j`;
 
-  var polar = zToPolar(z);
+  var polar = rectangularToPolar(z);
   zPolarStr = `${polar.magnitude.toFixed(2)} ∠ ${polar.angle.toFixed(2)}°`;
 
   // reflection coefficient =  (Z-Zo) / (Z+Zo)
-  var botInv = one_over_complex(z.real + zo, z.imaginary);
-  var refReal = (z.real - zo) * botInv.real - z.imaginary * botInv.imaginary;
-  var refImag = z.imaginary * botInv.real + (z.real - zo) * botInv.imaginary;
-  if (refImag < 0) refStr = `${refReal.toFixed(3)} - ${(-refImag).toFixed(3)}j`;
-  else refStr = `${refReal.toFixed(3)} + ${refImag.toFixed(3)}j`;
+  var reflection = zToRefl(z, { real: zo, imaginary: 0 });
+  // var botInv = one_over_complex(z.real + zo, z.imaginary);
+  // var refReal = (z.real - zo) * botInv.real - z.imaginary * botInv.imaginary;
+  // var refImag = z.imaginary * botInv.real + (z.real - zo) * botInv.imaginary;
+  if (reflection.imaginary < 0) refStr = `${reflection.real.toFixed(3)} - ${(-reflection.imaginary).toFixed(3)}j`;
+  else refStr = `${reflection.real.toFixed(3)} + ${reflection.imaginary.toFixed(3)}j`;
 
-  var refPolar = zToPolar({ real: refReal, imaginary: refImag });
+  var refPolar = rectangularToPolar({ real: reflection.real, imaginary: reflection.imaginary });
   refPolarStr = `${refPolar.magnitude.toFixed(3)} ∠ ${refPolar.angle.toFixed(1)}°`;
 
   var vswr = ((1 + refPolar.magnitude) / (1 - refPolar.magnitude)).toPrecision(3);
@@ -198,7 +241,7 @@ export function processImpedance(z, zo) {
   else qFactor = qFactor.toFixed(2);
 
   //admittance
-  var admittance = one_over_complex(z.real, z.imaginary);
+  var admittance = one_over_complex(z);
   real = Number(admittance.real).toPrecision(3);
   imaginary = Number(admittance.imaginary).toPrecision(3);
   if (imaginary < 0) admString = `${real} - ${-imaginary}j`;
@@ -211,8 +254,15 @@ export function processImpedance(z, zo) {
     refPolarStr,
     vswr,
     qFactor,
-    refReal,
-    refImag,
+    refReal: reflection.real,
+    refImag: reflection.imaginary,
     admString,
   };
+}
+
+export function moveArrayItem(array, fromIndex, toIndex) {
+  const arr = [...array]; // optional: copy to avoid mutating original
+  const [item] = arr.splice(fromIndex, 1);
+  arr.splice(toIndex, 0, item);
+  return arr;
 }

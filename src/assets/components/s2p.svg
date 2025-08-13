@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500px" height="300px" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-width="10" fill="none">
+  <path d="M 0 100 L 130 100" />
+  <path d="M 370 100 L 500 100" />
+  <rect x="130" y="60" width="240" height="80" />
+  <text x="250" y="110" font-family="Helvetica" font-size="35" text-anchor="middle" stroke="none" fill="#000000">S-Parameters</text>
+  <!-- <path d="M 86 159 Q 208 141 78 121" stroke-width="3" />
+  <path d="M 91 153 L 82 160 L 93 163" stroke-width="3" />
+  <text x="95" y="145" font-family="Helvetica" font-size="15" text-anchor="middle" stroke="none" fill="#000000">
+    S11
+  </text>
+  <path d="M 175 51 Q 175 51 326 51" stroke-width="3" />
+  <path d="M 320 56 L 330 51 L 320 46" stroke-width="3" />
+  <text x="255" y="45" font-family="Helvetica" font-size="15" text-anchor="middle" stroke="none" fill="#000000">
+    S21
+  </text>
+  <path d="M 335 151 Q 335 151 193 151" stroke-width="3" />
+  <path d="M 199 146 L 189 151 L 199 156" stroke-width="3" />
+  <text x="255" y="170" font-family="Helvetica" font-size="15" text-anchor="middle" stroke="none" fill="#000000">
+    S12
+  </text>
+  <path d="M 426 159 Q 305 141 435 121" stroke-width="3" />
+  <path d="M 419 163 L 430 160 L 421 153" stroke-width="3" />
+  <text x="415" y="145" font-family="Helvetica" font-size="15" text-anchor="middle" stroke="none" fill="#000000">
+    S22
+  </text> -->
+</svg>
