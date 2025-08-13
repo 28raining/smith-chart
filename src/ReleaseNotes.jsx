@@ -38,6 +38,21 @@ function ReleaseNotes() {
             <TableBody>
               <TableRow>
                 <TableCell>
+                  <Typography>v2.1</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography>August 2025</Typography>
+                </TableCell>
+                <TableCell>
+                  <ul>
+                    <li>Added s-parameter component</li>
+                    <li>Added gain circles for turning s2p gain</li>
+                    <li>Added a couple of s-parameter tutorials</li>
+                  </ul>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
                   <Typography>v2.0</Typography>
                 </TableCell>
                 <TableCell>

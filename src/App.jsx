@@ -18,6 +18,7 @@ import Results from "./Results.jsx";
 import Settings from "./Settings.jsx";
 import Equations from "./Equations.jsx";
 import ReleaseNotes from "./ReleaseNotes.jsx";
+import Tutorials from "./Tutorials.jsx";
 import { Comments } from "@hyvor/hyvor-talk-react";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
@@ -114,7 +115,7 @@ function App() {
       <LetUserKnowAboutURL />
       <NavBar />
       <Typography sx={{ color: "rgb(37, 50, 64)", mx: 3, mt: 1 }}>
-        Smith charts can help you design matching networks and obtain maximum power transfer between your source and load
+        Smith charts can help you design matching networks and obtain maximum power transfer between your source and load. Plot s-parameters.
       </Typography>
       <Box sx={{ flexGrow: 1, mx: { xs: 0, sm: 1, lg: 2 }, mt: 1 }}>
         <Grid container spacing={{ lg: 2, xs: 1 }}>
@@ -184,6 +185,9 @@ function App() {
                 <Settings settings={settings} setSettings={setSettings} usedF={numericalFrequency} chosenSparameter={chosenSparameter} />
               </CardContent>
             </Card>
+          </Grid>
+          <Grid size={12}>
+            <Tutorials />
           </Grid>
           <Grid size={12}>
             <Equations />

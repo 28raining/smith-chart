@@ -96,13 +96,9 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 - Add noise figure and stability circles later
 - Series RLC should be named parallel RLC
 -- test ESL as it's broken rn
+- let user plot gain without adding .s2p?
+- show gain circles input but gray out when no .s2p
 
-
-# To do just before merging sparam
-- add used equations
-- compare a few legacy test cases vs site
-- check I didn't screq up reflection coefficient maths
--- or span frequency & tol
 
 ## #####################
 ## ## Sparam DONE ## ##
@@ -203,3 +199,9 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 -- s2p matching
 -- s11 matching
 - have some test urls with state to ensure they load up properly
+- add used equations
+- add link to tutorials
+- release notes
+- compare a few legacy test cases vs site
+- check I didn't screq up reflection coefficient maths
+-- or span frequency & tol
