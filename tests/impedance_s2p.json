@@ -1,122 +1,122 @@
 [
-    {
-        "name": "blackBox",
-        "real": 50,
-        "imaginary": 0,
-        "tolerance": 0
-    },
-    {
-        "value": 0.08,
-        "unit": "λ",
-        "zo": 50,
-        "eeff": 1,
-        "name": "stub"
-    },
-    {
-        "value": 0.11,
-        "unit": "λ",
-        "zo": 50,
-        "eeff": 1,
-        "name": "transmissionLine"
-    },
-    {
-        "data": {
-            "800000000": {
-                "S11": {
-                    "magnitude": 0.44,
-                    "angle": -157.6
-                },
-                "S21": {
-                    "magnitude": 4.725,
-                    "angle": 84.3
-                },
-                "S12": {
-                    "magnitude": 0,
-                    "angle": 0
-                },
-                "S22": {
-                    "magnitude": 0.339,
-                    "angle": -51.8
-                },
-                "zS11": {
-                    "real": 20.087679236620072,
-                    "imaginary": -8.353473646203017
-                }
-            },
-            "1400000000": {
-                "S11": {
-                    "magnitude": 0.533,
-                    "angle": 176.6
-                },
-                "S21": {
-                    "magnitude": 2.8,
-                    "angle": 64.5
-                },
-                "S12": {
-                    "magnitude": 0,
-                    "angle": 0
-                },
-                "S22": {
-                    "magnitude": 0.604,
-                    "angle": -58.3
-                },
-                "zS11": {
-                    "real": 15.243742895217943,
-                    "imaginary": 1.3461428643436497
-                }
-            },
-            "2000000000": {
-                "S11": {
-                    "magnitude": 0.439,
-                    "angle": 159.6
-                },
-                "S21": {
-                    "magnitude": 2.057,
-                    "angle": 49.2
-                },
-                "S12": {
-                    "magnitude": 0,
-                    "angle": 0
-                },
-                "S22": {
-                    "magnitude": 0.294,
-                    "angle": -68.1
-                },
-                "zS11": {
-                    "real": 20.025231636837034,
-                    "imaginary": 7.591733711637334
-                }
-            }
+  {
+    "name": "blackBox",
+    "real": 50,
+    "imaginary": 0,
+    "tolerance": 0
+  },
+  {
+    "value": 0.08,
+    "unit": "λ",
+    "zo": 50,
+    "eeff": 1,
+    "name": "stub"
+  },
+  {
+    "value": 0.11,
+    "unit": "λ",
+    "zo": 50,
+    "eeff": 1,
+    "name": "transmissionLine"
+  },
+  {
+    "data": {
+      "800000000": {
+        "S11": {
+          "magnitude": 0.44,
+          "angle": -157.6
         },
-        "noise": [],
-        "settings": {
-            "freq_unit": "GHz",
-            "param": "S",
-            "format": "MA",
-            "zo": 50
+        "S21": {
+          "magnitude": 4.725,
+          "angle": 84.3
         },
-        "error": null,
-        "name": "sparam",
-        "type": "s2p"
+        "S12": {
+          "magnitude": 0,
+          "angle": 0
+        },
+        "S22": {
+          "magnitude": 0.339,
+          "angle": -51.8
+        },
+        "zS11": {
+          "real": 20.087679236620072,
+          "imaginary": -8.353473646203017
+        }
+      },
+      "1400000000": {
+        "S11": {
+          "magnitude": 0.533,
+          "angle": 176.6
+        },
+        "S21": {
+          "magnitude": 2.8,
+          "angle": 64.5
+        },
+        "S12": {
+          "magnitude": 0,
+          "angle": 0
+        },
+        "S22": {
+          "magnitude": 0.604,
+          "angle": -58.3
+        },
+        "zS11": {
+          "real": 15.243742895217943,
+          "imaginary": 1.3461428643436497
+        }
+      },
+      "2000000000": {
+        "S11": {
+          "magnitude": 0.439,
+          "angle": 159.6
+        },
+        "S21": {
+          "magnitude": 2.057,
+          "angle": 49.2
+        },
+        "S12": {
+          "magnitude": 0,
+          "angle": 0
+        },
+        "S22": {
+          "magnitude": 0.294,
+          "angle": -68.1
+        },
+        "zS11": {
+          "real": 20.025231636837034,
+          "imaginary": 7.591733711637334
+        }
+      }
     },
-    {
-        "value": 0.28,
-        "unit": "λ",
-        "zo": 50,
-        "eeff": 1,
-        "name": "transmissionLine"
+    "noise": [],
+    "settings": {
+      "freq_unit": "GHz",
+      "param": "S",
+      "format": "MA",
+      "zo": 50
     },
-    {
-        "value": 0.07,
-        "unit": "λ",
-        "zo": 50,
-        "eeff": 1,
-        "name": "stub"
-    },
-    {
-        "real": 50,
-        "imaginary": 0,
-        "name": "loadTerm",
-        "slider_im": 0
-    }
+    "error": null,
+    "name": "sparam",
+    "type": "s2p"
+  },
+  {
+    "value": 0.28,
+    "unit": "λ",
+    "zo": 50,
+    "eeff": 1,
+    "name": "transmissionLine"
+  },
+  {
+    "value": 0.07,
+    "unit": "λ",
+    "zo": 50,
+    "eeff": 1,
+    "name": "stub"
+  },
+  {
+    "real": 50,
+    "imaginary": 0,
+    "name": "loadTerm",
+    "slider_im": 0
+  }
 ]

@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "lint": "eslint . && prettier --check src",
-    "prettier": "prettier --write src",
+    "lint": "eslint . && prettier --check src tests",
+    "prettier": "prettier --write src tests",
     "preview": "vite preview",
     "test": "vitest"
   },

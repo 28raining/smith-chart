@@ -64,7 +64,7 @@ test("Impedance L-R-Shorted-Stub", () => {
   };
   const [processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, _RefIn] = allImpedanceCalculations(
     circuit,
-    settings
+    settings,
   );
 
   expect(processedImpedanceResults).toEqual({
@@ -112,7 +112,7 @@ test("Cap with ESL and ESR", () => {
   };
   const [processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, _RefIn] = allImpedanceCalculations(
     circuit,
-    settings
+    settings,
   );
 
   expect(processedImpedanceResults).toEqual({
@@ -196,7 +196,7 @@ test("Impedance s1p", () => {
   };
   const [_processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, RefIn] = allImpedanceCalculations(
     circuit,
-    settings
+    settings,
   );
 
   expect(RefIn).toEqual([

@@ -1,7 +1,7 @@
 // const { calculateImpedance } = require('../src/impedanceFunctions.js');
 import { expect, test } from "vitest";
 import { sparamGainCircles, sparamZout, parseTouchstoneFile } from "../src/sparam.js";
-import { readFileSync/*, writeFileSync*/ } from "fs";
+import { readFileSync /*, writeFileSync*/ } from "fs";
 import { join } from "path";
 
 test("Touchstone s2p small", () => {
@@ -29,7 +29,7 @@ test("Touchstone s2p small", () => {
   expect(sparameters.data).toEqual(expectedData);
 });
 
-function compareParsedData(a,b) {
+function compareParsedData(a, b) {
   for (const f in a) {
     for (const s in a[f]) {
       for (const v in a[f][s]) {

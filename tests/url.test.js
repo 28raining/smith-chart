@@ -21,7 +21,7 @@ const initialCircuit = [{ name: "blackBox", ...circuitComponents.blackBox.defaul
 
 test("URL clicked them all", () => {
   const params = new URLSearchParams(
-    "circuit=blackBox_50_0_0__shortedCap_1_pF_0_0_0__seriesCap_1_pF_0_0_0__shortedInd_1_nH_0_0__seriesInd_1_nH_0_0__shortedRes_50_%CE%A9_0_0__seriesRes_50_%CE%A9_0_0__seriesRlc_50_%CE%A9_1_nH_1_pF__custom_sah_%7B%220%22%3A%7B%22real%22%3A11%2C%22imaginary%22%3A12%7D%2C%221000%22%3A%7B%22real%22%3A30%2C%22imaginary%22%3A30%7D%2C%221000000%22%3A%7B%22real%22%3A63%2C%22imaginary%22%3A60%7D%2C%221000000000%22%3A%7B%22real%22%3A90%2C%22imaginary%22%3A90%7D%2C%221500000000000%22%3A%7B%22real%22%3A120%2C%22imaginary%22%3A123%7D%7D__transmissionLine_1_mm_0_50_1__stub_1_mm_0_50_1__shortedStub_30_mm_0_50_1__transformer_4_nH_3_nH_2"
+    "circuit=blackBox_50_0_0__shortedCap_1_pF_0_0_0__seriesCap_1_pF_0_0_0__shortedInd_1_nH_0_0__seriesInd_1_nH_0_0__shortedRes_50_%CE%A9_0_0__seriesRes_50_%CE%A9_0_0__seriesRlc_50_%CE%A9_1_nH_1_pF__custom_sah_%7B%220%22%3A%7B%22real%22%3A11%2C%22imaginary%22%3A12%7D%2C%221000%22%3A%7B%22real%22%3A30%2C%22imaginary%22%3A30%7D%2C%221000000%22%3A%7B%22real%22%3A63%2C%22imaginary%22%3A60%7D%2C%221000000000%22%3A%7B%22real%22%3A90%2C%22imaginary%22%3A90%7D%2C%221500000000000%22%3A%7B%22real%22%3A120%2C%22imaginary%22%3A123%7D%7D__transmissionLine_1_mm_0_50_1__stub_1_mm_0_50_1__shortedStub_30_mm_0_50_1__transformer_4_nH_3_nH_2",
   );
   var [stateInURL, defaultCircuit, urlContainsState] = updateObjectFromUrl(initialState, initialCircuit, params);
 
