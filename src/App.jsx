@@ -175,6 +175,7 @@ function App() {
                   sParameters={sParameters}
                   gainResults={gainArray}
                   RefIn={RefIn}
+                  zo={settings.zo}
                 />
               </CardContent>
             </Card>

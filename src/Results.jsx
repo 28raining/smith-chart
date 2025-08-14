@@ -301,7 +301,7 @@ function RPlot({ RefIn, options, freqUnit, title }) {
 // {!spanResults ? null : <UplotReact options={options4} data={data} />}
 // {!spanResults ? null : <UplotReact options={options3} data={data2} />}
 
-export default function Results({ zProc, spanResults, freqUnit, plotType, sParameters, gainResults, RefIn }) {
+export default function Results({ zProc, spanResults, freqUnit, plotType, sParameters, gainResults, RefIn, zo }) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
   // const [options, setOptions] = useState(optionsInit);
@@ -347,7 +347,7 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
   if (spanResults) {
     // console.log("spanResults res", spanResults);
     for (const f in spanResults) {
-      const { refReal, refImag } = processImpedance(spanResults[f].z, 50);
+      const { refReal, refImag } = processImpedance(spanResults[f].z, zo);
       const { magnitude, angle } = rectangularToPolar({
         real: refReal,
         imaginary: refImag,
