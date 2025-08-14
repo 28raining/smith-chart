@@ -97,7 +97,7 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
       else if (component.name === "seriesCap")
         newImpedance = {
           real: esr,
-          imaginary: -1 / (w * component.value * unitConverter[component.unit]),
+          imaginary: w * esl * ESLUnit - 1 / (w * component.value * unitConverter[component.unit]),
         };
       else if (component.name === "seriesRlc") {
         var zj =

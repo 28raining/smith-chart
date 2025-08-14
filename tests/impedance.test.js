@@ -1,6 +1,6 @@
 // const { calculateImpedance } = require('../src/impedanceFunctions.js');
 import { expect, test } from "vitest";
-import { readFileSync/*, writeFileSync*/ } from "fs";
+import { readFileSync /*, writeFileSync*/ } from "fs";
 import { join } from "path";
 import { allImpedanceCalculations, calculateImpedance } from "../src/impedanceFunctions.js";
 
@@ -62,7 +62,10 @@ test("Impedance L-R-Shorted-Stub", () => {
     gainInCircles: [],
     gainOutCircles: [],
   };
-  const [processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, _RefIn] = allImpedanceCalculations(circuit, settings);
+  const [processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, _RefIn] = allImpedanceCalculations(
+    circuit,
+    settings
+  );
 
   expect(processedImpedanceResults).toEqual({
     zStr: "27.88 - 11.2j",
@@ -74,6 +77,54 @@ test("Impedance L-R-Shorted-Stub", () => {
     refReal: -0.2580011952086847,
     refImag: -0.18089971346407316,
     admString: "0.0309 + 0.0124j",
+  });
+});
+
+test("Cap with ESL and ESR", () => {
+  const circuit = [
+    {
+      name: "blackBox",
+      real: 50,
+      imaginary: 0,
+      tolerance: 0,
+    },
+    {
+      name: "seriesCap",
+      value: 1,
+      unit: "pF",
+      tolerance: 0,
+      esr: 23,
+      esl: 2,
+    },
+  ];
+  const settings = {
+    zo: 50,
+    frequency: 2440,
+    frequencyUnit: "MHz",
+    fSpan: 0,
+    fSpanUnit: "MHz",
+    zMarkers: [],
+    vswrCircles: [],
+    qCircles: [],
+    nfCircles: [],
+    gainInCircles: [],
+    gainOutCircles: [],
+  };
+  const [processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, _RefIn] = allImpedanceCalculations(
+    circuit,
+    settings
+  );
+
+  expect(processedImpedanceResults).toEqual({
+    zStr: "73.00 - 34.57j",
+    zPolarStr: "80.77 ∠ -25.34°",
+    refStr: "0.246 - 0.212j",
+    refPolarStr: "0.325 ∠ -40.7°",
+    vswr: "1.96",
+    qFactor: "0.47",
+    refReal: 0.2464977396576432,
+    refImag: -0.21174939752436645,
+    admString: "0.0112 + 0.00530j",
   });
 });
 
@@ -143,7 +194,10 @@ test("Impedance s1p", () => {
     gainInCircles: [],
     gainOutCircles: [],
   };
-  const [_processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, RefIn] = allImpedanceCalculations(circuit, settings);
+  const [_processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _numericalFrequency, RefIn] = allImpedanceCalculations(
+    circuit,
+    settings
+  );
 
   expect(RefIn).toEqual([
     {
