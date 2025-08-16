@@ -235,9 +235,10 @@ function SPlot({ sparametersData, options, freqUnit, title }) {
     );
   });
 }
-function GainPlot({ gain, options, freqUnit, title }) {
+function GainPlot({ gain, options, freqUnit, title, legend }) {
   if (!gain || Object.keys(gain).length === 0) return null;
   const sParamOpt = JSON.parse(JSON.stringify(options));
+  sParamOpt.axes[1].label = legend;
   const sData = [];
   for (const i in gain) {
     const m = [];
@@ -246,7 +247,7 @@ function GainPlot({ gain, options, freqUnit, title }) {
     }
     sData.push(m);
     sParamOpt.series.push({
-      label: i == gain.length - 1 ? "ideal" : `tol ${i}`,
+      label: i == gain.length - 1 ? legend : `tol ${i}`,
       stroke: i == gain.length - 1 ? "blue" : "gray",
       width: 2,
       scale: "y",
@@ -301,7 +302,7 @@ function RPlot({ RefIn, options, freqUnit, title }) {
 // {!spanResults ? null : <UplotReact options={options4} data={data} />}
 // {!spanResults ? null : <UplotReact options={options3} data={data2} />}
 
-export default function Results({ zProc, spanResults, freqUnit, plotType, sParameters, gainResults, RefIn, zo }) {
+export default function Results({ zProc, spanResults, freqUnit, plotType, sParameters, gainResults, noiseArray, RefIn, zo }) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
   // const [options, setOptions] = useState(optionsInit);
@@ -388,7 +389,8 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
     return (
       <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
         <RPlot RefIn={RefIn} options={optionsS11} freqUnit={freqUnit} title="Z looking into DP1" />
-        <GainPlot gain={gainResults} options={optionsGain} freqUnit={freqUnit} title="System Gain" />
+        <GainPlot gain={gainResults} options={optionsGain} freqUnit={freqUnit} title="System Gain" legend="Gain (dB)" />
+        <GainPlot gain={noiseArray} options={optionsGain} freqUnit={freqUnit} title="Noise Figure" legend="Noise Figure (dB)" />
       </div>
     );
   } else

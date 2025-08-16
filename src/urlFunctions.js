@@ -8,7 +8,7 @@ export function syncObjectToUrl(settings, defaultSettings, circuit, defaultCircu
     let value = settings[key];
     let defaultValue = defaultSettings[key];
 
-    if (key == "vswrCircles" || key == "qCircles" || key == "gainInCircles" || key == "gainOutCircles") {
+    if (key == "vswrCircles" || key == "qCircles" || key == "gainInCircles" || key == "gainOutCircles" || key == "nfCircles") {
       if (value.length > 0) {
         const arrString = value.join("_");
         params.set(key, arrString);
@@ -22,13 +22,13 @@ export function syncObjectToUrl(settings, defaultSettings, circuit, defaultCircu
       } else {
         params.delete(key);
       }
-    } else if (key == "nfCircles") {
-      if (value.length > 0) {
-        const arrString = value.map((v) => `${v.NFmin}_${v.NF}_${v.Rn}`).join("__");
-        params.set(key, arrString);
-      } else {
-        params.delete(key);
-      }
+      // } else if (key == "nfCircles") {
+      //   if (value.length > 0) {
+      //     const arrString = value.map((v) => `${v.NFmin}_${v.NF}_${v.Rn}`).join("__");
+      //     params.set(key, arrString);
+      //   } else {
+      //     params.delete(key);
+      //   }
     } else if (value !== defaultValue) {
       params.set(key, value);
     } else {
@@ -63,17 +63,17 @@ export function updateObjectFromUrl(settings, initialCircuit, URLparams) {
     if (URLparams.has(key)) {
       urlContainsState = true;
       let value = URLparams.get(key);
-      if (key == "vswrCircles" || key == "qCircles" || key == "gainInCircles" || key == "gainOutCircles") {
+      if (key == "vswrCircles" || key == "qCircles" || key == "gainInCircles" || key == "gainOutCircles" || key == "nfCircles") {
         settingsFromURL[key] = value ? value.split("_").map(Number) : [];
       } else if (key == "zMarkers") {
         const markers = value ? value.split("__") : [];
         settingsFromURL[key] = markers.map((m) => m.split("_").map(Number));
-      } else if (key == "nfCircles") {
-        const c = value ? value.split("__") : [];
-        settingsFromURL[key] = c.map((m) => {
-          const v = m.split("_");
-          return { NFmin: Number(v[0]), NF: Number(v[1]), Rn: Number(v[2]) };
-        });
+        // } else if (key == "nfCircles") {
+        //   const c = value ? value.split("__") : [];
+        //   settingsFromURL[key] = c.map((m) => {
+        //     const v = m.split("_");
+        //     return { NFmin: Number(v[0]), NF: Number(v[1]), Rn: Number(v[2]) };
+        //   });
       } else if (typeof settings[key] === "number") {
         settingsFromURL[key] = Number(value);
       } else {

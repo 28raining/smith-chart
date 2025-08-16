@@ -91,14 +91,18 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 - can tooltip be changed to not re-render graph
 2d1 - measure Rs and Rl across frequency
 2 - S22 plot Rin and Rout like Steve Arr's sit
-- plot input gain, output gain and middle gain thing
 - when tol + fspan, make the gray markers gray
 - Add noise figure and stability circles later
 - Series RLC should be named parallel RLC
 -- test ESL as it's broken rn
 - let user plot gain without adding .s2p?
 - show gain circles input but gray out when no .s2p
-
+- link to TRGMC
+- Add stability circles
+- comment on youtuber wolfs page
+- Store s-parameter if it's under 10 lines long
+- recheck displays on smaller devices
+- add links to end produce from tutorials (can ensure they work in future!)
 
 ## #####################
 ## ## Sparam DONE ## ##
@@ -205,3 +209,8 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 - compare a few legacy test cases vs site
 - check I didn't screq up reflection coefficient maths
 -- or span frequency & tol
+- plot input gain, output gain and middle gain thing - instead, showing GS0 in the plot
+- add nfmin to input box
+- plot noise figure with gain
+- noise tutorial
+- disbaled grayed out

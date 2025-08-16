@@ -3,14 +3,6 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
 
 function Tutorials() {
   return (
@@ -22,10 +14,19 @@ function Tutorials() {
         <AccordionDetails>
           <ul>
             <li>
-              <a href="https://github.com/28raining/smith-chart/tutorials/s1p.md">Using .s1p files</a>
+              <a href="https://github.com/28raining/smith-chart/blob/main/tutorials/s1p.md" target="_blank">
+                Using .s1p files
+              </a>
             </li>
             <li>
-              <a href="https://github.com/28raining/smith-chart/tutorials/s2p.md">Using .s2p files</a>
+              <a href="https://github.com/28raining/smith-chart/blob/main/tutorials/s2p.md" target="_blank">
+                Using .s2p files
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/28raining/smith-chart/blob/main/tutorials/noise.md" target="_blank">
+                Designing for optimimum Noise Figure & Gain
+              </a>
             </li>
           </ul>
         </AccordionDetails>

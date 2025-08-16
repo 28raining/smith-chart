@@ -27,6 +27,26 @@ test("Touchstone s2p small", () => {
   const expectedData = JSON.parse(readFileSync(outputPath, "utf8"));
   // writeFileSync(outputPath, JSON.stringify(sparameters.data, null, 1), "utf8");
   expect(sparameters.data).toEqual(expectedData);
+  expect(sparameters.noise).toEqual({
+    1000000000: {
+      rn: 20,
+      fmin: 2,
+      gamma: { magnitude: -0.1211, angle: -0.0003 },
+      yGamma: { real: 0.025511434747870782, imaginary: -3.283400256919881e-8 },
+    },
+    2000000000: {
+      rn: 22.5,
+      fmin: 2.5,
+      gamma: { magnitude: -0.3054, angle: -0.0096 },
+      yGamma: { real: 0.03758709982155337, imaginary: -0.0000042423652523559385 },
+    },
+    10000000000: {
+      rn: 42.5,
+      fmin: 6.5,
+      gamma: { magnitude: 0.3336, angle: 0.0134 },
+      yGamma: { real: 0.009994001302296574, imaginary: -0.000001754757171921433 },
+    },
+  });
 });
 
 function compareParsedData(a, b) {
@@ -60,7 +80,7 @@ test("Touchstone s1p small", () => {
   });
   compareParsedData(sparameters.data, expectedData);
   // expect(sparameters.data).toEqual(expectedData);
-  expect(sparameters.noise).toEqual([]);
+  expect(sparameters.noise).toEqual({});
   expect(sparameters.type).toEqual("s1p");
 
   // Add your assertions here

@@ -88,7 +88,20 @@
         }
       }
     },
-    "noise": [],
+    "noise": {
+      "1400000000": {
+        "rn": 20,
+        "fmin": 1.6,
+        "gamma": {
+          "magnitude": 0.5,
+          "angle": 130
+        },
+        "yGamma": {
+          "real": 0.02470305323028169,
+          "imaginary": -0.02523151554017282
+        }
+      }
+    },
     "settings": {
       "freq_unit": "GHz",
       "param": "S",
