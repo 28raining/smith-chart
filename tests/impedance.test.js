@@ -250,7 +250,10 @@ test("Matched s2p circuit", () => {
     gainOutCircles: [1],
   };
 
-  const [_processedImpedanceResults, spanResults, multiZResults, gainArray, noiseArray, numericalFrequency, _RefIn] = allImpedanceCalculations(circuit, settings);
+  const [_processedImpedanceResults, spanResults, multiZResults, gainArray, noiseArray, numericalFrequency, _RefIn] = allImpedanceCalculations(
+    circuit,
+    settings,
+  );
 
   // const tmpPath = join(process.cwd(), "tests", "tmp.json");
   // writeFileSync(tmpPath, JSON.stringify(multiZResults, null, 1), "utf8");
@@ -267,7 +270,7 @@ test("Matched s2p circuit", () => {
       2000000000: 3.293622417785331,
     },
   ]);
-  expect(noiseArray).toEqual([ { '1400000000': 1.8259050592115345 } ]);
+  expect(noiseArray).toEqual([{ 1400000000: 1.8259050592115345 }]);
   expect(spanResults).toEqual([
     {
       800000000: {

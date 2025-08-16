@@ -52,7 +52,6 @@ console.log("stateInURL", stateInURL, defaultCircuit, urlContainsState);
 
 function App() {
   const [userCircuit, setUserCircuit] = useState(defaultCircuit);
-  
   const [settings, setSettings] = useState(stateInURL);
   const [urlSnackbar, setUrlSnackbar] = useState(false);
   const [plotType, setPlotType] = useState("impedance");
