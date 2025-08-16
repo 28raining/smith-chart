@@ -58,6 +58,7 @@ function Graph({
   chosenSparameter,
   freqUnit,
   frequency,
+  chosenNoiseParameter,
 }) {
   const svgRef = useRef(null);
   const svgWrapper = useRef(null);
@@ -238,9 +239,11 @@ function Graph({
 
     const circlesToPlot = [];
     //the noise circles
-    for (const n of nfCircles) {
-      const [center, radius] = sparamNoiseCircles(n.NFmin, n.NF, n.Rn / zo, reflection_real, reflection_imag);
-      circlesToPlot.push({ center, radius, dash: dashTypes[3], label: `${n.NF}dB` });
+    if (chosenNoiseParameter) {
+      for (const n of nfCircles) {
+        const [center, radius] = sparamNoiseCircles(chosenNoiseParameter.fmin, n, chosenNoiseParameter.rn / zo, chosenNoiseParameter.gamma);
+        circlesToPlot.push({ center, radius, dash: dashTypes[3], label: `${n}dB` });
+      }
     }
     //the gain circles
     for (const g of gainInCircles) {
@@ -299,7 +302,7 @@ function Graph({
 
       createLabel(userSVG, x, Number(y) - c.radius * width * 0.5, c.label);
     }
-  }, [nfCircles, gainInCircles, gainOutCircles, zo, reflection_real, reflection_imag, width, chosenSparameter]);
+  }, [nfCircles, gainInCircles, gainOutCircles, zo, reflection_real, reflection_imag, width, chosenSparameter, chosenNoiseParameter]);
 
   //initializing the smith chart diagrams
   useEffect(() => {
@@ -523,7 +526,7 @@ function Graph({
               coord[coord.length - 1][1],
               tol,
               point,
-              arcColors[dp % 10],
+              cumulatedDP == 0 ? arcColors[dp % 10] : arcColors[(cumulatedDP - dp) % 10],
               frequency,
               hoverSnaps,
               markerRadius,

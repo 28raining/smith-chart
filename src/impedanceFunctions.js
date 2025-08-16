@@ -8,6 +8,7 @@ import {
   polarToRectangular,
   rectangularToPolar,
   zToRefl,
+  complex_subtract,
 } from "./commonFunctions.js";
 import { sParamFrequencyRange } from "./sparam.js"; // Import the sParamFrequencyRange function
 
@@ -260,6 +261,7 @@ export function allImpedanceCalculations(userCircuit, settings) {
   var spanFrequencies = [];
   const numericalFrequencyTemp = settings.frequency * unitConverter[settings.frequencyUnit];
   var numericalFrequency = numericalFrequencyTemp;
+  var noiseFrequency = -1;
   //frequency must be one of the numbers in sparam
   if (sParamIndex !== -1) {
     const allF = Object.keys(userCircuit[sParamIndex].data);
@@ -268,6 +270,16 @@ export function allImpedanceCalculations(userCircuit, settings) {
       if (Number(f) >= numericalFrequencyTemp) {
         numericalFrequency = Number(f);
         break;
+      }
+    }
+    const allFn = Object.keys(userCircuit[sParamIndex].noise);
+    if (allFn.length > 0) {
+      noiseFrequency = allFn[allFn.length - 1];
+      for (const f in userCircuit[sParamIndex].noise) {
+        if (Number(f) >= numericalFrequencyTemp) {
+          noiseFrequency = Number(f);
+          break;
+        }
       }
     }
   }
@@ -283,6 +295,11 @@ export function allImpedanceCalculations(userCircuit, settings) {
   if (sParamIndex !== -1) {
     userCircuitNoLambda[sParamIndex].data = sParamFrequencyRange(
       userCircuitNoLambda[sParamIndex].data,
+      numericalFrequency - numericalFspan,
+      numericalFrequency + numericalFspan,
+    );
+    userCircuitNoLambda[sParamIndex].noise = sParamFrequencyRange(
+      userCircuitNoLambda[sParamIndex].noise,
       numericalFrequency - numericalFspan,
       numericalFrequency + numericalFspan,
     );
@@ -314,7 +331,7 @@ export function allImpedanceCalculations(userCircuit, settings) {
     //for frequency span, don't create arcs, just create the final impedances
     var spanResults = [];
 
-    if (numericalFspan > 0) {
+    if (spanFrequencies.length > 0) {
       for (const c of circuitArray) {
         const fRes = {};
         const RefInVsF = {};
@@ -333,6 +350,8 @@ export function allImpedanceCalculations(userCircuit, settings) {
 
   //if its s2p then create the gain results. Must do this after the multiZResults are created
   const gainArray = [];
+  const noiseArray = [];
+
   if (s2pIndex !== -1) {
     for (const x in multiZResults[0].ZvsF) {
       for (const y in multiZResults[1].ZvsF) {
@@ -349,10 +368,22 @@ export function allImpedanceCalculations(userCircuit, settings) {
         gainArray.push(gainResults);
       }
     }
+    if (Object.keys(userCircuitNoLambda[s2pIndex].noise).length > 0) {
+      for (const x in multiZResults[0].ZvsF) {
+        const noiseResults = {};
+        for (const f in userCircuitNoLambda[s2pIndex].noise) {
+          const p = userCircuitNoLambda[s2pIndex].noise[f];
+          const y = one_over_complex(multiZResults[0].ZvsF[x][f].z);
+          const YSmYOPT = complex_subtract(y, p.yGamma);
+          noiseResults[f] = 10 ** (p.fmin / 10) + (p.rn / y.real) * (YSmYOPT.real ** 2 + YSmYOPT.imaginary ** 2);
+        }
+        noiseArray.push(noiseResults);
+      }
+    }
   }
 
   // converts real and imaginary into Q, VSWR, reflection coeff, etc
   const processedImpedanceResults = processImpedance(finalZ, settings.zo);
 
-  return [processedImpedanceResults, spanResults, multiZResults, gainArray, numericalFrequency, RefIn];
+  return [processedImpedanceResults, spanResults, multiZResults, gainArray, noiseArray, numericalFrequency, RefIn, noiseFrequency];
 }

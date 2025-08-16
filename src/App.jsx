@@ -52,23 +52,23 @@ console.log("stateInURL", stateInURL, defaultCircuit, urlContainsState);
 
 function App() {
   const [userCircuit, setUserCircuit] = useState(defaultCircuit);
-
+  
   const [settings, setSettings] = useState(stateInURL);
   const [urlSnackbar, setUrlSnackbar] = useState(false);
   const [plotType, setPlotType] = useState("impedance");
 
   syncObjectToUrl(settings, initialState, userCircuit, initialCircuit); // Sync the settings object to the URL
 
-  const [processedImpedanceResults, spanResults, multiZResults, gainArray, numericalFrequency, RefIn] = allImpedanceCalculations(
-    userCircuit,
-    settings,
-  );
+  const [processedImpedanceResults, spanResults, multiZResults, gainArray, noiseArray, numericalFrequency, RefIn, noiseFrequency] =
+    allImpedanceCalculations(userCircuit, settings);
 
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
   const sParameters = sParamIndex === -1 ? null : userCircuit[sParamIndex];
   const s1pIndex = userCircuit.findIndex((c) => c.type === "s1p");
   const chosenSparameter =
     sParamIndex === -1 ? null : { ...userCircuit[sParamIndex].data[numericalFrequency], zo: userCircuit[sParamIndex].settings.zo };
+  const chosenNoiseParameter = noiseFrequency === -1 ? null : userCircuit[sParamIndex].noise[noiseFrequency];
+  // console.log("chosenNoiseParameter", chosenNoiseParameter);
 
   const handleSnackbarClick = () => {
     setSettings({ ...initialState });
@@ -151,10 +151,11 @@ function App() {
                 chosenSparameter={chosenSparameter}
                 freqUnit={settings.frequencyUnit}
                 frequency={numericalFrequency}
+                chosenNoiseParameter={chosenNoiseParameter}
               />
             </Card>
           </Grid>
-          <Grid size={{ xs: 12, sm: 5, md: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
             <Card>
               <CardContent>
                 {sParamIndex !== -1 && (
@@ -162,7 +163,7 @@ function App() {
                     <ToggleButtonGroup value={plotType} exclusive onChange={(e, newP) => setPlotType(newP)}>
                       <ToggleButton value="sparam">Plot Raw S-Parameter Data</ToggleButton>
                       <ToggleButton value="impedance">
-                        {s1pIndex !== -1 ? "Plot Reflection Coefficient Looking Into DP1" : "Plot System Gain"}
+                        {s1pIndex !== -1 ? "Plot Reflection Coefficient Looking Into DP1" : "Plot System Gain & Noise"}
                       </ToggleButton>
                     </ToggleButtonGroup>
                   </Box>
@@ -174,16 +175,23 @@ function App() {
                   plotType={plotType}
                   sParameters={sParameters}
                   gainResults={gainArray}
+                  noiseArray={noiseArray}
                   RefIn={RefIn}
                   zo={settings.zo}
                 />
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ xs: 12, sm: 7, md: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
             <Card>
               <CardContent>
-                <Settings settings={settings} setSettings={setSettings} usedF={numericalFrequency} chosenSparameter={chosenSparameter} />
+                <Settings
+                  settings={settings}
+                  setSettings={setSettings}
+                  usedF={numericalFrequency}
+                  chosenSparameter={chosenSparameter}
+                  chosenNoiseParameter={chosenNoiseParameter}
+                />
               </CardContent>
             </Card>
           </Grid>

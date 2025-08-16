@@ -305,6 +305,34 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                   </TableBody>
                 </Table>
               </TableContainer>
+              <Typography sx={{ display: "block", mt: 3 }}>Noise Data - note that noise frequencies not in s-param are discarded</Typography>
+              <TableContainer sx={{ maxHeight: 300, border: "1px solid black" }}>
+                <Table stickyHeader size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Frequency ({parsed.settings.freq_unit})</TableCell>
+                      <TableCell>NFmin</TableCell>
+                      <TableCell>|GAMMAopt|</TableCell>
+                      <TableCell>∠GAMMAopt</TableCell>
+                      <TableCell>Rn</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.keys(parsed.noise).map((f, i) => {
+                      if (!showAllData) if (i > 300) return null; // limit to 300 rows for performance
+                      return (
+                        <TableRow hover tabIndex={-1} key={f}>
+                          <TableCell key="freq">{(f / unitConverter[parsed.settings.freq_unit]).toLocaleString()}</TableCell>
+                          <TableCell key="nfmin">{parsed.noise[f].fmin}</TableCell>
+                          <TableCell key="gamma_mag">{parsed.noise[f].gamma.magnitude}</TableCell>
+                          <TableCell key="gamma_ang">{parsed.noise[f].gamma.angle}</TableCell>
+                          <TableCell key="rn">{parsed.noise[f].rn}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </>
           )}
         </Box>

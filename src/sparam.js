@@ -23,26 +23,24 @@ import {
 //Ni = (F - Fmin) * |1 + Go|^2 / 4 * Rn
 //Circle Center = Go / (Ni + 1)
 //Circle Radius = sqrt(Ni(Ni + 1 - |Go|^2)) / (Ni + 1)
-export function sparamNoiseCircles(fMin, F, Rn, reflection_real, reflection_imag) {
+export function sparamNoiseCircles(fMin, F, Rn, gamma) {
   // Fmin = n.NFmin;
   // F = n.NF;
   // Rn = n.Rn / zo;
-  const Go_real = reflection_real;
-  const Go_imag = reflection_imag;
-  const GoMag = Go_real * Go_real + Go_imag * Go_imag;
-  const GoMagP1 = (Go_real + 1) * (Go_real + 1) + Go_imag * Go_imag;
+  const Go = polarToRectangular(gamma);
+  // const Go_real = gamma.real;
+  // const Go_imag = gamma.imaginary;
+  // const GoMag = Go_real * Go_real + Go_imag * Go_imag;
+  const GoMagP1 = (Go.real + 1) * (Go.real + 1) + Go.imaginary * Go.imaginary;
 
   const FminLinear = Math.pow(10, fMin / 10);
   const FLinear = Math.pow(10, F / 10);
   const Ni = ((FLinear - FminLinear) * GoMagP1) / (4 * Rn);
-  const center_real = Go_real / (Ni + 1);
-  const center_imag = Go_imag / (Ni + 1);
-  const radius = Math.sqrt(Ni * (Ni + 1 - GoMag)) / (Ni + 1);
+  const center = { real: Go.real / (Ni + 1), imaginary: Go.imaginary / (Ni + 1) };
+  const radius = Math.sqrt(Ni * (Ni + 1 - gamma.magnitude ** 2)) / (Ni + 1);
 
   //must conver from center Reflection coefficient to Z : Z = Zo(1+refl/(1-refl)
-  var tempZ = one_over_complex({ real: 1 - center_real, imaginary: -center_imag });
-  var centerImpedance = complex_multiply(tempZ, { real: 1 + center_real, imaginary: center_imag });
-  return [centerImpedance, radius];
+  return [reflToZ(center, 50), radius];
 }
 
 export function sparamGainCircles(S11, zo, gain) {
@@ -191,7 +189,7 @@ export function parseTouchstoneFile(content) {
   // const dataLineRegex = /^(?<freq>\S+)((\s+[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?){2,})$/;
   const noiseRegex = /^\s*(?<freq>\S+)\s+(?<fmin>\S+)\s+(?<gamma_mag>\S+)\s+(?<gamma_ang>\S+)\s+(?<rn>\S+)\s*$/;
 
-  const results = { data: {}, noise: [], settings: {}, error: null, name: "sparam" };
+  const results = { data: {}, noise: {}, settings: {}, error: null, name: "sparam" };
   var noiseExists = false;
   var line;
 
@@ -202,11 +200,11 @@ export function parseTouchstoneFile(content) {
   }
 
   var lines = content.trim().replace(/–/g, "-").split(/\r?\n/); // split by line, remove empty lines and replace long dash with short dash
-  lines = lines.filter((line) => !line.trim().startsWith("!")); //remove comments
+  lines = lines.filter((line) => !(line.trim().startsWith("!") && !line.includes("Noise parameters"))); //remove comments
   const match = lines[0].match(optionsRegex);
   if (match?.groups) {
     // console.log("parsedSettings", match.groups);
-    results["settings"] = match.groups;
+    results["settings"] = { ...match.groups };
     if (results["settings"].param !== "S") {
       results.error = `Only type=S is supported for now (you have type=${results["settings"].param})`;
       return results;
@@ -242,7 +240,17 @@ export function parseTouchstoneFile(content) {
       const match = lines[line].match(noiseRegex);
       if (match?.groups) {
         // console.log("noiseData", match.groups);
-        results["noise"].push(match.groups);
+        const { freq, ...rest } = match.groups;
+        // rest.rn = rest.rn
+        const f = freq * unitConverter[results["settings"].freq_unit];
+        if (!(f in results["data"])) continue; // skip if noise frequency not in data
+        results.noise[f] = {};
+        results.noise[f].rn = rest.rn * results["settings"].zo; //convert rn to Ohms
+        results.noise[f].fmin = parseFloat(rest.fmin);
+        results.noise[f].gamma = { magnitude: parseFloat(rest.gamma_mag), angle: parseFloat(rest.gamma_ang) };
+        results.noise[f].yGamma = one_over_complex(reflToZ(polarToRectangular(results.noise[f].gamma), results["settings"].zo));
+
+        // results["noise"].push(match.groups);
       } else {
         results.error = "Invalid Touchstone noise data format";
         return results;

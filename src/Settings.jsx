@@ -35,18 +35,42 @@ function setUnit(value, field, setX) {
   });
 }
 
-export default function Settings({ settings, setSettings, usedF, chosenSparameter }) {
+function DisabledOverlay({ disabled, disabledText }) {
+  return (
+    disabled && (
+      <Typography
+        variant="caption"
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          backgroundColor: "rgba(69, 19, 19, 1)",
+          padding: "4px 8px",
+          borderRadius: 1,
+          fontWeight: "bold",
+          color: "white",
+        }}
+      >
+        {disabledText ? disabledText : "Disabled — Add .s2p file"}
+      </Typography>
+    )
+  );
+}
+
+export default function Settings({ settings, setSettings, usedF, chosenSparameter, chosenNoiseParameter }) {
   const [zMarkersInt, setZMarkersInt] = useState([25, 25]);
   const [QInt, setQInt] = useState(0);
   const [VSWRInt, setVSWRInt] = useState(0);
   const [gainInInt, setGainInInt] = useState(0);
   const [gainOutInt, setGainOutInt] = useState(0);
-  // const [NFInt, setNFInt] = useState({ NFmin: 1, NF: 1.5, Rn: 20 });
+  const [NFInt, setNFInt] = useState(0);
 
   const userFrequency = settings.frequency * unitConverter[settings.frequencyUnit];
   const s2p = chosenSparameter ? "S22" in chosenSparameter : false;
   const gInMax = s2p ? 10 * Math.log10(1 / (1 - chosenSparameter.S11.magnitude ** 2)) : null;
   const gOutMax = s2p ? 10 * Math.log10(1 / (1 - chosenSparameter.S22.magnitude ** 2)) : null;
+  const NFMin = chosenNoiseParameter ? chosenNoiseParameter.fmin : null;
 
   return (
     <>
@@ -101,68 +125,62 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
             ))}
           </Select>
         </Grid>
-        <Grid size={{ xs: 12, lg: 7 }} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
           <CustomMarkersTable zMarkersInt={zMarkersInt} setZMarkersInt={setZMarkersInt} settings={settings} setSettings={setSettings} />
         </Grid>
-        <Grid size={{ xs: 12, lg: 5 }} sx={{ display: "flex" }}>
-          <CustomQTable
-            QInt={QInt}
-            setQInt={setQInt}
-            settings={settings}
-            setSettings={setSettings}
-            title="Constant Q-factor circles"
-            index="qCircles"
-          />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 7 }} sx={{ display: "flex" }}>
-          {/* FIXME - temporariliy commented whilst adding sparameters for first time */}
-          {/* <CustomNFTable
-            QInt={NFInt}
-            setQInt={setNFInt}
-            settings={settings}
-            setSettings={setSettings}
-            title="Constant Noise Figure circles"
-            index="nfCircles"
-          /> */}
-        </Grid>
-        <Grid size={{ xs: 12, lg: 5 }} sx={{ display: "flex" }}>
-          <CustomQTable
-            QInt={VSWRInt}
-            setQInt={setVSWRInt}
-            settings={settings}
-            setSettings={setSettings}
-            title="Constant VSWR circles"
-            index="vswrCircles"
-          />
-        </Grid>
-        {s2p && (
-          <>
-            <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
-              <CustomQTable
-                QInt={gainInInt}
-                gmax={gInMax}
-                setQInt={setGainInInt}
-                settings={settings}
-                setSettings={setSettings}
-                title="Input Gain Circles"
-                index="gainInCircles"
-                unit="dB"
-              />
-            </Grid>
-            <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
-              <CustomQTable
-                QInt={gainOutInt}
-                gmax={gOutMax}
-                setQInt={setGainOutInt}
-                settings={settings}
-                setSettings={setSettings}
-                title="Output Gain Circles"
-                index="gainOutCircles"
-                unit="dB"
-              />
-            </Grid>
-          </>
-        )}
+        <CustomQTable
+          QInt={QInt}
+          setQInt={setQInt}
+          settings={settings}
+          setSettings={setSettings}
+          title="Constant Q-factor circles"
+          index="qCircles"
+          disabled={false}
+        />
+        <CustomQTable
+          QInt={VSWRInt}
+          setQInt={setVSWRInt}
+          settings={settings}
+          setSettings={setSettings}
+          title="Constant VSWR circles"
+          index="vswrCircles"
+          disabled={false}
+        />
+        <CustomQTable
+          minValue={NFMin}
+          QInt={NFInt}
+          setQInt={setNFInt}
+          settings={settings}
+          setSettings={setSettings}
+          title="Constant Noise Figure circles"
+          index="nfCircles"
+          unit="dB"
+          disabled={!s2p || !chosenNoiseParameter}
+          disabledText="Disabled — Add .s2p with noise"
+        />
+        <CustomQTable
+          QInt={gainInInt}
+          maxValue={gInMax}
+          setQInt={setGainInInt}
+          settings={settings}
+          setSettings={setSettings}
+          title="Input Gain Circles"
+          index="gainInCircles"
+          unit="dB"
+          disabled={!s2p}
+        />
+
+        <CustomQTable
+          QInt={gainOutInt}
+          maxValue={gOutMax}
+          setQInt={setGainOutInt}
+          settings={settings}
+          setSettings={setSettings}
+          title="Output Gain Circles"
+          index="gainOutCircles"
+          unit="dB"
+          disabled={!s2p}
+        />
       </Grid>
     </>
   );
@@ -255,196 +273,87 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
     </TableContainer>
   );
 }
-function CustomQTable({ QInt, gmax, setQInt, settings, setSettings, title, index, unit }) {
+function CustomQTable({ QInt, maxValue, minValue, setQInt, settings, setSettings, title, index, unit, disabled, disabledText }) {
   return (
-    <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1, backgroundColor: "#effffd" }}>
-      <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
-        {title} {gmax ? ` (Gmax = ${gmax.toPrecision(3)}dB)` : ""}
-      </Typography>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              Value
-            </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              Add
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-            <TableCell align="center">
-              <TextField
-                variant="outlined"
-                size="small"
-                value={QInt}
-                onChange={(e) => setQInt(parseInput(e.target.value))}
-                slotProps={{
-                  input: {
-                    endAdornment: <InputAdornment position="end">{unit}</InputAdornment>,
-                  },
-                }}
-              />
-            </TableCell>
-            <TableCell align="center" sx={{ py: 0 }}>
-              <IconButton
-                disabled={gmax && QInt > gmax}
-                sx={{ p: 1 }}
-                onClick={() => {
-                  setSettings((z) => {
-                    const newCircuit = { ...z };
-                    newCircuit[index] = [...settings[index], Math.abs(QInt)];
-                    return newCircuit;
-                  });
-                  setQInt(0);
-                }}
-              >
-                <AddCircleOutlineIcon sx={{ height: "24px", width: "24px" }} />
-              </IconButton>
-            </TableCell>
-          </TableRow>
-          {settings[index].map((row, i) => (
-            <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} key={i}>
-              <TableCell component="th" scope="row" align="center">
-                {row}
+    <Grid
+      size={{ xs: 12, lg: 6 }}
+      sx={{ display: "flex", position: "relative", opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? "none" : "auto" }}
+    >
+      <DisabledOverlay disabled={disabled} disabledText={disabledText} />
+      <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1, backgroundColor: "#effffd" }}>
+        <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
+          {title} {maxValue ? ` (max = ${maxValue.toPrecision(3)}dB)` : minValue ? ` (min = ${minValue.toPrecision(3)}dB)` : ""}
+        </Typography>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+                Value
               </TableCell>
+              <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
+                Add
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
               <TableCell align="center">
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  value={QInt}
+                  onChange={(e) => setQInt(parseInput(e.target.value))}
+                  slotProps={{
+                    input: {
+                      endAdornment: <InputAdornment position="end">{unit}</InputAdornment>,
+                    },
+                  }}
+                />
+              </TableCell>
+              <TableCell align="center" sx={{ py: 0 }}>
                 <IconButton
-                  aria-label="delete"
+                  disabled={(maxValue && QInt > maxValue) || (minValue && QInt < minValue)}
+                  sx={{ p: 1 }}
                   onClick={() => {
                     setSettings((z) => {
-                      const n = { ...z };
-                      n[index] = [
-                        ...n[index].slice(0, i), // Items before the index `i`
-                        ...n[index].slice(i + 1),
-                      ];
-                      return n;
+                      const newCircuit = { ...z };
+                      newCircuit[index] = [...settings[index], Math.abs(QInt)];
+                      return newCircuit;
                     });
+                    setQInt(0);
                   }}
                 >
-                  <DeleteIcon sx={{ height: "20px", width: "20px" }} />
+                  <AddCircleOutlineIcon sx={{ height: "24px", width: "24px" }} />
                 </IconButton>
               </TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-}
-function CustomNFTable({ QInt, setQInt, settings, setSettings, title, index }) {
-  return (
-    <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1, backgroundColor: "#effffd" }}>
-      <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
-        {title}
-      </Typography>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              NF<sub>min</sub>
-            </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              NF
-            </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              R<sub>N</sub>
-            </TableCell>
-            <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              Add
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-            <TableCell align="center" sx={{ px: 0.5 }}>
-              <TextField
-                slotProps={{
-                  input: {
-                    endAdornment: <InputAdornment position="end">dB</InputAdornment>,
-                  },
-                }}
-                variant="outlined"
-                size="small"
-                value={QInt.NFmin}
-                onChange={(e) => setValue(e.target.value, "NFmin", setQInt)}
-              />
-            </TableCell>
-            <TableCell align="center" sx={{ px: 0.5 }}>
-              <TextField
-                slotProps={{
-                  input: {
-                    endAdornment: <InputAdornment position="end">dB</InputAdornment>,
-                  },
-                }}
-                variant="outlined"
-                size="small"
-                value={QInt.NF}
-                onChange={(e) => setValue(e.target.value, "NF", setQInt)}
-              />
-            </TableCell>
-            <TableCell align="center" sx={{ px: 0.5 }}>
-              <TextField
-                slotProps={{
-                  input: {
-                    endAdornment: <InputAdornment position="end">Ω</InputAdornment>,
-                  },
-                }}
-                variant="outlined"
-                size="small"
-                value={QInt.Rn}
-                onChange={(e) => setValue(e.target.value, "Rn", setQInt)}
-              />
-            </TableCell>
-            <TableCell align="center" sx={{ py: 0, px: 0.5 }}>
-              <IconButton
-                sx={{ p: 1 }}
-                onClick={() => {
-                  setSettings((z) => {
-                    const newCircuit = { ...z };
-                    newCircuit[index] = [...settings[index], QInt];
-                    return newCircuit;
-                  });
-                  // setQInt(0);
-                }}
-              >
-                <AddCircleOutlineIcon sx={{ height: "24px", width: "24px" }} />
-              </IconButton>
-            </TableCell>
-          </TableRow>
-          {settings[index].map((row, i) => (
-            <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} key={i}>
-              <TableCell component="th" scope="row" align="center">
-                {`${row.NFmin}dB`}
-              </TableCell>
-              <TableCell component="th" scope="row" align="center">
-                {`${row.NF}dB`}
-              </TableCell>
-              <TableCell component="th" scope="row" align="center">
-                {`${row.Rn}Ω`}
-              </TableCell>
-              <TableCell align="center">
-                <IconButton
-                  aria-label="delete"
-                  onClick={() => {
-                    setSettings((z) => {
-                      const n = { ...z };
-                      n[index] = [
-                        ...n[index].slice(0, i), // Items before the index `i`
-                        ...n[index].slice(i + 1),
-                      ];
-                      return n;
-                    });
-                  }}
-                >
-                  <DeleteIcon sx={{ height: "20px", width: "20px" }} />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+            {settings[index].map((row, i) => (
+              <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} key={i}>
+                <TableCell component="th" scope="row" align="center">
+                  {row}
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton
+                    aria-label="delete"
+                    onClick={() => {
+                      setSettings((z) => {
+                        const n = { ...z };
+                        n[index] = [
+                          ...n[index].slice(0, i), // Items before the index `i`
+                          ...n[index].slice(i + 1),
+                        ];
+                        return n;
+                      });
+                    }}
+                  >
+                    <DeleteIcon sx={{ height: "20px", width: "20px" }} />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Grid>
   );
 }
