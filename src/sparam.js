@@ -279,3 +279,29 @@ export function S11NotMatched(point, zo, rTermination) {
   return { ...point, S11: rectangularToPolar(newZ) };
   // });
 }
+
+export function stabilityCircles(sparam, zo) {
+  // Convert polar form to rectangular form
+  const S11r = polarToRectangular(sparam.S11);
+  const S22r = polarToRectangular(sparam.S22);
+  const S12r = polarToRectangular(sparam.S12);
+  const S21r = polarToRectangular(sparam.S21);
+
+  // Calculate Delta = S11 * S22 - S12 * S21
+  const product1 = complex_multiply(S11r, S22r);
+  const product2 = complex_multiply(S12r, S21r);
+  const delta = {
+    real: product1.real - product2.real,
+    imaginary: product1.imaginary - product2.imaginary,
+  };
+  const deltaPolar = rectangularToPolar(delta);
+
+  const denominator = sparam.S22.magnitude ** 2 - deltaPolar.magnitude ** 2;
+  const numerator = complex_subtract(S22r, complex_multiply(delta, { real: S11r.real, imaginary: -S11r.imaginary }));
+  const center = { real: numerator.real / denominator, imaginary: -numerator.imaginary / denominator };
+
+  const radius_numerator = complex_multiply(S12r, S21r);
+  const radius = rectangularToPolar({ real: radius_numerator.real / denominator, imaginary: radius_numerator.imaginary / denominator });
+
+  return { center: reflToZ(center, zo), radius: radius.magnitude };
+}

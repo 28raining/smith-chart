@@ -214,3 +214,9 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 - plot noise figure with gain
 - noise tutorial
 - disbaled grayed out
+# Stability circles
+- check stability inisde circle reading is correct
+- can color outside of a circle?
+- Tutorial
+- Testing
+- Stability used equations
