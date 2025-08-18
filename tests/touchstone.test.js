@@ -1,6 +1,6 @@
 // const { calculateImpedance } = require('../src/impedanceFunctions.js');
 import { expect, test } from "vitest";
-import { sparamGainCircles, sparamZout, parseTouchstoneFile } from "../src/sparam.js";
+import { sparamGainCircles, sparamZout, parseTouchstoneFile, stabilityCircles } from "../src/sparam.js";
 import { readFileSync /*, writeFileSync*/ } from "fs";
 import { join } from "path";
 
@@ -119,3 +119,35 @@ test("Rout from sparam", () => {
   };
   expect(res).toEqual(expected);
 });
+
+test("Test stability circles", () => {
+  const sparam = {
+    S11: {
+      magnitude: 0.72,
+      angle: -46,
+    },
+    S21: {
+      magnitude: 17.973,
+      angle: 148.5,
+    },
+    S12: {
+      magnitude: 0.03,
+      angle: 68.5,
+    },
+    S22: {
+      magnitude: 0.88,
+      angle: -23.6,
+    },
+  };
+  const a = stabilityCircles(sparam, 50);
+
+  console.log(a);
+  expect(a).toEqual({
+    center: { real: -55.656222191198005, imaginary: 49.338584816038534 },
+    radius: 1.9435518506543061,
+  });
+
+  // const [x, y] = impedanceToSmithChart(a.center.real / 50, a.center.imaginary / 50, 300);
+});
+
+//FIXME - test sparamNoiseCircles directly

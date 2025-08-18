@@ -99,7 +99,9 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
             variant="outlined"
             size="small"
             error={usedF !== userFrequency}
-            helperText={usedF === userFrequency ? "" : `f not in s-param. Using ${usedF}Hz`}
+            helperText={
+              usedF === userFrequency ? "" : `f not in s-param. Using ${usedF / unitConverter[settings.frequencyUnit]}${settings.frequencyUnit}`
+            }
             sx={{ m: 0, p: 0, flex: 1 }}
             value={settings.frequency}
             onChange={(e) => setValue(e.target.value, "frequency", setSettings)}

@@ -21,7 +21,7 @@ import Checkbox from "@mui/material/Checkbox";
 import Box from "@mui/material/Box";
 
 import { arcColors, processImpedance, parseInput, reflToZ, polarToRectangular, unitConverter } from "./commonFunctions.js";
-import { sparamNoiseCircles, sparamGainCircles } from "./sparam.js";
+import { sparamNoiseCircles, sparamGainCircles, stabilityCircles } from "./sparam.js";
 
 const sParamColorLut = {
   S11: arcColors[0],
@@ -40,6 +40,29 @@ const dashTypes = [
 // Usage: <path stroke-dasharray={dashTypes[0]} ... />
 const markerRadius = 6;
 const markerRadiusSP = 6 * 0.7;
+
+//find if a specific point (px, py) is inside a circle with center (cx, cy) and radius r
+function isPointInCircle(px, py, cx, cy, r) {
+  const dx = px - cx;
+  const dy = py - cy;
+  return dx * dx + dy * dy <= r * r;
+}
+
+//function to find the point on the  circle circumferance that is nearers to point (j,q)
+function lineEndPoint(x, y, j, q, l) {
+  const dx = j - x;
+  const dy = q - y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist === 0) {
+    throw new Error("Start and target point are the same");
+  }
+  const nx = dx / dist;
+  const ny = dy / dist;
+  return {
+    x: x + nx * l,
+    y: y + ny * l,
+  };
+}
 
 function Graph({
   zResultsSrc,
@@ -71,6 +94,7 @@ function Graph({
   const vswrCirclesRef = useRef(null);
   const sParamsRef = useRef(null);
   const nfCirclesRef = useRef(null);
+  const stabilityCirclesRef = useRef(null);
   const impedanceArcsRef = useRef(null);
   const dpCirclesRef = useRef(null);
   const [hoverImpedance, setHoverImpedance] = useState([0, 0, 0]);
@@ -82,6 +106,7 @@ function Graph({
   const [reactanceCircles, setReactanceCircles] = useState([0.2, 0.5, 1, 2, 4, 10, -0.2, -0.5, -1, -2, -4, -10]);
   const [showSPlots, setShowSPlots] = useState({ S11: true, S21: true, S12: true, S22: true });
   const [showZPlots, setShowZPlots] = useState(true);
+  const [showStabilityPlot, setShowStabilityPlot] = useState(true);
 
   // console.log('resistanceCircles', resistanceCircles);
   // const [snapDetails, setSnapDetails] = useState({ real: 0, imaginary: 0 });
@@ -231,6 +256,42 @@ function Graph({
     });
   }, [zMarkers, zo, width]);
 
+  //draw the stability circles
+  useEffect(() => {
+    var userSVG = d3.select(stabilityCirclesRef.current);
+    userSVG.selectAll("*").remove();
+    if (!showStabilityPlot) return;
+    if (!chosenSparameter) return;
+    if (!chosenSparameter.S22) return;
+    // const b = stabilityCircles({...chosenSparameter, S11: chosenSparameter.S22, S22: chosenSparameter.S11 }); // output stability circle
+
+    function drawStabilityCircle(modifiedSparam, inOrOut) {
+      const a = stabilityCircles(modifiedSparam, modifiedSparam.zo);
+      //check if center point is inside circle, and if the center point is stable
+      const [x, y] = impedanceToSmithChart(a.center.real / zo, a.center.imaginary / zo, width);
+      const stableInsideCircle = isPointInCircle(-width / 2, 0, x, y, a.radius * width * 0.5) ^ (modifiedSparam.S11.magnitude > 1);
+      userSVG
+        .append("circle")
+        .attr("cx", x)
+        .attr("cy", y)
+        .attr("fill", "rgba(184, 184, 184,0.4)")
+        .attr("r", a.radius * width * 0.5)
+        .attr("stroke-width", 3)
+        .attr("stroke-dasharray", dashTypes[0]);
+      const zz = lineEndPoint(x, y, -width / 2, 0, a.radius * width * 0.5 - 15);
+      createLabelStability(
+        userSVG,
+        zz.x,
+        zz.y,
+        stableInsideCircle ? `${inOrOut} stable region` : `${inOrOut} unstable region`,
+        0.5 * Math.PI + Math.atan(y / (x - -width / 2)),
+        "10px",
+      );
+    }
+    drawStabilityCircle(chosenSparameter, "Output");
+    drawStabilityCircle({ ...chosenSparameter, S11: chosenSparameter.S22, S22: chosenSparameter.S11 }, "Input"); // input stability circle
+  }, [zo, width, chosenSparameter, showStabilityPlot]);
+
   //draw the noise Figure circles
   useEffect(() => {
     var userSVG = d3.select(nfCirclesRef.current);
@@ -287,7 +348,7 @@ function Graph({
       // // var tempZ = one_over_complex(1-Go_real , -Go_imag);
       // // var tempz2 = complex_multiply(tempZ.real, tempZ.imaginary, 1+Go_real, Go_imag);
 
-      const [x, y] = impedanceToSmithChart(c.center.real / 50, c.center.imaginary / 50, width);
+      const [x, y] = impedanceToSmithChart(c.center.real / zo, c.center.imaginary / zo, width);
       // // [x, y] = impedanceToSmithCoordinates(tempZ.real, tempZ.imaginary);
 
       // console.log('center, radius', center_real, center_imag, radius, Ni);
@@ -699,13 +760,19 @@ function Graph({
           left: 4,
         }}
       >
+        {sParameters && (
+          <div style={{ fontWeight: "bold" }}>
+            <input type="checkbox" checked={showStabilityPlot} onChange={() => setShowStabilityPlot(!showStabilityPlot)} />
+            <label>Stability circles</label>
+          </div>
+        )}
         {Object.keys(showSPlots).map((s) => {
           if (sParameters === null) return null;
           if (sParameters.data.length === 0) return null;
           if (s in Object.values(sParameters.data)[0])
             return (
               <div key={s} style={{ fontWeight: "bold", color: sParamColorLut[s] }}>
-                <input type="checkbox" name="scales" checked={showSPlots[s]} onChange={() => setShowSPlots({ ...showSPlots, [s]: !showSPlots[s] })} />
+                <input type="checkbox" checked={showSPlots[s]} onChange={() => setShowSPlots({ ...showSPlots, [s]: !showSPlots[s] })} />
                 <label>{s}</label>
               </div>
             );
@@ -754,6 +821,7 @@ function Graph({
                 <g id="vswrCircles" ref={vswrCirclesRef} />
                 <g id="sParams" ref={sParamsRef} />
                 <g id="nfCircles" ref={nfCirclesRef} />
+                <g id="stabilityCircles" ref={stabilityCirclesRef} />
               </g>
               <g id="impedanceArc" ref={impedanceArcsRef} />
               <g id="dpCircles" ref={dpCirclesRef} />
@@ -880,6 +948,34 @@ function createLabel(svg, x, y, text) {
     .attr("font-size", "14px")
     .attr("stroke", "none")
     .attr("text-anchor", "middle")
+    .attr("fill", "black");
+}
+
+function createLabelStability(svg, x, y, text, angle, size) {
+  y = Number(y);
+  x = Number(x); // + 4;
+  var strLen = text.length * 5;
+  angle = angle > Math.PI / 2 && angle < (3 * Math.PI) / 2 ? angle - Math.PI : angle; // normalize angle to [0, 2PI]
+
+  svg
+    .append("rect")
+    .attr("x", x - 0.5 * strLen)
+    .attr("y", y - 7)
+    .attr("width", strLen)
+    .attr("height", 10)
+    .attr("fill", "white")
+    .attr("stroke", "none") // removes the outline
+    .attr("transform", `rotate(${angle * (180 / Math.PI)}, ${x}, ${y})`)
+    .attr("opacity", 1.0); // 50% opacity
+  svg
+    .append("text")
+    .attr("x", x) // x position
+    .attr("y", y) // y position
+    .text(text) // label content
+    .attr("font-size", size)
+    .attr("stroke", "none")
+    .attr("text-anchor", "middle")
+    .attr("transform", `rotate(${angle * (180 / Math.PI)}, ${x}, ${y})`)
     .attr("fill", "black");
 }
 
@@ -1027,7 +1123,7 @@ function impedanceToSmithChart(re, im, width) {
   var [x, y] = impedanceToSmithCoordinates(re, im);
   var newX = x * width * 0.5;
   var newY = y * width * 0.5;
-  return [newX.toFixed(1), newY.toFixed(1)];
+  return [Number(newX.toFixed(1)), Number(newY.toFixed(1))];
 }
 
 export default Graph;
