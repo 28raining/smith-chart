@@ -8,7 +8,7 @@ Load an .s2p file and tune it to have 11dB gain at 1.4GHz
 
 ### Instructions
 
-1.  Import .s2p file by clicking the S-Parameter component and copying this file contents [../tests/SteveArarGain.s1p](../tests/SteveArarGain.s2p)
+1.  Import .s2p file by clicking the S-Parameter component and copying this file contents [../tests/SteveArarGain.s2p](../tests/SteveArarGain.s2p)
     ![S2P Import](images/s2p_import.png)
 
 Note that gain is Ginput * G0 * Goutput. G0 is shown just below the sparam component for the selected frequency, 8.94dB in this case

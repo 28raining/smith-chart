@@ -73,7 +73,9 @@ As well as a re-write, the following new features are added
 2. Review performance on 20x slower device than my `m2 mac air`
 3. investigate if can use preact, to reduce size and increase spped
 4. can we do gain for s1p?
-
+2d1 - measure Rs and Rl across frequency
+2 - S22 plot Rin and Rout like Steve Arr's sit
+- let user plot gain without adding .s2p?
 
 # to vizualise the file sizes:
 npx vite-bundle-visualizer --sourcemap
@@ -83,25 +85,7 @@ npx vite-bundle-visualizer --sourcemap
 This work is licensed under a Creative Commons Attribution 4.0 International License. You may not resell this tool
 
 # For next git merge after s-param fixes
-- Add custom reflection markers
-- custom markers can be polar
-- change black box for termination?
-1d - change bbox to rTerm
-- parallel rlc to series rlc (different merge!)
-- can tooltip be changed to not re-render graph
-2d1 - measure Rs and Rl across frequency
-2 - S22 plot Rin and Rout like Steve Arr's sit
-- when tol + fspan, make the gray markers gray
-- Add noise figure and stability circles later
-- Series RLC should be named parallel RLC
--- test ESL as it's broken rn
-- let user plot gain without adding .s2p?
-- show gain circles input but gray out when no .s2p
-- link to TRGMC
-- Add stability circles
 - comment on youtuber wolfs page
-- Store s-parameter if it's under 10 lines long
-- recheck displays on smaller devices
 - add links to end produce from tutorials (can ensure they work in future!)
 
 ## #####################
@@ -220,3 +204,13 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 - Tutorial
 - Testing
 - Stability used equations
+- custom markers can be polar
+- parallel rlc to series rlc (different merge!)
+- when tol + fspan, make the gray markers gray
+- Add noise figure and stability circles later
+- Series RLC should be named parallel RLC
+-- test ESL as it's broken rn
+- show s21 plots even before span is added
+- Store s-parameter if it's under 10 lines long
+- add button to autofill s-param with this default
+- link to TRGMC

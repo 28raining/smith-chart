@@ -310,6 +310,7 @@ export function allImpedanceCalculations(userCircuit, settings) {
   if (sParamIndex !== -1)
     spanFrequencies = Object.keys(userCircuitNoLambda[sParamIndex].data); //.map((x) => x.frequency);
   else if (settings.fSpan > 0) for (i = -10; i <= 10; i++) spanFrequencies.push(numericalFrequency + i * spanStep);
+  else spanFrequencies.push(numericalFrequency);
 
   //if there's a s2p block then create 2 impedance arcs
   const multiZCircuits =
@@ -331,19 +332,17 @@ export function allImpedanceCalculations(userCircuit, settings) {
     //for frequency span, don't create arcs, just create the final impedances
     var spanResults = [];
 
-    if (spanFrequencies.length > 0) {
-      for (const c of circuitArray) {
-        const fRes = {};
-        const RefInVsF = {};
-        for (const f of spanFrequencies) {
-          const z = impedanceAtFrequency(c, f);
-          fRes[f] = { z };
-          if (sParamIndex !== -1) fRes[f].reflAtSZo = zToRefl(z, { real: userCircuitNoLambda[sParamIndex].settings.zo, imaginary: 0 });
-          if (s1pIndex !== -1) RefInVsF[f] = rectangularToPolar(zToRefl(z, userCircuitNoLambda[0])); //userCircuitNoLambda[0] is the termination
-        }
-        spanResults.push(fRes);
-        if (s1pIndex !== -1) RefIn.push(RefInVsF);
+    for (const c of circuitArray) {
+      const fRes = {};
+      const RefInVsF = {};
+      for (const f of spanFrequencies) {
+        const z = impedanceAtFrequency(c, f);
+        fRes[f] = { z };
+        if (sParamIndex !== -1) fRes[f].reflAtSZo = zToRefl(z, { real: userCircuitNoLambda[sParamIndex].settings.zo, imaginary: 0 });
+        if (s1pIndex !== -1) RefInVsF[f] = rectangularToPolar(zToRefl(z, userCircuitNoLambda[0])); //userCircuitNoLambda[0] is the termination
       }
+      spanResults.push(fRes);
+      if (s1pIndex !== -1) RefIn.push(RefInVsF);
     }
     multiZResults.push({ arcs: zResultsSrc, ZvsF: spanResults });
   }

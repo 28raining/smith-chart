@@ -91,11 +91,5 @@ export function updateObjectFromUrl(settings, initialCircuit, URLparams) {
       return circuitComponents[parts[0]].fromURL(parts);
     });
   }
-  for (const c of defaultCircuit)
-    if (c.name === "sparam")
-      alert(
-        "You're loading a circuit containing s-parameters. Because URL's have a 4k character limit and sparameter files are very big, the sparameter data was not saved (dummy data is used instead). Please manually re-enter s-param data.",
-      );
-
-  return [settingsFromURL, defaultCircuit, urlContainsState];
+ return [settingsFromURL, defaultCircuit, urlContainsState];
 }

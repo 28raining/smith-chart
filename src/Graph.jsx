@@ -106,7 +106,7 @@ function Graph({
   const [reactanceCircles, setReactanceCircles] = useState([0.2, 0.5, 1, 2, 4, 10, -0.2, -0.5, -1, -2, -4, -10]);
   const [showSPlots, setShowSPlots] = useState({ S11: true, S21: true, S12: true, S22: true });
   const [showZPlots, setShowZPlots] = useState(true);
-  const [showStabilityPlot, setShowStabilityPlot] = useState(true);
+  const [showStabilityPlot, setShowStabilityPlot] = useState(false);
 
   // console.log('resistanceCircles', resistanceCircles);
   // const [snapDetails, setSnapDetails] = useState({ real: 0, imaginary: 0 });
@@ -545,6 +545,7 @@ function Graph({
       var newPath = "";
       var spanArc = "";
       var mainSpanArc = "";
+      var lastDpColor = "";
       for (tol = 0; tol < z.length; tol++) {
         for (dp = 0; dp < z[tol].length; dp++) {
           coord = [];
@@ -571,12 +572,13 @@ function Graph({
             }
           } else {
             //the last entry in z array is the circuit without any tolerance applied
+            lastDpColor = cumulatedDP == 0 ? arcColors[dp % 10] : arcColors[(cumulatedDP - dp) % 10];
             impedanceArc
               .append("path")
               .attr("stroke-linecap", "round")
               .attr("stroke-linejoin", "round")
               .attr("fill", "none")
-              .attr("stroke", cumulatedDP == 0 ? arcColors[dp % 10] : arcColors[(cumulatedDP - dp) % 10])
+              .attr("stroke", lastDpColor)
               .attr("stroke-width", 5)
               .attr("id", `dp_${cumulatedDP + dp}`)
               .attr("d", newPath);
@@ -587,7 +589,7 @@ function Graph({
               coord[coord.length - 1][1],
               tol,
               point,
-              cumulatedDP == 0 ? arcColors[dp % 10] : arcColors[(cumulatedDP - dp) % 10],
+              lastDpColor,
               frequency,
               hoverSnaps,
               markerRadius,
@@ -616,7 +618,18 @@ function Graph({
         for (const f in s) {
           const co = impedanceToSmithChart(s[f].z.real / zo, s[f].z.imaginary / zo, width);
           coord.push(co);
-          addDpMarker(dpCircles, co[0], co[1], `${i}_${f}`, s[f].z, "#911313", f, hoverSnaps, markerRadius, `hover_dp_${hoverSnaps.length}`);
+          addDpMarker(
+            dpCircles,
+            co[0],
+            co[1],
+            `${i}_${f}`,
+            s[f].z,
+            i == spanResults.length - 1 ? lastDpColor : "#911313",
+            f,
+            hoverSnaps,
+            markerRadius,
+            `hover_dp_${hoverSnaps.length}`,
+          );
         }
         newPath = `M ${coord[0][0]} ${coord[0][1]} ${coord.map((c) => `L ${c[0]} ${c[1]}`).join(" ")}`;
 
@@ -760,7 +773,7 @@ function Graph({
           left: 4,
         }}
       >
-        {sParameters && (
+        {sParameters && sParameters.type === "s2p" && (
           <div style={{ fontWeight: "bold" }}>
             <input type="checkbox" checked={showStabilityPlot} onChange={() => setShowStabilityPlot(!showStabilityPlot)} />
             <label>Stability circles</label>

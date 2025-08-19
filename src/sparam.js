@@ -189,7 +189,7 @@ export function parseTouchstoneFile(content) {
   // const dataLineRegex = /^(?<freq>\S+)((\s+[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?){2,})$/;
   const noiseRegex = /^\s*(?<freq>\S+)\s+(?<fmin>\S+)\s+(?<gamma_mag>\S+)\s+(?<gamma_ang>\S+)\s+(?<rn>\S+)\s*$/;
 
-  const results = { data: {}, noise: {}, settings: {}, error: null, name: "sparam" };
+  const results = { data: {}, noise: {}, settings: {}, error: null, name: "sparam", raw: content };
   var noiseExists = false;
   var line;
 

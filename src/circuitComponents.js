@@ -14,6 +14,9 @@ import transformer from "./assets/components/transformer.svg";
 import transmissionLine from "./assets/components/transmission_line.svg";
 import s2p from "./assets/components/s2p.svg";
 
+import { unitConverter } from "./commonFunctions.js";
+import { parseTouchstoneFile } from "./sparam.js";
+
 const sparamDefaultS1P = {
   data: {
     1500000: {
@@ -37,6 +40,7 @@ const sparamDefaultS1P = {
   error: null,
   name: "sparam",
   type: "s1p",
+  raw: "",
 };
 
 const sparamDefaultS2P = {
@@ -118,6 +122,7 @@ const sparamDefaultS2P = {
   error: null,
   name: "sparam",
   type: "s2p",
+  raw: "",
 };
 
 export const circuitComponents = {
@@ -252,7 +257,7 @@ export const circuitComponents = {
     },
   },
   seriesRlc: {
-    name: "Series RLC",
+    name: "Parallel RLC",
     src: rlc_series,
     circuitInputs: ["impedance", "resistor", "lc"],
     default: {
@@ -372,9 +377,63 @@ export const circuitComponents = {
     //s2p data gives more features, but will crash the tool because load must also be added
     default: { ...sparamDefaultS1P },
     //sparameters are not saved in the URL because URL has 4K limit, and sparam can be very large.
-    toURL: (c) => `sparam_${c.type}`,
+    toURL: (c) => {
+      console.log("c", c);
+      //FIXME - check if saveable field is true
+      var sparamStr = `sparam_${c.type}_${c.settings.freq_unit}_${c.settings.zo}`;
+      if (c.raw.length > 1000) return `${sparamStr}_tooLong`;
+      if (c.type == "s2p") {
+        sparamStr = `${sparamStr}_${Object.keys(c.data)
+          .map(
+            (f) =>
+              `${f / unitConverter[c.settings.freq_unit]}_${c.data[f].S11.magnitude}_${c.data[f].S11.angle}_${c.data[f].S21.magnitude}_${c.data[f].S21.angle}_${c.data[f].S12.magnitude}_${c.data[f].S12.angle}_${c.data[f].S22.magnitude}_${c.data[f].S22.angle}`,
+          )
+          .join("_")}`;
+        if (Object.keys(c.noise).length > 0) {
+          sparamStr = `${sparamStr}_noise_${Object.keys(c.noise)
+            .map(
+              (f) =>
+                `${f / unitConverter[c.settings.freq_unit]}_${c.noise[f].fmin}_${c.noise[f].gamma.magnitude}_${c.noise[f].gamma.angle}_${c.noise[f].rn}`,
+            )
+            .join("_")}`;
+        }
+      } else if (c.type == "s1p") {
+        sparamStr = `${sparamStr}_${Object.keys(c.data)
+          .map((f) => `${f / unitConverter[c.settings.freq_unit]}_${c.data[f].S11.magnitude}_${c.data[f].S11.angle}`)
+          .join("_")}`;
+      }
+      return sparamStr;
+    },
     fromURL: (u) => {
-      return u[1] == "s1p" ? { ...sparamDefaultS1P } : { ...sparamDefaultS2P };
+      if (u[4] == "tooLong") {
+        alert("The saved state included a 1000+ character s-parameter file. That was not saved so must be manually re-entered");
+        return u[1] == "s1p" ? { ...sparamDefaultS1P } : { ...sparamDefaultS2P };
+      }
+      var rawString = `# ${u[2]} S MA R ${u[3]}`;
+      if (u[1] == "s2p") {
+        var noiseIndex = 0;
+        for (let i = 4; i < u.length; i += 9) {
+          if (u[i] == "noise") {
+            rawString = rawString + "\n! Noise parameters";
+            noiseIndex = i + 1;
+            break;
+          }
+          rawString =
+            rawString +
+            `\n${u[i]} ${Number(u[i + 1])} ${Number(u[i + 2])} ${Number(u[i + 3])} ${Number(u[i + 4])} ${Number(u[i + 5])} ${Number(u[i + 6])} ${Number(u[i + 7])} ${Number(u[i + 8])}`;
+        }
+        if (noiseIndex > 0) {
+          for (let i = noiseIndex; i < u.length; i += 5) {
+            rawString = rawString + `\n${u[i]} ${Number(u[i + 1])} ${Number(u[i + 2])} ${Number(u[i + 3])} ${Number(u[i + 4]) / u[3]}`;
+          }
+        }
+        return parseTouchstoneFile(rawString);
+      } else if (u[1] == "s1p") {
+        for (let i = 4; i < u.length; i += 3) {
+          rawString = rawString + `\n${u[i]} ${Number(u[i + 1])} ${Number(u[i + 2])}`;
+        }
+        return parseTouchstoneFile(rawString);
+      }
     },
   },
 };

@@ -27,6 +27,12 @@ import TableRow from "@mui/material/TableRow";
 
 import ArrowLeftRoundedIcon from "@mui/icons-material/ArrowLeftRounded";
 import ArrowRightRoundedIcon from "@mui/icons-material/ArrowRightRounded";
+import Link from "@mui/material/Link";
+
+const s2pExample = `# GHz S MA R 50
+0.8	0.44  –157.6 4.725 84.3	0 0	0.339 –51.8
+1.4	0.533 176.6	2.800 64.5	0 0	0.604 –58.3
+2.0	0.439 159.6	2.057 49.2	0 0	0.294 –68.1`;
 
 import {
   arcColors,
@@ -175,10 +181,7 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
 }
 
 function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setPlotType, setSettings, frequency }) {
-  const [customInput, setCustomInput] = useState(`# GHz S MA R 50
-0.8	0.44  –157.6 4.725 84.3	0 0	0.339 –51.8
-1.4	0.533 176.6	2.800 64.5	0 0	0.604 –58.3
-2.0	0.439 159.6	2.057 49.2	0 0	0.294 –68.1`);
+  const [customInput, setCustomInput] = useState(value.raw ? value.raw : "");
   const [showAllData, setShowAllData] = useState(false);
   const allcols = ["S11", "S21", "S12", "S22"];
 
@@ -209,6 +212,12 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
             <Typography id="modal-modal-title" variant="h6" component="h2">
               Paste .s1p or .s2p file contents below
             </Typography>
+            <Link onClick={() => setCustomInput(s2pExample)} sx={{ cursor: "pointer" }}>
+              s2p example
+            </Link>
+            <small>
+              {customInput.length} characters{customInput.length > 1000 ? ": 1K max for URL saving" : ""}
+            </small>
             <Button
               sx={{ m: 0, ml: 1 }}
               variant="contained"

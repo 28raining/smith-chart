@@ -17,7 +17,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useState } from "react";
 
-import { frequencyUnits, parseInput, unitConverter } from "./commonFunctions";
+import { frequencyUnits, parseInput, polarToRectangular, rectangularToPolar, unitConverter } from "./commonFunctions";
 
 function setValue(value, field, setX) {
   setX((z) => {
@@ -59,7 +59,6 @@ function DisabledOverlay({ disabled, disabledText }) {
 }
 
 export default function Settings({ settings, setSettings, usedF, chosenSparameter, chosenNoiseParameter }) {
-  const [zMarkersInt, setZMarkersInt] = useState([25, 25]);
   const [QInt, setQInt] = useState(0);
   const [VSWRInt, setVSWRInt] = useState(0);
   const [gainInInt, setGainInInt] = useState(0);
@@ -128,7 +127,7 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
           </Select>
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
-          <CustomMarkersTable zMarkersInt={zMarkersInt} setZMarkersInt={setZMarkersInt} settings={settings} setSettings={setSettings} />
+          <CustomMarkersTable settings={settings} setSettings={setSettings} />
         </Grid>
         <CustomQTable
           QInt={QInt}
@@ -188,11 +187,24 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
   );
 }
 
-function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings }) {
+function CustomMarkersTable({ settings, setSettings }) {
+  const [polar, setPolar] = useState(false);
+  const [zMarkersInt, setZMarkersInt] = useState([25, 25]);
+
   return (
     <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1, backgroundColor: "#effffd" }}>
-      <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
-        Add custom markers
+      <Typography variant="h7" component="div" sx={{ pb: 0.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        Custom markers
+        <span>
+          <label>
+            <input type="radio" name="choice" checked={polar === false} onChange={() => setPolar(false)} />
+            Rectangular
+          </label>
+          <label>
+            <input type="radio" name="choice" checked={polar === true} onChange={() => setPolar(true)} />
+            Polar
+          </label>
+        </span>
       </Typography>
       <Table size="small">
         <TableHead>
@@ -201,10 +213,10 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
               Name
             </TableCell>
             <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              Real
+              {polar ? "Magnitude" : "Real"}
             </TableCell>
             <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              Imaginary
+              {polar ? "Angle(°)" : "Imaginary"}
             </TableCell>
             <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
               Add
@@ -234,9 +246,14 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
               <IconButton
                 sx={{ p: 1 }}
                 onClick={() => {
+                  var rectResult = zMarkersInt;
+                  if (polar) {
+                    const tmp = polarToRectangular({ magnitude: zMarkersInt[0], angle: zMarkersInt[1] });
+                    rectResult = [tmp.real.toPrecision(3), tmp.imaginary.toPrecision(3)];
+                  }
                   setSettings((z) => {
                     const newCircuit = { ...z };
-                    newCircuit["zMarkers"] = [...settings.zMarkers, zMarkersInt];
+                    newCircuit["zMarkers"] = [...settings.zMarkers, rectResult];
                     return newCircuit;
                   });
                   setZMarkersInt([0, 0]);
@@ -246,30 +263,33 @@ function CustomMarkersTable({ zMarkersInt, setZMarkersInt, settings, setSettings
               </IconButton>
             </TableCell>
           </TableRow>
-          {settings.zMarkers.map((row, i) => (
-            <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} key={i}>
-              <TableCell sx={{ px: 1 }} component="th" scope="row" align="center">{`MK${i}`}</TableCell>
-              <TableCell align="center">{row[0]}</TableCell>
-              <TableCell align="center">{row[1]}</TableCell>
-              <TableCell align="center">
-                <IconButton
-                  aria-label="delete"
-                  onClick={() => {
-                    setSettings((z) => {
-                      const n = { ...z };
-                      n["zMarkers"] = [
-                        ...n["zMarkers"].slice(0, i), // Items before the index `i`
-                        ...n["zMarkers"].slice(i + 1),
-                      ];
-                      return n;
-                    });
-                  }}
-                >
-                  <DeleteIcon sx={{ height: "20px", width: "20px" }} />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
+          {settings.zMarkers.map((row, i) => {
+            const asPolar = rectangularToPolar({ real: row[0], imaginary: row[1] });
+            return (
+              <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} key={i}>
+                <TableCell sx={{ px: 1 }} component="th" scope="row" align="center">{`MK${i}`}</TableCell>
+                <TableCell align="center">{polar ? asPolar.magnitude.toPrecision(3) : row[0]}</TableCell>
+                <TableCell align="center">{polar ? asPolar.angle.toPrecision(3) : row[1]}</TableCell>
+                <TableCell align="center">
+                  <IconButton
+                    aria-label="delete"
+                    onClick={() => {
+                      setSettings((z) => {
+                        const n = { ...z };
+                        n["zMarkers"] = [
+                          ...n["zMarkers"].slice(0, i), // Items before the index `i`
+                          ...n["zMarkers"].slice(i + 1),
+                        ];
+                        return n;
+                      });
+                    }}
+                  >
+                    <DeleteIcon sx={{ height: "20px", width: "20px" }} />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>

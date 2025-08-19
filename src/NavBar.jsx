@@ -74,6 +74,9 @@ function NavBar() {
               <Button variant="contained" color="bland" component="a" href="https://onlinecircuitsolver.com">
                 Circuit Solver
               </Button>
+              <Button variant="contained" color="bland" component="a" href="https://trgmc.net">
+                TRGMC
+              </Button>
             </Stack>
           </Toolbar>
         </AppBar>
