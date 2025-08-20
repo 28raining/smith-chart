@@ -418,6 +418,15 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
 
         <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
           {!spanResults ? null : <UplotReact options={options4} data={data} />}
+          <Typography sx={{ textAlign: "center", mt: 2 }}>
+            (assuming{" "}
+            <i>
+              S<sub>11</sub>
+              <sup>2</sup> + S<sub>21</sub>
+              <sup>2</sup> = 1
+            </i>
+            )
+          </Typography>
           {!spanResults ? null : <UplotReact options={options3} data={data2} />}
         </div>
       </>
