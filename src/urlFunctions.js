@@ -91,7 +91,7 @@ export function updateObjectFromUrl(settings, initialCircuit, URLparams) {
       if (!(parts[0] in circuitComponents)) return null;
       return circuitComponents[parts[0]].fromURL(parts);
     });
-    defaultCircuit = defaultCircuit.filter(x => x !== null);
+    defaultCircuit = defaultCircuit.filter((x) => x !== null);
   }
   return [settingsFromURL, defaultCircuit, urlContainsState];
 }
