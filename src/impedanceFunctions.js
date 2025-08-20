@@ -285,7 +285,7 @@ export function allImpedanceCalculations(userCircuit, settings) {
   }
 
   const numericalFspan = settings.fSpan * unitConverter[settings.fSpanUnit];
-  const spanStep = numericalFspan / 10;
+  const spanStep = numericalFspan / settings.fRes;
   var i;
 
   var userCircuitWithSliders = applySliders(JSON.parse(JSON.stringify(userCircuit)));
@@ -309,7 +309,7 @@ export function allImpedanceCalculations(userCircuit, settings) {
 
   if (sParamIndex !== -1)
     spanFrequencies = Object.keys(userCircuitNoLambda[sParamIndex].data); //.map((x) => x.frequency);
-  else if (settings.fSpan > 0) for (i = -10; i <= 10; i++) spanFrequencies.push(numericalFrequency + i * spanStep);
+  else if (settings.fSpan > 0) for (i = -settings.fRes; i <= settings.fRes; i++) spanFrequencies.push(numericalFrequency + i * spanStep);
   else spanFrequencies.push(numericalFrequency);
 
   //if there's a s2p block then create 2 impedance arcs

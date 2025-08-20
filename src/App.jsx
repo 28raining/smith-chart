@@ -36,6 +36,7 @@ const initialState = {
   frequencyUnit: "MHz",
   fSpan: 0,
   fSpanUnit: "MHz",
+  fRes: 10,
   zMarkers: [],
   vswrCircles: [],
   qCircles: [],

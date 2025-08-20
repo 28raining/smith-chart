@@ -88,8 +88,10 @@ export function updateObjectFromUrl(settings, initialCircuit, URLparams) {
     const circuitStr = URLparams.get("circuit");
     defaultCircuit = circuitStr.split("__").map((c) => {
       const parts = c.split("_");
+      if (!(parts[0] in circuitComponents)) return null;
       return circuitComponents[parts[0]].fromURL(parts);
     });
+    defaultCircuit = defaultCircuit.filter(x => x !== null);
   }
   return [settingsFromURL, defaultCircuit, urlContainsState];
 }
