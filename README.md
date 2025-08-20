@@ -1,15 +1,20 @@
 # Online Smith Chart Tool
-This website is an interactive Smith Chart, which is a paper chart invented in 1930's used to impedance match, which is needed to maximise power transfer to the load (for example audio speakers, wifi antennas, radar antennas)
+This website is an interactive Smith Chart (a paper chart invented in 1930's used to impedance match) which is needed to maximise power transfer from the source to the load - for example with audio speakers or wifi antennas
 
 Hosted at `onlinesmithchart.com`
 
 # How to run locally
-`npm i; npm run dev`
+```
+npm i
+npm run dev
+```
 
 # How the website gets updated
-Push to the main branch then the git workflow (`.github/workflows/gh-pages.yml`) will execute
-`npm run build`
-and push the results into branch `gh-pages`, which is hosted by github-pages
+Any push to the main branch will automatically launch the git workflow (`.github/workflows/gh-pages.yml`), which does this:
+```
+npm run build
+```
+and pushes the results into `gh-pages` - the branch hosted by github-pages
 
 # How to contribute
 1. Create a branch
@@ -32,47 +37,12 @@ As well as a re-write, the following new features are added
 
 
 # Remaining to-do items
-~~1. Add equations descriptions~~
-~~- especially NF site~~
-~~2. Add release notes to site~~
-~~4. Create unit tests and only allow merge into main branch once unit tests + lint pass~~
-~~5. Fix chart hover when using a touch device~~
-~~6. See if the microwave guy would like to sponsor the site~~
-~~7. Don't error out when shorted stubs length = 0, and other error conditions~~
-~~- zo = 0~~
-~~- Prevent -ve Q factor, -ve VSWR~~
-~~12. remove fixme's~~
 9. Review all the old comments, make any previous requests are present (and in unit test?)
-- check items more thoroughly vs old site
-13. To add Gain, Stability and Noise circles I must add S-parameter inputs
-~~-- Use touchstone S-parameter format~~
-~~---- chatGPT already wrote me a parser...!~~
-~~-- Add a complex-conjugate 'ideal match' to the output of the s-parameter block. This load be in the same SVG. The Smith Chart is then used to design the input circut~~
--- Also get Ropt, NFmin and Rn from s-parameter file
-~~-- Users cannot add any more elements after s-parameter file~~
--- Then it's possible to add Noise-Figure, Gain and Stability circles
--- Add plots for Gain and Noise
-~~---- S11 and S21 should then be plotted looking into s-parameter block (change Zo from 50 in reflection coefficient equation)~~
--- follow these resources
----- https://www.allaboutcircuits.com/technical-articles/learn-about-designing-unilateral-low-noise-amplifiers/
----- https://www.allaboutcircuits.com/technical-articles/using-the-available-power-gain-to-design-bilateral-low-noise-amplifiers
----- https://www.allaboutcircuits.com/technical-articles/learn-about-unconditional-stability-and-potential-instability-in-rf-amplifier-design/
-14. Prevent NF circles where NF < NFmin, R<0
 15. Add 'tool' into google search queries - it doesn't show up under smith chart tool
-~~16. allow plotting of s-parameters on smith chart on their own?~~
-~~17. bbox on small screens the boxs don't align with sliders~~
-~~18. move / eliminate DP0 marker~~
-~~19. make impedance and reflection ceofficient boxes the same size~~
-20. I changed a lot of complex maths, much add testing to ensure site matches old site!
-~~21. rename zToPolar~~
-21. better compress the custom-component URL
 
 
 # Low -priority to-do items
 1. Why is the graph re-rendering when mouse-over? Is it expensive?
-2. Review performance on 20x slower device than my `m2 mac air`
-3. investigate if can use preact, to reduce size and increase spped
-4. can we do gain for s1p?
 2d1 - measure Rs and Rl across frequency
 2 - S22 plot Rin and Rout like Steve Arr's sit
 - let user plot gain without adding .s2p?
@@ -86,7 +56,6 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 
 # For next git merge after s-param fixes
 - comment on youtuber wolfs page
-- add links to end produce from tutorials (can ensure they work in future!)
 
 ## #####################
 ## ## Sparam DONE ## ##
@@ -198,7 +167,7 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 - plot noise figure with gain
 - noise tutorial
 - disbaled grayed out
-# Stability circles
+## ## Stability circles DONE ## ##
 - check stability inisde circle reading is correct
 - can color outside of a circle?
 - Tutorial
@@ -214,3 +183,30 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 - Store s-parameter if it's under 10 lines long
 - add button to autofill s-param with this default
 - link to TRGMC
+- add links to end produce from tutorials (can ensure they work in future!)
+14. Prevent NF circles where NF < NFmin, R<0
+20. I changed a lot of complex maths, much add testing to ensure site matches old site!
+21. better compress the custom-component URL - not going to do
+1. Add equations descriptions
+- especially NF site
+2. Add release notes to site
+4. Create unit tests and only allow merge into main branch once unit tests + lint pass
+5. Fix chart hover when using a touch device
+6. See if the microwave guy would like to sponsor the site
+7. Don't error out when shorted stubs length = 0, and other error conditions
+- zo = 0
+- Prevent -ve Q factor, -ve VSWR
+12. remove fixme's
+-- Use touchstone S-parameter format
+---- chatGPT already wrote me a parser...!
+-- Add a complex-conjugate 'ideal match' to the output of the s-parameter block. This load be in the same SVG. The Smith Chart is then used to design the input circut
+-- Users cannot add any more elements after s-parameter file
+---- S11 and S21 should then be plotted looking into s-parameter block (change Zo from 50 in reflection coefficient equation)
+16. allow plotting of s-parameters on smith chart on their own?
+17. bbox on small screens the boxs don't align with sliders
+18. move / eliminate DP0 marker
+19. make impedance and reflection ceofficient boxes the same size
+21. rename zToPolar
+2. Review performance on 20x slower device than my `m2 mac air`
+4. can we do gain for s1p?
+3. investigate if can use preact, to reduce size and increase spped

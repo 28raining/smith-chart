@@ -6,6 +6,8 @@ https://www.allaboutcircuits.com/technical-articles/designing-a-unilateral-rf-am
 ### Goal
 Load an .s2p file and tune it to have 11dB gain at 1.4GHz
 
+[See the end result here](https://onlinesmithchart.com/?circuit=blackBox_50_0_0__stub_0.08_%CE%BB_0_50_1__transmissionLine_0.11_%CE%BB_0_50_1__sparam_s2p_GHz_50_0.8_0.44_-157.6_4.725_84.3_0_0_0.339_-51.8_1.4_0.533_176.6_2.8_64.5_0_0_0.604_-58.3_2_0.439_159.6_2.057_49.2_0_0_0.294_-68.1__transmissionLine_0.28_%CE%BB_0_50_1__stub_0.07_%CE%BB_0_50_1__loadTerm_50_0_0&frequency=1.4&frequencyUnit=GHz&fSpan=1.2&fSpanUnit=GHz&gainInCircles=1&gainOutCircles=1)
+
 ### Instructions
 
 1.  Import .s2p file by clicking the S-Parameter component and copying this file contents [../tests/SteveArarGain.s2p](../tests/SteveArarGain.s2p)

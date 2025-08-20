@@ -91,5 +91,5 @@ export function updateObjectFromUrl(settings, initialCircuit, URLparams) {
       return circuitComponents[parts[0]].fromURL(parts);
     });
   }
- return [settingsFromURL, defaultCircuit, urlContainsState];
+  return [settingsFromURL, defaultCircuit, urlContainsState];
 }

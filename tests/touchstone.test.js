@@ -141,7 +141,6 @@ test("Test stability circles", () => {
   };
   const a = stabilityCircles(sparam, 50);
 
-  console.log(a);
   expect(a).toEqual({
     center: { real: -55.656222191198005, imaginary: 49.338584816038534 },
     radius: 1.9435518506543061,
