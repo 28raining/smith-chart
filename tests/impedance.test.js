@@ -103,6 +103,7 @@ test("Cap with ESL and ESR", () => {
     frequencyUnit: "MHz",
     fSpan: 0,
     fSpanUnit: "MHz",
+    fRes: 10,
     zMarkers: [],
     vswrCircles: [],
     qCircles: [],

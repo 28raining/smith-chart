@@ -77,9 +77,9 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
         Settings & Features
       </Typography>
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, lg: 4 }} sx={{ display: "flex" }}>
+        <Grid size={{ xs: 12, lg: 2 }} sx={{ display: "flex" }}>
           <TextField
-            label="Characteristic Impedance (Zo)"
+            label="Zo"
             variant="outlined"
             size="small"
             sx={{ m: 0, p: 0, flex: 1 }}
@@ -125,6 +125,21 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
               <MenuItem value={u}>{u}</MenuItem>
             ))}
           </Select>
+        </Grid>
+        <Grid size={{ xs: 12, lg: 2 }} sx={{ display: "flex" }}>
+          <TextField
+            label="Resolution"
+            variant="outlined"
+            size="small"
+            sx={{ m: 0, p: 0, flex: 1 }}
+            value={settings.fRes}
+            onChange={(e) => setValue(Math.round(e.target.value), "fRes", setSettings)}
+            slotProps={{
+              input: {
+                endAdornment: <InputAdornment position="end">pts</InputAdornment>,
+              },
+            }}
+          />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
           <CustomMarkersTable settings={settings} setSettings={setSettings} />
