@@ -1,5 +1,5 @@
 /* global gtag */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
@@ -30,6 +30,8 @@ import { circuitComponents } from "./circuitComponents.js";
 import { allImpedanceCalculations } from "./impedanceFunctions.js";
 // import { sParamFrequencyRange } from "./sparam.js"; // Import the sParamFrequencyRange function
 
+import debounce from "lodash/debounce";
+
 const initialState = {
   zo: 50,
   frequency: 2440,
@@ -57,7 +59,14 @@ function App() {
   const [urlSnackbar, setUrlSnackbar] = useState(false);
   const [plotType, setPlotType] = useState("impedance");
 
-  syncObjectToUrl(settings, initialState, userCircuit, initialCircuit); // Sync the settings object to the URL
+  //debounding the URL syncing because 100 updateHistory in 10s causes chrome to crash, which happens when using sliders
+  const debouncedSync = useMemo(() => debounce(syncObjectToUrl, 1000), []);
+  // Run when dependencies change
+  useEffect(() => {
+    debouncedSync(settings, initialState, userCircuit, initialCircuit);
+  }, [settings, userCircuit, debouncedSync]);
+
+  // syncObjectToUrl(settings, initialState, userCircuit, initialCircuit); // Sync the settings object to the URL
 
   const [processedImpedanceResults, spanResults, multiZResults, gainArray, noiseArray, numericalFrequency, RefIn, noiseFrequency] =
     allImpedanceCalculations(userCircuit, settings);
