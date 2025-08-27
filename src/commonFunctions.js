@@ -53,21 +53,17 @@ export const theme = createTheme({
   },
 });
 
-// must support
+//Returns valid integers. Fixed so trailing zeroes are preserved
 //input = 0.0, return 0.0
 //input = 0.,  return 0.
+//input = 0.403,  return 0.403
+//input = 0.40,  return 0.40
 export function parseInput(input) {
-  if (input === "-") return input;
-  const num = parseFloat(input);
-  const endsWithDotZeroes = /\.0+$/.test(input); // true
-
-  if (isNaN(num)) {
-    return "";
-  } else if (typeof input === "string") {
-    if (input.endsWith(".")) return input;
-    else if (endsWithDotZeroes) return input;
-    else return num;
-  } else return num;
+  if (typeof input === "string") {
+    return input.replace(/[^0-9.\-eE]/g, "");
+  } else {
+    return input;
+  }
 }
 
 export const inductorUnits = {
