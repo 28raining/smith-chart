@@ -222,7 +222,7 @@ export function createToleranceArray(copyCircuit) {
   return copyCircuit;
 }
 
-export function applySliders(circuit) {
+function applySliders(circuit) {
   for (var i = 0; i < circuit.length; i++) {
     if (circuit[i].slider) circuit[i].value = circuit[i].value * (1 + circuit[i].slider / 100);
     if (circuit[i].slider_im) circuit[i].imaginary = circuit[i].imaginary * (1 + circuit[i].slider_im / 100);
@@ -231,7 +231,36 @@ export function applySliders(circuit) {
   return circuit;
 }
 
-export function convertLengthToM(circuit, frequency) {
+function convertStrToFloat(circuit) {
+  const fields = [
+    "tolerance",
+    "real",
+    "imaginary",
+    "esl",
+    "esr",
+    "value",
+    "slider_re",
+    "slider_im",
+    "l1",
+    "l2",
+    "k",
+    "slider",
+    "zo",
+    "value_c",
+    "value_l",
+    "eeff",
+  ];
+  for (var i = 0; i < circuit.length; i++) {
+    for (const field of fields) {
+      if (field in circuit[i] && typeof circuit[i][field] === "string") {
+        circuit[i][field] = parseFloat(circuit[i][field]);
+      }
+    }
+  }
+  return circuit;
+}
+
+function convertLengthToM(circuit, frequency) {
   for (var i = 0; i < circuit.length; i++) {
     if (circuit[i].unit == "λ" || circuit[i].unit == "deg") {
       var lambdaLen = circuit[i].value;
@@ -288,7 +317,8 @@ export function allImpedanceCalculations(userCircuit, settings) {
   const spanStep = numericalFspan / settings.fRes;
   var i;
 
-  var userCircuitWithSliders = applySliders(JSON.parse(JSON.stringify(userCircuit)));
+  var userCircuitStrToFloat = convertStrToFloat(JSON.parse(JSON.stringify(userCircuit)));
+  var userCircuitWithSliders = applySliders(userCircuitStrToFloat);
   var userCircuitNoLambda = convertLengthToM(userCircuitWithSliders, numericalFrequency);
 
   //reduce s-param data to the frequency range of interest

@@ -378,8 +378,6 @@ export const circuitComponents = {
     default: { ...sparamDefaultS1P },
     //sparameters are not saved in the URL because URL has 4K limit, and sparam can be very large.
     toURL: (c) => {
-      console.log("c", c);
-      //FIXME - check if saveable field is true
       var sparamStr = `sparam_${c.type}_${c.settings.freq_unit}_${c.settings.zo}`;
       if (c.raw.length > 1000) return `${sparamStr}_tooLong`;
       if (c.type == "s2p") {

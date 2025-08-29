@@ -27,24 +27,24 @@ test("Impedance L-R-Shorted-Stub", () => {
   const circuit = [
     {
       name: "blackBox",
-      real: 50,
-      imaginary: 0,
+      real: "50",
+      imaginary: "0",
     },
     {
-      value: 1,
+      value: "1",
       unit: "nH",
       name: "shortedInd",
     },
     {
-      value: 20,
+      value: "20",
       unit: "Ω",
       name: "seriesRes",
     },
     {
-      value: 50,
+      value: "50",
       unit: "mm",
-      zo: 50,
-      eeff: 1,
+      zo: "50",
+      eeff: "1",
       name: "shortedStub",
       slider: 0,
     },
@@ -133,9 +133,9 @@ test("Impedance s1p", () => {
   const circuit = [
     {
       name: "blackBox",
-      real: 8,
-      imaginary: 1.5,
-      tolerance: 0,
+      real: "8",
+      imaginary: "1.5",
+      tolerance: "0",
     },
     {
       data: {

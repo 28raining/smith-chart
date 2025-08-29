@@ -853,8 +853,8 @@ function DialogGraphSettings({ dialogOpen, setDialogOpen, resistanceCircles, set
 
   function handleClose() {
     setDialogOpen(false);
-    setResistanceCircles(tempRCircles.split(",").map((x) => parseInput(x)));
-    setReactanceCircles(tempReacCircles.split(",").map((x) => parseInput(x)));
+    setResistanceCircles(tempRCircles.split(",").map((x) => parseFloat(parseInput(x))));
+    setReactanceCircles(tempReacCircles.split(",").map((x) => parseFloat(parseInput(x))));
   }
   return (
     <Dialog onClose={handleClose} open={dialogOpen} maxWidth="xl" fullWidth>
