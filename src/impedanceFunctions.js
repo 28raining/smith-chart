@@ -253,11 +253,29 @@ function convertStrToFloat(circuit) {
   for (var i = 0; i < circuit.length; i++) {
     for (const field of fields) {
       if (field in circuit[i] && typeof circuit[i][field] === "string") {
-        circuit[i][field] = parseFloat(circuit[i][field]);
+        const r = parseFloat(circuit[i][field]);
+        if (!isNaN(r)) circuit[i][field] = r;
+        else circuit[i][field] = 0;
       }
     }
   }
   return circuit;
+}
+function convertSettingsToFloat(s) {
+  const fields = [
+    "zo",
+    "frequency",
+    "fSpan",
+    "fRes"
+  ];
+  for (const field of fields) {
+    if (field in s && typeof s[field] === "string") {
+      const r = parseFloat(s[field]);
+      if (!isNaN(r)) s[field] = r;
+      else s[field] = 0;
+    }
+  }
+  return s;
 }
 
 function convertLengthToM(circuit, frequency) {
@@ -280,9 +298,10 @@ function impedanceAtFrequency(circuit, frequency) {
   return span_tol_final[span_tol_final.length - 1];
 }
 
-export function allImpedanceCalculations(userCircuit, settings) {
+export function allImpedanceCalculations(userCircuit, settingsStr) {
   //get index of sparam in userCircuit
   // const sParametersSearch = userCircuit.filter((c) => c.name === "sparam");
+  const settings = convertSettingsToFloat(JSON.parse(JSON.stringify(settingsStr)));
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
   const s2pIndex = userCircuit.findIndex((c) => c.type === "s2p");
   const s1pIndex = userCircuit.findIndex((c) => c.type === "s1p");

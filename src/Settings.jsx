@@ -133,7 +133,7 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
             size="small"
             sx={{ m: 0, p: 0, flex: 1 }}
             value={settings.fRes}
-            onChange={(e) => setValue(Math.round(parseFloat(e.target.value)), "fRes", setSettings)}
+            onChange={(e) => setValue(e.target.value, "fRes", setSettings)}
             slotProps={{
               input: {
                 endAdornment: <InputAdornment position="end">pts</InputAdornment>,
