@@ -262,12 +262,7 @@ function convertStrToFloat(circuit) {
   return circuit;
 }
 function convertSettingsToFloat(s) {
-  const fields = [
-    "zo",
-    "frequency",
-    "fSpan",
-    "fRes"
-  ];
+  const fields = ["zo", "frequency", "fSpan", "fRes"];
   for (const field of fields) {
     if (field in s && typeof s[field] === "string") {
       const r = parseFloat(s[field]);
