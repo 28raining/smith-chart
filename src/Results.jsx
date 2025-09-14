@@ -298,10 +298,6 @@ function RPlot({ RefIn, options, freqUnit, title }) {
   );
 }
 
-//FIXME - move these lines and their calculations to a separate compoenent
-// {!spanResults ? null : <UplotReact options={options4} data={data} />}
-// {!spanResults ? null : <UplotReact options={options3} data={data2} />}
-
 export default function Results({ zProc, spanResults, freqUnit, plotType, sParameters, gainResults, noiseArray, RefIn, zo }) {
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
@@ -345,23 +341,21 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
   var s11_ang = [];
   var s21 = [];
   var data, data2;
-  if (spanResults) {
-    // console.log("spanResults res", spanResults);
-    for (const f in spanResults) {
-      const { refReal, refImag } = processImpedance(spanResults[f].z, zo);
-      const { magnitude, angle } = rectangularToPolar({
-        real: refReal,
-        imaginary: refImag,
-      });
+  const sortedSpanFrequencies = Object.keys(spanResults).sort((a, b) => a - b);
+  for (const f of sortedSpanFrequencies) {
+    const { refReal, refImag } = processImpedance(spanResults[f].z, zo);
+    const { magnitude, angle } = rectangularToPolar({
+      real: refReal,
+      imaginary: refImag,
+    });
 
-      s11.push(20 * Math.log10(magnitude));
-      s11_ang.push(angle);
-      s21.push(20 * Math.log10(Math.sqrt(1 - magnitude ** 2)));
-    }
-    const absSpanFrequencies = Object.keys(spanResults).map((f) => f / unitConverter[freqUnit]);
-    data = [absSpanFrequencies, s11, s11_ang];
-    data2 = [absSpanFrequencies, s21];
+    s11.push(20 * Math.log10(magnitude));
+    s11_ang.push(angle);
+    s21.push(20 * Math.log10(Math.sqrt(1 - magnitude ** 2)));
   }
+  const absSpanFrequencies = Object.keys(sortedSpanFrequencies).map((f) => f / unitConverter[freqUnit]);
+  data = [absSpanFrequencies, s11, s11_ang];
+  data2 = [absSpanFrequencies, s21];
 
   useEffect(() => {
     function handleResize() {
@@ -417,7 +411,7 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
         </Grid>
 
         <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-          {!spanResults ? null : <UplotReact options={options4} data={data} />}
+          <UplotReact options={options4} data={data} />
           <Typography sx={{ textAlign: "center", mt: 2 }}>
             (assuming{" "}
             <i>
@@ -427,7 +421,7 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
             </i>
             )
           </Typography>
-          {!spanResults ? null : <UplotReact options={options3} data={data2} />}
+          <UplotReact options={options3} data={data2} />
         </div>
       </>
     );

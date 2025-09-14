@@ -615,7 +615,8 @@ function Graph({
       const spanResults = zz.ZvsF;
       spanResults.forEach((s, i) => {
         coord = [];
-        for (const f in s) {
+        const sortedSpanFrequencies = Object.keys(s).sort((a, b) => a - b);
+        for (const f of sortedSpanFrequencies) {
           const co = impedanceToSmithChart(s[f].z.real / zo, s[f].z.imaginary / zo, width);
           coord.push(co);
           addDpMarker(
