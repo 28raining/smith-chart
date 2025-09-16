@@ -13,6 +13,18 @@ export const arcColors = [
   "#17becf", // blue-teal
 ];
 
+export function convertSettingsToFloat(s) {
+  const fields = ["zo", "frequency", "fSpan", "fRes"];
+  for (const field of fields) {
+    if (field in s && typeof s[field] === "string") {
+      const r = parseFloat(s[field]);
+      if (!isNaN(r)) s[field] = r;
+      else s[field] = 0;
+    }
+  }
+  return s;
+}
+
 export function one_over_complex(z) {
   var real = z.real / (z.real * z.real + z.imaginary * z.imaginary);
   var imaginary = -z.imaginary / (z.real * z.real + z.imaginary * z.imaginary);

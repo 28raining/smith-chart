@@ -24,7 +24,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 import { syncObjectToUrl, updateObjectFromUrl } from "./urlFunctions.js"; // Import the syncObjectToUrl function
-import { theme } from "./commonFunctions.js";
+import { theme, convertSettingsToFloat } from "./commonFunctions.js";
 import { circuitComponents } from "./circuitComponents.js";
 
 import { allImpedanceCalculations } from "./impedanceFunctions.js";
@@ -59,6 +59,8 @@ function App() {
   const [urlSnackbar, setUrlSnackbar] = useState(false);
   const [plotType, setPlotType] = useState("impedance");
 
+  const settingsFloat = convertSettingsToFloat(JSON.parse(JSON.stringify(settings)));
+
   //debounding the URL syncing because 100 updateHistory in 10s causes chrome to crash, which happens when using sliders
   const debouncedSync = useMemo(() => debounce(syncObjectToUrl, 1000), []);
   // Run when dependencies change
@@ -66,10 +68,8 @@ function App() {
     debouncedSync(settings, initialState, userCircuit, initialCircuit);
   }, [settings, userCircuit, debouncedSync]);
 
-  // syncObjectToUrl(settings, initialState, userCircuit, initialCircuit); // Sync the settings object to the URL
-
   const [processedImpedanceResults, spanResults, multiZResults, gainArray, noiseArray, numericalFrequency, RefIn, noiseFrequency] =
-    allImpedanceCalculations(userCircuit, settings);
+    allImpedanceCalculations(userCircuit, settingsFloat);
 
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
   const sParameters = sParamIndex === -1 ? null : userCircuit[sParamIndex];
@@ -145,7 +145,7 @@ function App() {
             <Card sx={{ padding: 0 }}>
               <Graph
                 zResultsSrc={multiZResults}
-                zo={settings.zo}
+                zo={settingsFloat.zo}
                 spanResults={spanResults}
                 qCircles={settings.qCircles}
                 vswrCircles={settings.vswrCircles}
@@ -186,7 +186,7 @@ function App() {
                   gainResults={gainArray}
                   noiseArray={noiseArray}
                   RefIn={RefIn}
-                  zo={settings.zo}
+                  zo={settingsFloat.zo}
                 />
               </CardContent>
             </Card>
