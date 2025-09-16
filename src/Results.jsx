@@ -341,6 +341,7 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
   var s11_ang = [];
   var s21 = [];
   var data, data2;
+  //FIXME - move this to a separate function so we can do unit testing
   const sortedSpanFrequencies = Object.keys(spanResults).sort((a, b) => a - b);
   for (const f of sortedSpanFrequencies) {
     const { refReal, refImag } = processImpedance(spanResults[f].z, zo);
@@ -353,7 +354,7 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
     s11_ang.push(angle);
     s21.push(20 * Math.log10(Math.sqrt(1 - magnitude ** 2)));
   }
-  const absSpanFrequencies = Object.keys(sortedSpanFrequencies).map((f) => f / unitConverter[freqUnit]);
+  const absSpanFrequencies = sortedSpanFrequencies.map((f) => f / unitConverter[freqUnit]);
   data = [absSpanFrequencies, s11, s11_ang];
   data2 = [absSpanFrequencies, s21];
 
