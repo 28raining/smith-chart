@@ -77,6 +77,8 @@ export function updateObjectFromUrl(settings, initialCircuit, URLparams) {
       } else if (typeof settings[key] === "number") {
         settingsFromURL[key] = Number(value);
       } else {
+        //to support legacy URLs
+        if (value == "KHz") value = "kHz";
         settingsFromURL[key] = value;
       }
     } else settingsFromURL[key] = settings[key];

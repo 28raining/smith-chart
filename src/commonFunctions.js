@@ -98,7 +98,7 @@ export const resistorUnits = { MΩ: 1e6, KΩ: 1e3, Ω: 1, mΩ: 1e-3 };
 export const lengthUnits = { λ: 0, m: 1, mm: 1e-3, um: 1e-6, deg: 0 };
 export const frequencyUnits = {
   Hz: 1,
-  KHz: 1e3,
+  kHz: 1e3,
   MHz: 1e6,
   GHz: 1e9,
   THz: 1e12,
