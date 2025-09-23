@@ -154,6 +154,7 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
           disabled={false}
         />
         <CustomQTable
+          dB={true}
           QInt={VSWRInt}
           setQInt={setVSWRInt}
           settings={settings}
@@ -310,7 +311,8 @@ function CustomMarkersTable({ settings, setSettings }) {
     </TableContainer>
   );
 }
-function CustomQTable({ QInt, maxValue, minValue, setQInt, settings, setSettings, title, index, unit, disabled, disabledText }) {
+function CustomQTable({ dB, QInt, maxValue, minValue, setQInt, settings, setSettings, title, index, unit, disabled, disabledText }) {
+  const [unitdB, setUnitdB] = useState(false);
   return (
     <Grid
       size={{ xs: 12, lg: 6 }}
@@ -318,8 +320,20 @@ function CustomQTable({ QInt, maxValue, minValue, setQInt, settings, setSettings
     >
       <DisabledOverlay disabled={disabled} disabledText={disabledText} />
       <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1, backgroundColor: "#effffd" }}>
-        <Typography variant="h7" component="div" sx={{ pb: 0.5 }}>
+        <Typography variant="h7" component="div" sx={{ pb: 0.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {title} {maxValue ? ` (max = ${maxValue.toPrecision(3)}dB)` : minValue ? ` (min = ${minValue.toPrecision(3)}dB)` : ""}
+          {dB && (
+            <span>
+              <label>
+                <input type="radio" name="dbUnitChoice" checked={unitdB === false} onChange={() => setUnitdB(false)} />
+                V/V
+              </label>
+              <label>
+                <input type="radio" name="dbUnitChoice" checked={unitdB === true} onChange={() => setUnitdB(true)} />
+                dB
+              </label>
+            </span>
+          )}
         </Typography>
         <Table size="small">
           <TableHead>
@@ -354,7 +368,8 @@ function CustomQTable({ QInt, maxValue, minValue, setQInt, settings, setSettings
                   onClick={() => {
                     setSettings((z) => {
                       const newCircuit = { ...z };
-                      newCircuit[index] = [...settings[index], Math.abs(QInt)];
+                      const linear = unitdB ? 10 ** (QInt / 20) : QInt;
+                      newCircuit[index] = [...settings[index], Math.abs(linear)];
                       return newCircuit;
                     });
                     setQInt(0);
@@ -367,7 +382,7 @@ function CustomQTable({ QInt, maxValue, minValue, setQInt, settings, setSettings
             {settings[index].map((row, i) => (
               <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} key={i}>
                 <TableCell component="th" scope="row" align="center">
-                  {row}
+                  {unitdB ? (20 * Math.log10(row)).toFixed(3) : row}
                 </TableCell>
                 <TableCell align="center">
                   <IconButton
