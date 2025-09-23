@@ -104,14 +104,12 @@ function Graph({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [resistanceCircles, setResistanceCircles] = useState([0, 0.2, 0.5, 1, 2, 4, 10]);
   const [reactanceCircles, setReactanceCircles] = useState([0.2, 0.5, 1, 2, 4, 10, -0.2, -0.5, -1, -2, -4, -10]);
+  const [showAdmittance, setShowAdmittance] = useState(true);
+
   const [showSPlots, setShowSPlots] = useState({ S11: true, S21: true, S12: true, S22: true });
   const [showZPlots, setShowZPlots] = useState(true);
   const [showStabilityPlot, setShowStabilityPlot] = useState(false);
 
-  // console.log('resistanceCircles', resistanceCircles);
-  // const [snapDetails, setSnapDetails] = useState({ real: 0, imaginary: 0 });
-
-  // console.log("chosenSparameter", chosenSparameter);
   function updateWidth() {
     var newWidth = svgWrapper.current.offsetWidth;
     // console.log('neww', newWidth);
@@ -374,8 +372,8 @@ function Graph({
       .attr("fill", "none")
       .attr("stroke", "black")
       .attr("stroke-width", 1);
-    initializeSmithChart(tracingArcsRef, width, resistanceCircles, reactanceCircles); //draw the circles and add the labels
-  }, [width, resistanceCircles, reactanceCircles]);
+    initializeSmithChart(tracingArcsRef, width, resistanceCircles, reactanceCircles, showAdmittance); //draw the circles and add the labels
+  }, [width, resistanceCircles, reactanceCircles, showAdmittance]);
 
   //mouse handlers (move to the component?)
   useEffect(() => {
@@ -739,6 +737,8 @@ function Graph({
         setResistanceCircles={setResistanceCircles}
         reactanceCircles={reactanceCircles}
         setReactanceCircles={setReactanceCircles}
+        showAdmittance={showAdmittance}
+        setShowAdmittance={setShowAdmittance}
       />
       <Tooltip title="Download SVG file">
         <IconButton
@@ -848,14 +848,31 @@ function Graph({
   );
 }
 
-function DialogGraphSettings({ dialogOpen, setDialogOpen, resistanceCircles, setResistanceCircles, reactanceCircles, setReactanceCircles }) {
+function DialogGraphSettings({
+  dialogOpen,
+  setDialogOpen,
+  resistanceCircles,
+  setResistanceCircles,
+  reactanceCircles,
+  setReactanceCircles,
+  showAdmittance,
+  setShowAdmittance,
+}) {
   const [tempRCircles, setTempRCircles] = useState(resistanceCircles.join(", "));
   const [tempReacCircles, setTempReacCircles] = useState(reactanceCircles.join(", "));
 
   function handleClose() {
     setDialogOpen(false);
-    setResistanceCircles(tempRCircles.split(",").map((x) => parseFloat(parseInput(x))));
-    setReactanceCircles(tempReacCircles.split(",").map((x) => parseFloat(parseInput(x))));
+    if (tempRCircles) {
+      setResistanceCircles(tempRCircles.split(",").map((x) => parseFloat(parseInput(x))));
+    } else {
+      setResistanceCircles([]);
+    }
+    if (tempReacCircles) {
+      setReactanceCircles(tempReacCircles.split(",").map((x) => parseFloat(parseInput(x))));
+    } else {
+      setReactanceCircles([]);
+    }
   }
   return (
     <Dialog onClose={handleClose} open={dialogOpen} maxWidth="xl" fullWidth>
@@ -877,6 +894,10 @@ function DialogGraphSettings({ dialogOpen, setDialogOpen, resistanceCircles, set
             size="small"
             value={tempReacCircles}
             onChange={(e) => setTempReacCircles(e.target.value)}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={showAdmittance} onChange={(e) => setShowAdmittance(e.target.checked)} />}
+            label="Show Admittance"
           />
         </FormControl>
       </DialogContent>
@@ -993,7 +1014,7 @@ function createLabelStability(svg, x, y, text, angle, size) {
     .attr("fill", "black");
 }
 
-function initializeSmithChart(tracingArcsRef, width, resistanceCircles, reactanceCircles) {
+function initializeSmithChart(tracingArcsRef, width, resistanceCircles, reactanceCircles, showAdmittance) {
   var tracingArcs = d3.select(tracingArcsRef.current).attr("stroke", "rgba(0, 0, 0, 0.75)");
   tracingArcs.selectAll("*").remove();
 
@@ -1025,34 +1046,36 @@ function initializeSmithChart(tracingArcsRef, width, resistanceCircles, reactanc
   });
 
   //add constance admittance and susceptance curves
-  resistanceCircles.map((r) => {
-    var [cx /*cy*/, , radius] = resistanceToXYR(r);
-    tracingArcs
-      .append("circle")
-      .attr("cx", (-2 - cx) * width * 0.5) // X coordinate of the center
-      .attr("cy", 0) // Y coordinate of the center
-      .attr("r", radius * width * 0.5) // Radius of the circle
-      .attr("stroke", "rgba(0, 0, 0, 0.25)");
-  });
-  reactanceCircles.map((r, i) => {
-    var [cy, xStart, yStart, xEnd, yEnd] = reactanceToXYR(r);
-    //half the arcs can start at point 0,0
-    if (i % 2 == 1) {
-      xStart = 0;
-      yStart = 0;
-    }
-    var clockwise = 1;
-    if (cy < 0) clockwise = 0;
-    tracingArcs
-      .append("path")
-      .attr(
-        "d",
-        `M ${(-2 - xStart) * width * 0.5} ${yStart * width * 0.5} A ${cy * width * 0.5} ${
-          cy * width * 0.5
-        } 0 0 ${clockwise} ${(-2 - xEnd) * width * 0.5} ${yEnd * width * 0.5}`,
-      )
-      .attr("stroke", "rgba(0, 0, 0, 0.25)");
-  });
+  if (showAdmittance) {
+    resistanceCircles.map((r) => {
+      var [cx /*cy*/, , radius] = resistanceToXYR(r);
+      tracingArcs
+        .append("circle")
+        .attr("cx", (-2 - cx) * width * 0.5) // X coordinate of the center
+        .attr("cy", 0) // Y coordinate of the center
+        .attr("r", radius * width * 0.5) // Radius of the circle
+        .attr("stroke", "rgba(0, 0, 0, 0.25)");
+    });
+    reactanceCircles.map((r, i) => {
+      var [cy, xStart, yStart, xEnd, yEnd] = reactanceToXYR(r);
+      //half the arcs can start at point 0,0
+      if (i % 2 == 1) {
+        xStart = 0;
+        yStart = 0;
+      }
+      var clockwise = 1;
+      if (cy < 0) clockwise = 0;
+      tracingArcs
+        .append("path")
+        .attr(
+          "d",
+          `M ${(-2 - xStart) * width * 0.5} ${yStart * width * 0.5} A ${cy * width * 0.5} ${
+            cy * width * 0.5
+          } 0 0 ${clockwise} ${(-2 - xEnd) * width * 0.5} ${yEnd * width * 0.5}`,
+        )
+        .attr("stroke", "rgba(0, 0, 0, 0.25)");
+    });
+  }
 
   //add a line down the middle
   tracingArcs.append("line").attr("x1", 0).attr("y1", 0).attr("x2", -width).attr("y2", 0);
