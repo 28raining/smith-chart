@@ -358,6 +358,31 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
   data = [absSpanFrequencies, s11, s11_ang];
   data2 = [absSpanFrequencies, s21];
 
+  var maxS21 = s21[0];
+  var maxF = 0;
+  var db3_l = -1;
+  var db3_m = -1;
+  var i, maxIndex;
+  for (i = 0; i < absSpanFrequencies.length; i++) {
+    if (s21[i] > maxS21) {
+      maxIndex = i;
+      maxS21 = s21[i];
+      maxF = absSpanFrequencies[i];
+    }
+  }
+  for (i = maxIndex; i >= 0; i--) {
+    if (s21[i] < maxS21 - 3) {
+      db3_l = absSpanFrequencies[i];
+      break;
+    }
+  }
+  for (i = maxIndex; i < absSpanFrequencies.length; i++) {
+    if (s21[i] < maxS21 - 3) {
+      db3_m = absSpanFrequencies[i];
+      break;
+    }
+  }
+
   useEffect(() => {
     function handleResize() {
       // renderChart(setOptions, setOptions2, containerRef, freqUnit);
@@ -424,6 +449,14 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
           </Typography>
           <UplotReact options={options3} data={data2} />
         </div>
+        <ul>
+          <li>
+            Max S21: {maxS21.toPrecision(6)} dB at {maxF} {freqUnit}
+          </li>
+          <li>
+            S21 3dB bandwidth: {db3_l == -1 || db3_m == -1 ? "N/A" : (db3_m - db3_l).toPrecision(6)} {freqUnit}
+          </li>
+        </ul>
       </>
     );
 }
