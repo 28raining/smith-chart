@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
+import EditIcon from "@mui/icons-material/Edit";
 import { ThemeProvider } from "@mui/material/styles";
 import Grid from "@mui/material/Grid";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -28,6 +29,7 @@ import TableRow from "@mui/material/TableRow";
 import ArrowLeftRoundedIcon from "@mui/icons-material/ArrowLeftRounded";
 import ArrowRightRoundedIcon from "@mui/icons-material/ArrowRightRounded";
 import Link from "@mui/material/Link";
+import Tooltip from "@mui/material/Tooltip";
 
 const s2pExample = `# GHz S MA R 50
 0.8	0.44  –157.6 4.725 84.3	0 0	0.339 –51.8
@@ -350,8 +352,9 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
   );
 }
 
-function ImpedanceComponent({ real, imaginary }) {
-  // console.log("impedance", real, imaginary);
+function ImpedanceComponent({ real, imaginary, zToVal }) {
+  const [editOpen, setEditOpen] = useState(false);
+  const [editValue, setEditValue] = useState();
 
   real = Number(real).toFixed(2);
   imaginary = Number(imaginary).toFixed(2);
@@ -360,10 +363,63 @@ function ImpedanceComponent({ real, imaginary }) {
   else if (imaginary == 0) zStr = `${real}Ω`;
   else if (imaginary < 0) zStr = `${real}Ω - ${-imaginary}jΩ`;
   else zStr = `${real}Ω + ${imaginary}jΩ`;
+
+  const hasZToVal = typeof zToVal === "function";
+
   return (
-    <Typography variant="caption" align="center" sx={{ display: "block" }}>
-      Z = {zStr}
-    </Typography>
+    <>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <Typography variant="caption" component="span" sx={{ mr: 0.5 }}>
+          Z =
+        </Typography>
+        <Typography variant="caption" component="span" sx={{ mr: 0.5 }}>
+          {zStr}
+        </Typography>
+        {hasZToVal && (
+          <Tooltip title="Set impedance (auto-calculate component value)" arrow>
+            <IconButton
+              size="small"
+              sx={{ p: 0.2 }}
+              onClick={() => {
+                setEditValue(imaginary);
+                setEditOpen(true);
+              }}
+            >
+              <EditIcon sx={{ transform: "scale(0.6)" }} />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
+
+      <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth>
+        <Box sx={{ p: 2 }}>
+          <Typography variant="h6">Enter impedance</Typography>
+          <TextField
+            size="small"
+            fullWidth
+            sx={{ mt: 1 }}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            helperText="Enter numeric impedance (will be passed to the component calculator)"
+          />
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+            <Button onClick={() => setEditOpen(false)} sx={{ mr: 1 }}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                const v = Number(editValue);
+                if (!Number.isNaN(v)) zToVal(v);
+                setEditOpen(false);
+              }}
+            >
+              Save
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+    </>
   );
 }
 
@@ -687,14 +743,21 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
     const slider_re = component.slider_re === undefined ? 0 : component.slider_re;
     const slider_im = component.slider_im === undefined ? 0 : component.slider_im;
     const slider = component.slider === undefined ? 0 : component.slider;
+    let zToVal; // explicitly declared
     switch (type) {
       case "impedance":
         if (component.name == "shortedInd" || component.name == "seriesInd") {
           real = 0;
           imaginary = component.value * 2 * Math.PI * frequency * unitConverter[component.unit] * (1 + slider / 100);
+          zToVal = (v) => {
+            setValue(v / (2 * Math.PI * frequency * unitConverter[component.unit]), "value", setUserCircuit, index);
+          };
         } else if (component.name == "shortedCap" || component.name == "seriesCap") {
           real = 0;
           imaginary = -1 / (component.value * 2 * Math.PI * frequency * unitConverter[component.unit]);
+          zToVal = (v) => {
+            setValue(-1 / (v * 2 * Math.PI * frequency * unitConverter[component.unit]), "value", setUserCircuit, index);
+          };
         } else if (component.name == "shortedRes" || component.name == "seriesRes") {
           real = component.value * unitConverter[component.unit] * (1 + slider / 100);
           imaginary = 0;
@@ -709,7 +772,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
           real = component.real * (1 + slider_re / 100); //for black box this will be correct
           imaginary = component.imaginary * (1 + slider_im / 100);
         }
-        return <ImpedanceComponent real={real} imaginary={imaginary} key={index} />;
+        return <ImpedanceComponent real={real} imaginary={imaginary} key={index} zToVal={zToVal} />;
       case "complex":
         return (
           <ComplexComponent
