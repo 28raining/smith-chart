@@ -32,9 +32,11 @@ import Link from "@mui/material/Link";
 import Tooltip from "@mui/material/Tooltip";
 
 const s2pExample = `# GHz S MA R 50
-0.8	0.44  –157.6 4.725 84.3	0 0	0.339 –51.8
-1.4	0.533 176.6	2.800 64.5	0 0	0.604 –58.3
-2.0	0.439 159.6	2.057 49.2	0 0	0.294 –68.1`;
+0.8 0.44 -157.6 4.725 84.3 0 0 0.339 -51.8
+1.4 0.533 176.6 2.800 64.5 0 0 0.604 -58.3
+2.0 0.439 159.6 2.057 49.2 0 0 0.294 -68.1
+! Noise parameters
+1.4 1.6 0.5 130 0.4`;
 
 import {
   arcColors,
