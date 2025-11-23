@@ -425,7 +425,20 @@ function ImpedanceComponent({ real, imaginary, zToVal }) {
   );
 }
 
-function SliderAdjust({ handleChange, value }) {
+function SliderAdjust({ handleChange, value, baseValue, unit }) {
+  const formatAdjustedValue = (sliderValue) => {
+    if (baseValue !== undefined && unit !== undefined) {
+      const numValue = parseFloat(baseValue);
+      if (!isNaN(numValue)) {
+        const adjusted = numValue * (1 + (sliderValue || 0) / 100);
+        // Format with appropriate precision
+        const formatted = adjusted.toPrecision(4);
+        return `${sliderValue}% (${formatted}${unit})`;
+      }
+    }
+    return `${sliderValue}%`;
+  };
+
   return (
     <Slider
       size="small"
@@ -437,7 +450,7 @@ function SliderAdjust({ handleChange, value }) {
       max={20}
       step={1}
       value={value === undefined ? 0 : value}
-      valueLabelFormat={(value) => `${value}%`}
+      valueLabelFormat={(val) => formatAdjustedValue(val)}
       onChange={(e) => handleChange(e.target.value)}
       color={value === 0 || value == undefined ? "primary" : "warning"}
     />
@@ -467,8 +480,8 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
         />
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 0, mb: 1, zIndex: 10 }}>
-        <SliderAdjust handleChange={(v) => setValue(v, "slider_re", setUserCircuit, index)} value={slider_re} />
-        <SliderAdjust handleChange={(v) => setValue(v, "slider_im", setUserCircuit, index)} value={slider_im} />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider_re", setUserCircuit, index)} value={slider_re} baseValue={real} unit="" />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider_im", setUserCircuit, index)} value={slider_im} baseValue={imaginary} unit="j" />
       </Box>
     </>
   );
@@ -541,7 +554,7 @@ function InductorComponent({ value, unit, index, setUserCircuit, slider }) {
         </Select>
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, zIndex: 10 }}>
-        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} baseValue={value} unit={unit} />
       </Box>
     </>
   );
@@ -585,7 +598,7 @@ function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequen
         </Select>
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, zIndex: 10 }}>
-        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} baseValue={value} unit={unit} />
       </Box>
       <TextField
         label="Zo"
@@ -645,7 +658,7 @@ function ResistorComponent({ value, unit, index, setUserCircuit, slider }) {
         </Select>
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, zIndex: 10 }}>
-        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} baseValue={value} unit={unit} />
       </Box>
     </>
   );
@@ -669,7 +682,7 @@ function CapacitorComponent({ value, unit, index, setUserCircuit, slider }) {
         </Select>
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, zIndex: 10 }}>
-        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} />
+        <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} baseValue={value} unit={unit} />
       </Box>
     </>
   );
@@ -756,7 +769,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
           };
         } else if (component.name == "shortedCap" || component.name == "seriesCap") {
           real = 0;
-          imaginary = -1 / (component.value * 2 * Math.PI * frequency * unitConverter[component.unit]);
+          imaginary = -1 / (component.value * 2 * Math.PI * frequency * unitConverter[component.unit] * (1 + slider / 100));
           zToVal = (v) => {
             setValue(-1 / (v * 2 * Math.PI * frequency * unitConverter[component.unit]), "value", setUserCircuit, index);
           };
