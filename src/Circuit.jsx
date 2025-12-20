@@ -465,7 +465,15 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
           label="Re"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, minWidth: "6ch", padding: 0 }}
+          sx={{
+            mx: 0.5,
+            p: 0,
+            minWidth: "6ch",
+            padding: 0,
+            "& .MuiInputBase-input": {
+              textDecoration: slider_re === 0 || slider_re == undefined ? "none" : "line-through",
+            },
+          }}
           value={real}
           onChange={(e) => setValue(e.target.value, "real", setUserCircuit, index)}
         />
@@ -474,7 +482,15 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
           label="Im"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, minWidth: "6ch", padding: 0 }}
+          sx={{
+            mx: 0.5,
+            p: 0,
+            minWidth: "6ch",
+            padding: 0,
+            "& .MuiInputBase-input": {
+              textDecoration: slider_im === 0 || slider_im == undefined ? "none" : "line-through",
+            },
+          }}
           value={imaginary}
           onChange={(e) => setValue(e.target.value, "imaginary", setUserCircuit, index)}
         />
@@ -543,7 +559,14 @@ function InductorComponent({ value, unit, index, setUserCircuit, slider }) {
           label="Inductance"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, padding: 0 }}
+          sx={{
+            mx: 0.5,
+            p: 0,
+            padding: 0,
+            "& .MuiInputBase-input": {
+              textDecoration: slider === 0 || slider == undefined ? "none" : "line-through",
+            },
+          }}
           value={value}
           onChange={(e) => setValue(e.target.value, "value", setUserCircuit, index)}
         />
@@ -587,7 +610,14 @@ function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequen
           label="Length"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, padding: 0 }}
+          sx={{
+            mx: 0.5,
+            p: 0,
+            padding: 0,
+            "& .MuiInputBase-input": {
+              textDecoration: slider === 0 || slider == undefined ? "none" : "line-through",
+            },
+          }}
           value={value}
           onChange={(e) => setValue(e.target.value, "value", setUserCircuit, index)}
         />
@@ -647,7 +677,14 @@ function ResistorComponent({ value, unit, index, setUserCircuit, slider }) {
           label="Resistance"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, padding: 0 }}
+          sx={{
+            mx: 0.5,
+            p: 0,
+            padding: 0,
+            "& .MuiInputBase-input": {
+              textDecoration: slider === 0 || slider == undefined ? "none" : "line-through",
+            },
+          }}
           value={value}
           onChange={(e) => setValue(e.target.value, "value", setUserCircuit, index)}
         />
@@ -671,7 +708,14 @@ function CapacitorComponent({ value, unit, index, setUserCircuit, slider }) {
           label="Capacitance"
           variant="outlined"
           size="small"
-          sx={{ mx: 0.5, p: 0, padding: 0 }}
+          sx={{
+            mx: 0.5,
+            p: 0,
+            padding: 0,
+            "& .MuiInputBase-input": {
+              textDecoration: slider === 0 || slider == undefined ? "none" : "line-through",
+            },
+          }}
           value={value}
           onChange={(e) => setValue(e.target.value, "value", setUserCircuit, index)}
         />
