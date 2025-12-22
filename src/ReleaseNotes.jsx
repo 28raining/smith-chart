@@ -96,11 +96,11 @@ function ReleaseNotes() {
                   </p>
                   <p>
                     The first version of this site was extremely simple to support my basic needs; a black box, capacitor, inductor and smith chart
-                    diagram. We successfully used the tool to chose our component values, and since then I've not needed a Smith Chart!
+                    diagram. We successfully used the tool to chose our component values.
                   </p>
                   <p>The community has made hundreds of requests over the years and many features have been added</p>
                   <p>
-                    All features have been verified against Fritz's software, YouTube videos, allaboutcircuits.com, etc. Of course I made some
+                    All features have been verified against Fritz's software, YouTube videos, allaboutcircuits.com, etc. Of coursethere were some
                     mistakes, most of these have been identified and fixed during the 100's of comments
                   </p>
                 </TableCell>

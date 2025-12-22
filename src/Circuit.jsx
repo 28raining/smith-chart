@@ -192,8 +192,9 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
   const gs0 = value.data[frequency] ? (value.data[frequency].S21 ? 10 * Math.log10(value.data[frequency].S21.magnitude ** 2) : 0) : 0;
   const parsed = parseTouchstoneFile(customInput);
   const validCheckerResults = parsed.error === null;
-  const helperText =
-    customInput == "" ? "Copy in a file" : validCheckerResults ? `${Object.keys(parsed.data).length} data points parsed succesfully` : parsed.error;
+  const numRows = Object.keys(parsed.data).length;
+  const defaultMaxRows = 300;
+  const helperText = customInput == "" ? "Copy in a file" : validCheckerResults ? `${numRows} data points parsed succesfully` : parsed.error;
   return (
     <>
       <Typography variant="caption" align="center" sx={{ display: "block" }}>
@@ -286,22 +287,28 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                 </li>
                 <li>Zo: {parsed.settings.zo}</li>
               </ul>
-              {showAllData ? "All rows of data:" : `First ${Math.min(300, Object.keys(parsed.data).length)} rows of data:`}
-              <button onClick={() => setShowAllData((o) => !o)}>{showAllData ? "Show less" : "Show all"}</button>
-              <TableContainer sx={{ maxHeight: 300, border: "1px solid black" }}>
+              ABOVE TEXT FORMATTED INTO A TABLE{" "}
+              {numRows > defaultMaxRows && (showAllData ? "- All rows of data: " : `- First ${Math.min(defaultMaxRows, numRows)} rows of data: `)}
+              {numRows > defaultMaxRows && <button onClick={() => setShowAllData((o) => !o)}>{showAllData ? "Show less" : "Show all"}</button>}
+              <TableContainer sx={{ maxHeight: defaultMaxRows, border: "1px solid black" }}>
                 <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow>
                       <TableCell key="frequency">Frequency ({parsed.settings.freq_unit})</TableCell>
                       {allcols.map((column) => {
                         if (!(column in Object.values(parsed.data)[0])) return null;
-                        return [<TableCell key="mag">|{column}|</TableCell>, <TableCell key="ang">∠{column}</TableCell>];
+                        return [
+                          <TableCell key="mag">
+                            |{column}|<small>dB</small>
+                          </TableCell>,
+                          <TableCell key="ang">∠{column}°</TableCell>,
+                        ];
                       })}
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {Object.keys(parsed.data).map((f, i) => {
-                      if (!showAllData) if (i > 300) return null; // limit to 300 rows for performance
+                      if (!showAllData) if (i > defaultMaxRows) return null; // limit to defaultMaxRows rows for performance
                       return (
                         <TableRow hover tabIndex={-1} key={f}>
                           <TableCell key="freq">{(f / unitConverter[parsed.settings.freq_unit]).toLocaleString()}</TableCell>
@@ -319,7 +326,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                 </Table>
               </TableContainer>
               <Typography sx={{ display: "block", mt: 3 }}>Noise Data - note that noise frequencies not in s-param are discarded</Typography>
-              <TableContainer sx={{ maxHeight: 300, border: "1px solid black" }}>
+              <TableContainer sx={{ maxHeight: defaultMaxRows, border: "1px solid black" }}>
                 <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow>
@@ -332,7 +339,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                   </TableHead>
                   <TableBody>
                     {Object.keys(parsed.noise).map((f, i) => {
-                      if (!showAllData) if (i > 300) return null; // limit to 300 rows for performance
+                      if (!showAllData) if (i > defaultMaxRows) return null; // limit to defaultMaxRows rows for performance
                       return (
                         <TableRow hover tabIndex={-1} key={f}>
                           <TableCell key="freq">{(f / unitConverter[parsed.settings.freq_unit]).toLocaleString()}</TableCell>
