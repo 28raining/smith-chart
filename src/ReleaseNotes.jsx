@@ -81,6 +81,30 @@ function ReleaseNotes() {
                   </ul>
                 </TableCell>
               </TableRow>
+              <TableRow>
+                <TableCell>
+                  <Typography>v1.0</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography>May 2018</Typography>
+                </TableCell>
+                <TableCell>
+                  <i>Adding a brief history of the site</i>
+                  <p>
+                    I needed to match a Maxim 2.4GHz bluetooth amplifier (with a 25+25j output impedace) to a 50ohm chip antenna. The only software I
+                    could find was from Fritz Dellsperger however on Windows 11 the GUI became unusable.
+                  </p>
+                  <p>
+                    The first version of this site was extremely simple to support my basic needs; a black box, capacitor, inductor and smith chart
+                    diagram. We successfully used the tool to chose our component values, and since then I've not needed a Smith Chart!
+                  </p>
+                  <p>The community has made hundreds of requests over the years and many features have been added</p>
+                  <p>
+                    All features have been verified against Fritz's software, YouTube videos, allaboutcircuits.com, etc. Of course I made some
+                    mistakes, most of these have been identified and fixed during the 100's of comments
+                  </p>
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </AccordionDetails>
