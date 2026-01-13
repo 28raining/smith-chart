@@ -940,6 +940,13 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
         );
       case "esr":
         return <EsComponent type={"esr"} value={component.esr} index={index} setUserCircuit={setUserCircuit} key={type} />;
+      case "qfactor":
+        // if `esr` is 0 or undefined, don't return anything
+        return component.esr === 0 || component.esr === undefined ? null : (
+          <Typography variant="caption" align="center" sx={{ display: "block"}}>
+            Q Factor = {((component.value * 2 * Math.PI * frequency * unitConverter[component.unit]) / component.esr).toPrecision(3)}
+          </Typography>
+        );
       case "esl":
         return <EsComponent type={"esl"} value={component.esl} index={index} setUserCircuit={setUserCircuit} key={type} />;
       default:

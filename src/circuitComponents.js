@@ -195,7 +195,7 @@ export const circuitComponents = {
   shortedInd: {
     name: "Shorted Inductor",
     src: inductor_parallel,
-    circuitInputs: ["impedance", "inductor", "esr", "tolerance"],
+    circuitInputs: ["impedance", "inductor", "esr", "qfactor", "tolerance"],
     default: { value: 1, unit: "nH" },
     toURL: (c) => `shortedInd_${c.value}_${c.unit}_${c.tolerance ? c.tolerance : 0}_${c.esr ? c.esr : 0}`,
     fromURL: (u) => {
