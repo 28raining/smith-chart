@@ -82,6 +82,9 @@ function Graph({
   freqUnit,
   frequency,
   chosenNoiseParameter,
+  nonIdealUsed,
+  showIdeal,
+  setShowIdeal,
 }) {
   const svgRef = useRef(null);
   const svgWrapper = useRef(null);
@@ -797,6 +800,25 @@ function Graph({
           <label>{sParameters ? (sParameters.type == "s1p" ? "Z looking into DP1" : "Z") : "Z"}</label>
         </div>
       </Stack>
+      {nonIdealUsed >= 0 && (
+        <Tooltip title="set all ESR and ESL to zero">
+          <ToggleButton
+            value="showIdeal"
+            selected={showIdeal}
+            onChange={() => setShowIdeal(!showIdeal)}
+            size="small"
+            sx={{
+              position: "absolute",
+              bottom: 0,
+              left: 4,
+              py: 0,
+              mb: 0.5,
+            }}
+          >
+            Show Ideal
+          </ToggleButton>
+        </Tooltip>
+      )}
       <Link
         onClick={() => setDialogOpen(true)}
         sx={{

@@ -388,7 +388,7 @@ function ImpedanceComponent({ real, imaginary, zToVal }) {
           <Tooltip title="Set impedance (auto-calculate component value)" arrow>
             <IconButton
               size="small"
-              sx={{ p: 0.2 }}
+              sx={{ p: 0.2, height: "19px" }}
               onClick={() => {
                 setEditValue(imaginary);
                 setEditOpen(true);
@@ -658,13 +658,21 @@ function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequen
   );
 }
 
-function EsComponent({ type, value, setUserCircuit, index }) {
+function EsComponent({ type, value, setUserCircuit, index, showIdeal }) {
   return (
     <TextField
       label={type.toUpperCase()}
       variant="outlined"
       size="small"
-      sx={{ mx: 0.5, mb: 1.2, p: 0, padding: 0 }}
+      sx={{
+        mx: 0.5,
+        mb: 1.2,
+        p: 0,
+        padding: 0,
+        "& .MuiInputBase-input": {
+          textDecoration: showIdeal ? "line-through" : "none",
+        },
+      }}
       slotProps={{
         input: {
           endAdornment: <InputAdornment position="end">{type == "esr" ? "Ω" : "nH"}</InputAdornment>,
@@ -794,7 +802,7 @@ function ToleranceComponent({ tol, index, setUserCircuit }) {
   );
 }
 
-function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSettings }) {
+function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSettings, showIdeal }) {
   const w = 2 * Math.PI * frequency;
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSparam, setModalSparam] = useState(false);
@@ -939,7 +947,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
           />
         );
       case "esr":
-        return <EsComponent type={"esr"} value={component.esr} index={index} setUserCircuit={setUserCircuit} key={type} />;
+        return <EsComponent type={"esr"} value={component.esr} index={index} setUserCircuit={setUserCircuit} showIdeal={showIdeal} key={type} />;
       case "qfactor":
         // if `esr` is 0 or undefined, don't return anything
         return component.esr === 0 || component.esr === undefined ? null : (
@@ -948,7 +956,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
           </Typography>
         );
       case "esl":
-        return <EsComponent type={"esl"} value={component.esl} index={index} setUserCircuit={setUserCircuit} key={type} />;
+        return <EsComponent type={"esl"} value={component.esl} index={index} setUserCircuit={setUserCircuit} showIdeal={showIdeal} key={type} />;
       default:
         return "";
     }

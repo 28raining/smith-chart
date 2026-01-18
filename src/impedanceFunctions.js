@@ -44,7 +44,7 @@ function subEq(Rs, S11) {
   return numerator / denominator;
 }
 
-export function calculateImpedance(userCircuit, frequency, resolution) {
+export function calculateImpedance(userCircuit, frequency, resolution, showIdeal = false) {
   var startReal, startImaginary, startAdmittance, endImpedance;
   var newAdmittance = {};
   var newImpedance = {};
@@ -65,8 +65,8 @@ export function calculateImpedance(userCircuit, frequency, resolution) {
     prevResult = impedanceResults[impedanceResults.length - 1];
     startReal = prevResult[prevResult.length - 1].real;
     startImaginary = prevResult[prevResult.length - 1].imaginary;
-    esr = component.esr ? component.esr : 0;
-    esl = component.esl ? component.esl : 0;
+    esr = showIdeal ? 0 : component.esr ? component.esr : 0;
+    esl = showIdeal ? 0 : component.esl ? component.esl : 0;
 
     if (component.name === "shortedCap" || component.name === "shortedInd" || component.name === "shortedRes") {
       //this impedance is in parallel with the existing impedance
@@ -276,13 +276,13 @@ function convertLengthToM(circuit, frequency) {
 }
 
 //calculate impedance at a specific frequency
-function impedanceAtFrequency(circuit, frequency) {
-  const span_tol = calculateImpedance(circuit, frequency, 2);
+function impedanceAtFrequency(circuit, frequency, showIdeal = false) {
+  const span_tol = calculateImpedance(circuit, frequency, 2, showIdeal);
   const span_tol_final = span_tol[span_tol.length - 1];
   return span_tol_final[span_tol_final.length - 1];
 }
 
-export function allImpedanceCalculations(userCircuit, settings) {
+export function allImpedanceCalculations(userCircuit, settings, showIdeal = false) {
   //get index of sparam in userCircuit
   // const sParametersSearch = userCircuit.filter((c) => c.name === "sparam");
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
@@ -356,7 +356,7 @@ export function allImpedanceCalculations(userCircuit, settings) {
       c = cReversed;
     }
     var circuitArray = createToleranceArray([c]);
-    for (const z of circuitArray) zResultsSrc.push(calculateImpedance(z, numericalFrequency, detailedResolution));
+    for (const z of circuitArray) zResultsSrc.push(calculateImpedance(z, numericalFrequency, detailedResolution, showIdeal));
     const noToleranceResult = zResultsSrc[zResultsSrc.length - 1];
     finalDp = noToleranceResult[noToleranceResult.length - 1];
     finalZ = finalDp[finalDp.length - 1];
@@ -368,7 +368,7 @@ export function allImpedanceCalculations(userCircuit, settings) {
       const fRes = {};
       const RefInVsF = {};
       for (const f of spanFrequencies) {
-        const z = impedanceAtFrequency(c, f);
+        const z = impedanceAtFrequency(c, f, showIdeal);
         fRes[f] = { z };
         if (sParamIndex !== -1) fRes[f].reflAtSZo = zToRefl(z, { real: userCircuitNoLambda[sParamIndex].settings.zo, imaginary: 0 });
         if (s1pIndex !== -1) RefInVsF[f] = rectangularToPolar(zToRefl(z, userCircuitNoLambda[0])); //userCircuitNoLambda[0] is the termination

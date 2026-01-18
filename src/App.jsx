@@ -58,6 +58,7 @@ function App() {
   const [settings, setSettings] = useState(stateInURL);
   const [urlSnackbar, setUrlSnackbar] = useState(false);
   const [plotType, setPlotType] = useState("impedance");
+  const [showIdeal, setShowIdeal] = useState(false);
 
   const settingsFloat = convertSettingsToFloat(JSON.parse(JSON.stringify(settings)));
 
@@ -69,7 +70,10 @@ function App() {
   }, [settings, userCircuit, debouncedSync]);
 
   const [processedImpedanceResults, spanResults, multiZResults, gainArray, noiseArray, numericalFrequency, RefIn, noiseFrequency] =
-    allImpedanceCalculations(userCircuit, settingsFloat);
+    allImpedanceCalculations(userCircuit, settingsFloat, showIdeal);
+
+  //check if esr or esl exists, and if it does exist check that it is not 0 or ''
+  const nonIdealUsed = userCircuit.findIndex((c) => (c.esr != null && c.esr != 0 && c.esr !== "") || (c.esl != null && c.esl != 0 && c.esl !== ""));
 
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
   const sParameters = sParamIndex === -1 ? null : userCircuit[sParamIndex];
@@ -137,6 +141,7 @@ function App() {
                   frequency={numericalFrequency}
                   setPlotType={setPlotType}
                   setSettings={setSettings}
+                  showIdeal={showIdeal}
                 />
               </CardContent>
             </Card>
@@ -161,6 +166,9 @@ function App() {
                 freqUnit={settings.frequencyUnit}
                 frequency={numericalFrequency}
                 chosenNoiseParameter={chosenNoiseParameter}
+                nonIdealUsed={nonIdealUsed}
+                showIdeal={showIdeal}
+                setShowIdeal={setShowIdeal}
               />
             </Card>
           </Grid>
