@@ -38,6 +38,27 @@ const s2pExample = `# GHz S MA R 50
 ! Noise parameters
 1.4 1.6 0.5 130 0.4`;
 
+const s1pExample = `# MHz S RI R 50
+200.217864 0.468046844 -0.716237902
+205.133607 0.356939613 -0.815402686
+210.049352 0.227947369 -0.881349921
+215.272330 0.08556845 -0.901367306
+220.188074 -0.040296394 -0.882605373
+225.103818 -0.154826939 -0.826501727
+230.019564 -0.233549714 -0.72003293
+235.242540 -0.170896843 -0.594879806
+240.158284 -0.105404153 -0.705455303
+245.381261 -0.25128895 -0.770565211
+250.297006 -0.377072513 -0.71627146
+255.212750 -0.453501135 -0.631189465
+260.128494 -0.502062082 -0.541466295
+265.044238 -0.530858218 -0.451504796
+270.267215 -0.548313796 -0.350935876
+275.182960 -0.539190292 -0.254450619
+280.098704 -0.515894114 -0.163792759
+285.014448 -0.474802017 -0.076475627
+290.237426 -0.409809559 0.008439064`;
+
 import {
   arcColors,
   inductorUnits,
@@ -213,12 +234,15 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
       </Button>
       <Dialog open={modalOpen} fullScreen>
         <Box sx={{ p: 4 }}>
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            Paste .s1p or .s2p file contents below
+          </Typography>
           <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Typography id="modal-modal-title" variant="h6" component="h2">
-              Paste .s1p or .s2p file contents below
-            </Typography>
-            <Link onClick={() => setCustomInput(s2pExample)} sx={{ cursor: "pointer" }}>
+            <Link onClick={() => setCustomInput(s2pExample)} sx={{ cursor: "pointer", px: 1 }}>
               s2p example
+            </Link>
+            <Link onClick={() => setCustomInput(s1pExample)} sx={{ cursor: "pointer", px: 1 }}>
+              s1p example
             </Link>
             <small>
               {customInput.length} characters{customInput.length > 1000 ? ": 1K max for URL saving" : ""}
