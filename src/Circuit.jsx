@@ -830,6 +830,8 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
   const w = 2 * Math.PI * frequency;
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSparam, setModalSparam] = useState(false);
+  const [shortedStubDialogOpen, setShortedStubDialogOpen] = useState(false);
+  const [hasSeenShortedStubPopup, setHasSeenShortedStubPopup] = useState(false);
 
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
   const s1pIndex = userCircuit.findIndex((c) => c.type === "s1p");
@@ -1011,6 +1013,9 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
                       setModalOpen(true);
                     } else if (k == "sparam") {
                       setModalSparam(true);
+                    } else if (k === "shortedStub" && !hasSeenShortedStubPopup) {
+                      setHasSeenShortedStubPopup(true);
+                      setShortedStubDialogOpen(true);
                     }
                   }}
                   color="bland"
@@ -1035,6 +1040,17 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
             );
         })}
       </Grid>
+      <Dialog open={shortedStubDialogOpen} onClose={() => setShortedStubDialogOpen(false)}>
+        <Box sx={{ p: 2 }}>
+          <Typography sx={{ mb: 2 }}>
+            Shorted-stub arc starts at 0-ohms (length = 0), therefore will not be connected to the previous point. This may seem unintuitive but makes
+            more sense once considering frequency-span and tolerance
+          </Typography>
+          <Button variant="contained" onClick={() => setShortedStubDialogOpen(false)}>
+            OK
+          </Button>
+        </Box>
+      </Dialog>
       <div style={{ display: "flex", width: "100%" }}>
         <p>Click components above to add them to the circuit below. Impedance is looking {s1pIndex === -1 ? "towards the BLACK BOX" : "into DP1"}</p>
       </div>

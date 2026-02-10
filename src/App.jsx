@@ -235,9 +235,6 @@ function App() {
                     Get professional support from Microwave Master here
                   </Link>
                 </div>
-                <Typography>
-                  <em>Before commenting about shorted stubs please read the other comments</em>
-                </Typography>
                 {!import.meta.env.DEV && <Comments website-id="12282" page-id="/smith_chart/" />}
               </CardContent>
             </Card>
