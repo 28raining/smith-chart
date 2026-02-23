@@ -159,6 +159,7 @@ test("URL clicked them all", () => {
       l2: 3,
       unit_l2: "nH",
       k: 2,
+      model: "coupledInductor",
     },
   ]);
 });

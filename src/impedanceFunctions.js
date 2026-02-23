@@ -157,7 +157,7 @@ export function calculateImpedance(userCircuit, frequency, resolution, showIdeal
         if (isNaN(n) || n <= 0) n = 1;
         var n2 = n * n;
         for (j = 0; j <= resolution; j++) {
-          const transformerScaler = 1 + (n2 - 1) * j / resolution;
+          const transformerScaler = 1 + ((n2 - 1) * j) / resolution;
           impedanceResolution.push({
             real: transformerScaler * startReal,
             imaginary: transformerScaler * startImaginary,

@@ -561,7 +561,6 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
         />
       </RadioGroup>
       {modelValue === "coupledInductor" && (
-
         <>
           <Box sx={{ display: "flex", m: 0, p: 0, mt: 1, mb: 1.2 }}>
             <TextField
@@ -572,7 +571,12 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
               value={l1}
               onChange={(e) => setValue(e.target.value, "l1", setUserCircuit, index)}
             />
-            <Select value={unit_l1} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit_l1", setUserCircuit, index)}>
+            <Select
+              value={unit_l1}
+              size="small"
+              sx={{ marginRight: 0.5 }}
+              onChange={(e) => setUnit(e.target.value, "unit_l1", setUserCircuit, index)}
+            >
               {Object.keys(inductorUnits).map((u) => (
                 <MenuItem value={u}>{u}</MenuItem>
               ))}
@@ -587,7 +591,12 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
               value={l2}
               onChange={(e) => setValue(e.target.value, "l2", setUserCircuit, index)}
             />
-            <Select value={unit_l2} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit_l2", setUserCircuit, index)}>
+            <Select
+              value={unit_l2}
+              size="small"
+              sx={{ marginRight: 0.5 }}
+              onChange={(e) => setUnit(e.target.value, "unit_l2", setUserCircuit, index)}
+            >
               {Object.keys(inductorUnits).map((u) => (
                 <MenuItem value={u}>{u}</MenuItem>
               ))}
@@ -604,7 +613,7 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
         </>
       )}
       {modelValue === "ideal" && (
-        <Box sx={{ display: "flex", alignItems: "center", m: 0, p: 0, mt: 1, gap: 0.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", m: 0, p: 0, mt: 1, ml: 1, gap: 0.5 }}>
           <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
             1 :
           </Typography>
