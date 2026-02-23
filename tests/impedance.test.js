@@ -129,6 +129,105 @@ test("Cap with ESL and ESR", () => {
   });
 });
 
+test("Ideal Transformer", () => {
+  const circuit = [
+    {
+      name: "blackBox",
+      real: "20",
+      imaginary: "20",
+      tolerance: 0,
+    },
+    {
+      name: "transformer",
+      l1: 2,
+      unit_l1: "nH",
+      l2: 1,
+      unit_l2: "nH",
+      k: 2.04,
+      model: "ideal",
+    },
+  ];
+  const settings = {
+    zo: 50,
+    frequency: 2440,
+    frequencyUnit: "MHz",
+    fSpan: 0,
+    fSpanUnit: "MHz",
+    fRes: 10,
+    zMarkers: [],
+    vswrCircles: [],
+    qCircles: [],
+    nfCircles: [],
+    gainInCircles: [],
+    gainOutCircles: [],
+  };
+  const [processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _noiseArray, _numericalFrequency, _RefIn] = allImpedanceCalculations(
+    circuit,
+    settings,
+  );
+
+  expect(processedImpedanceResults).toEqual({
+    zStr: "83.23 + 83.23j",
+    zPolarStr: "117.71 ∠ 45.00°",
+    refStr: "0.460 + 0.337j",
+    refPolarStr: "0.570 ∠ 36.2°",
+    vswr: "3.66",
+    qFactor: "1.00",
+    refReal: 0.46012557939346155,
+    refImag: 0.33726753164347456,
+    admString: "0.00601 - 0.00601j",
+  });
+});
+
+test("Coupled Transformer", () => {
+  const circuit = [
+    {
+      name: "blackBox",
+      real: "20",
+      imaginary: "20",
+      tolerance: 0,
+    },
+    {
+      name: "transformer",
+      l1: 2,
+      unit_l1: "nH",
+      l2: 3,
+      unit_l2: "nH",
+      k: 4,
+    },
+  ];
+  const settings = {
+    zo: 50,
+    frequency: 2440,
+    frequencyUnit: "MHz",
+    fSpan: 0,
+    fSpanUnit: "MHz",
+    fRes: 10,
+    zMarkers: [],
+    vswrCircles: [],
+    qCircles: [],
+    nfCircles: [],
+    gainInCircles: [],
+    gainOutCircles: [],
+  };
+  const [processedImpedanceResults, _spanResults, _multiZResults, _gainArray, _noiseArray, _numericalFrequency, _RefIn] = allImpedanceCalculations(
+    circuit,
+    settings,
+  );
+
+  expect(processedImpedanceResults).toEqual({
+    zStr: "152.12 - 339.33j",
+    zPolarStr: "371.87 ∠ -65.85°",
+    refStr: "0.870 - 0.218j",
+    refPolarStr: "0.897 ∠ -14.0°",
+    vswr: "18.5",
+    qFactor: "2.23",
+    refReal: 0.8704366392639906,
+    refImag: -0.2175237548329506,
+    admString: "0.00110 + 0.00245j",
+  });
+});
+
 test("Impedance s1p", () => {
   const circuit = [
     {

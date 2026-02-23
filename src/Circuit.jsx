@@ -534,50 +534,99 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
   );
 }
 
-function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, index, setUserCircuit }) {
+function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUserCircuit }) {
+  const modelValue = model ?? "coupledInductor";
   return (
     <>
       <Typography variant="caption" align="center" sx={{ display: "block" }}>
         ~
       </Typography>
-      <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
-        <TextField
-          label="L1"
-          variant="outlined"
-          size="small"
-          sx={{ mx: 0.5, p: 0, padding: 0 }}
-          value={l1}
-          onChange={(e) => setValue(e.target.value, "l1", setUserCircuit, index)}
+      <RadioGroup
+        row
+        value={modelValue}
+        onChange={(e) => setUnit(e.target.value, "model", setUserCircuit, index)}
+        sx={{ m: 0, mb: 1, p: 0, alignItems: "center", minHeight: 60, "& .MuiFormControlLabel-root": { margin: 0 } }}
+      >
+        <FormControlLabel
+          value="coupledInductor"
+          control={<Radio size="small" sx={{ p: 0.25 }} />}
+          label="Coupled-Inductor Model"
+          sx={{ "& .MuiFormControlLabel-label": { fontSize: "0.7rem", lineHeight: 1 }, my: 0, mr: 1 }}
         />
-        <Select value={unit_l1} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit_l1", setUserCircuit, index)}>
-          {Object.keys(inductorUnits).map((u) => (
-            <MenuItem value={u}>{u}</MenuItem>
-          ))}
-        </Select>
-      </Box>
-      <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
-        <TextField
-          label="L2"
-          variant="outlined"
-          size="small"
-          sx={{ mx: 0.5, p: 0, padding: 0 }}
-          value={l2}
-          onChange={(e) => setValue(e.target.value, "l2", setUserCircuit, index)}
+        <FormControlLabel
+          value="ideal"
+          control={<Radio size="small" sx={{ p: 0.25 }} />}
+          label="Ideal Transformer"
+          sx={{ "& .MuiFormControlLabel-label": { fontSize: "0.7rem", lineHeight: 1 }, my: 0 }}
         />
-        <Select value={unit_l2} size="small" sx={{ marginRight: 0.5 }} onChange={(e) => setUnit(e.target.value, "unit_l2", setUserCircuit, index)}>
-          {Object.keys(inductorUnits).map((u) => (
-            <MenuItem value={u}>{u}</MenuItem>
-          ))}
-        </Select>
-      </Box>
-      <TextField
-        label="Coupling Factor"
-        variant="outlined"
-        size="small"
-        sx={{ mx: 0.5, p: 0, padding: 0, mt: 1 }}
-        value={k}
-        onChange={(e) => setValue(e.target.value, "k", setUserCircuit, index)}
-      />
+      </RadioGroup>
+      {modelValue === "coupledInductor" && (
+        <>
+          <Box sx={{ display: "flex", m: 0, p: 0, mt: 1, mb: 1.2 }}>
+            <TextField
+              label="L1"
+              variant="outlined"
+              size="small"
+              sx={{ mx: 0.5, p: 0, padding: 0 }}
+              value={l1}
+              onChange={(e) => setValue(e.target.value, "l1", setUserCircuit, index)}
+            />
+            <Select
+              value={unit_l1}
+              size="small"
+              sx={{ marginRight: 0.5 }}
+              onChange={(e) => setUnit(e.target.value, "unit_l1", setUserCircuit, index)}
+            >
+              {Object.keys(inductorUnits).map((u) => (
+                <MenuItem value={u}>{u}</MenuItem>
+              ))}
+            </Select>
+          </Box>
+          <Box sx={{ display: "flex", m: 0, p: 0, mb: 1.2 }}>
+            <TextField
+              label="L2"
+              variant="outlined"
+              size="small"
+              sx={{ mx: 0.5, p: 0, padding: 0 }}
+              value={l2}
+              onChange={(e) => setValue(e.target.value, "l2", setUserCircuit, index)}
+            />
+            <Select
+              value={unit_l2}
+              size="small"
+              sx={{ marginRight: 0.5 }}
+              onChange={(e) => setUnit(e.target.value, "unit_l2", setUserCircuit, index)}
+            >
+              {Object.keys(inductorUnits).map((u) => (
+                <MenuItem value={u}>{u}</MenuItem>
+              ))}
+            </Select>
+          </Box>
+          <TextField
+            label="Coupling Factor"
+            variant="outlined"
+            size="small"
+            sx={{ mx: 0.5, p: 0, padding: 0 }}
+            value={k}
+            onChange={(e) => setValue(e.target.value, "k", setUserCircuit, index)}
+          />
+        </>
+      )}
+      {modelValue === "ideal" && (
+        <Box sx={{ display: "flex", alignItems: "center", m: 0, p: 0, mt: 1, ml: 1, gap: 0.5 }}>
+          <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
+            1 :
+          </Typography>
+          <TextField
+            label="Turns Ratio"
+            variant="outlined"
+            size="small"
+            sx={{ mx: 0.5, p: 0, padding: 0, flex: 1 }}
+            value={k}
+            onChange={(e) => setValue(e.target.value, "k", setUserCircuit, index)}
+          />
+        </Box>
+      )}
     </>
   );
 }
@@ -920,6 +969,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
             l2={component.l2}
             unit_l2={component.unit_l2}
             k={component.k}
+            model={component.model}
             index={index}
             setUserCircuit={setUserCircuit}
             key={type}

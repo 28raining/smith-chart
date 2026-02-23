@@ -151,30 +151,44 @@ export function calculateImpedance(userCircuit, frequency, resolution, showIdeal
       line_length = ((lengthLambda % 0.5) * speedOfLight) / frequency;
       calculateTlineZ(resolution, component, line_length, beta, startImaginary, startReal, impedanceResolution, startAdmittance);
     } else if (component.name == "transformer") {
-      //coupled inductor model. Do 3 separate equations
-      //     --- L1 --- --- L2 ---  <- look this way
-      //    |          |
-      //    Zo         Lm
-      //    |          |
-      var l1w = w * component.l1 * unitConverter[component.unit_l1];
-      var l2w = w * component.l2 * unitConverter[component.unit_l2];
-      var lmw = component.k * Math.sqrt(l1w * l2w);
-      var i1z, i2z, newStartAdmittance;
+      if (component.model === "ideal") {
+        // Ideal transformer: Z_out = n² * Z_in (turns ratio n from primary to secondary)
+        var n = Number(component.k);
+        if (isNaN(n) || n <= 0) n = 1;
+        var n2 = n * n;
+        for (j = 0; j <= resolution; j++) {
+          const transformerScaler = 1 + ((n2 - 1) * j) / resolution;
+          impedanceResolution.push({
+            real: transformerScaler * startReal,
+            imaginary: transformerScaler * startImaginary,
+          });
+        }
+      } else {
+        // Coupled inductor model. Do 3 separate equations
+        //     --- L1 --- --- L2 ---  <- look this way
+        //    |          |
+        //    Zo         Lm
+        //    |          |
+        var l1w = w * component.l1 * unitConverter[component.unit_l1];
+        var l2w = w * component.l2 * unitConverter[component.unit_l2];
+        var lmw = component.k * Math.sqrt(l1w * l2w);
+        var i1z, i2z, newStartAdmittance;
 
-      for (j = 0; j <= resolution; j++) {
-        //L1
-        i1z = {
-          real: startReal,
-          imaginary: startImaginary + ((l1w - lmw) * j) / resolution,
-        };
-        //Lm
-        newStartAdmittance = one_over_complex(i1z);
-        i2z = one_over_complex({ real: newStartAdmittance.real, imaginary: newStartAdmittance.imaginary - ((1 / lmw) * j) / resolution });
-        //L2
-        impedanceResolution.push({
-          real: i2z.real,
-          imaginary: i2z.imaginary + ((l2w - lmw) * j) / resolution,
-        });
+        for (j = 0; j <= resolution; j++) {
+          //L1
+          i1z = {
+            real: startReal,
+            imaginary: startImaginary + ((l1w - lmw) * j) / resolution,
+          };
+          //Lm
+          newStartAdmittance = one_over_complex(i1z);
+          i2z = one_over_complex({ real: newStartAdmittance.real, imaginary: newStartAdmittance.imaginary - ((1 / lmw) * j) / resolution });
+          //L2
+          impedanceResolution.push({
+            real: i2z.real,
+            imaginary: i2z.imaginary + ((l2w - lmw) * j) / resolution,
+          });
+        }
       }
     } else if (component.name == "custom") {
       newImpedance = CustomZAtFrequency(component.value, frequency, component.interpolation);
