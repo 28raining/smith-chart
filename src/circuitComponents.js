@@ -356,8 +356,8 @@ export const circuitComponents = {
     name: "Transformer",
     src: transformer,
     circuitInputs: ["transformer"],
-    default: { l1: 1, unit_l1: "nH", l2: 1, unit_l2: "nH", k: 1 },
-    toURL: (c) => `transformer_${c.l1}_${c.unit_l1}_${c.l2}_${c.unit_l2}_${c.k}`,
+    default: { l1: 1, unit_l1: "nH", l2: 1, unit_l2: "nH", k: 1, model: "coupledInductor" },
+    toURL: (c) => `transformer_${c.l1}_${c.unit_l1}_${c.l2}_${c.unit_l2}_${c.k}_${c.model ?? "coupledInductor"}`,
     fromURL: (u) => {
       return {
         name: u[0],
@@ -366,6 +366,7 @@ export const circuitComponents = {
         l2: Number(u[3]),
         unit_l2: u[4],
         k: Number(u[5]),
+        model: u[6] === "ideal" ? "ideal" : "coupledInductor",
       };
     },
   },
