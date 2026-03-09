@@ -11,11 +11,12 @@ import Tooltip from "@mui/material/Tooltip";
 
 import SnackbarContent from "@mui/material/SnackbarContent";
 import { ThemeProvider } from "@mui/material/styles";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import GetAppIcon from "@mui/icons-material/GetApp";
 
 import { theme } from "./commonFunctions.js"; // import your theme
 
 import SmithChartSvg from "./assets/smith-chart-icon.svg"; // import your SVG file
-import Download from "./assets/download.svg"; // import your SVG file
 import Home from "./assets/home.svg"; // import your SVG file
 function NavBar() {
   const [urlSnackbar, setUrlSnackbar] = useState(false);
@@ -46,7 +47,7 @@ function NavBar() {
             <Typography variant="h6" component="div" sx={{ fontWeight: "bold", display: { xs: "none", sm: "block" } }}>
               ONLINE SMITH CHART TOOL
             </Typography>
-            <div style={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+            <div style={{ flexGrow: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 4 }}>
               <Tooltip title="Copy shareable URL" placement="bottom">
                 <IconButton
                   aria-label="download"
@@ -59,7 +60,18 @@ function NavBar() {
                     });
                   }}
                 >
-                  <img src={Download} alt="download" width="30" />
+                  <GetAppIcon sx={{ fontSize: 30, color: "rgb(184, 255, 241)" }} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Reset to initial state" placement="bottom">
+                <IconButton
+                  aria-label="reset to initial state"
+                  color="bland"
+                  onClick={() => {
+                    window.location.href = window.location.origin;
+                  }}
+                >
+                  <RestartAltIcon sx={{ fontSize: 30, color: "rgb(184, 255, 241)" }} />
                 </IconButton>
               </Tooltip>
             </div>
