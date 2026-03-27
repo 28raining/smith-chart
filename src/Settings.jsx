@@ -210,7 +210,7 @@ function CustomMarkersTable({ settings, setSettings }) {
   return (
     <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1, backgroundColor: "#effffd" }}>
       <Typography variant="h7" component="div" sx={{ pb: 0.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        Custom markers
+        Impedance markers
         <span>
           <label>
             <input type="radio" name="choice" checked={polar === false} onChange={() => setPolar(false)} />
