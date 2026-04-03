@@ -16,6 +16,7 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { frequencyUnits, parseInput, polarToRectangular, rectangularToPolar, unitConverter } from "./commonFunctions";
 
@@ -36,6 +37,7 @@ function setUnit(value, field, setX) {
 }
 
 function DisabledOverlay({ disabled, disabledText }) {
+  const { t } = useTranslation();
   return (
     disabled && (
       <Typography
@@ -52,13 +54,14 @@ function DisabledOverlay({ disabled, disabledText }) {
           color: "white",
         }}
       >
-        {disabledText ? disabledText : "Disabled — Add .s2p file"}
+        {disabledText ?? t("settings.disabledS2p")}
       </Typography>
     )
   );
 }
 
 export default function Settings({ settings, setSettings, usedF, chosenSparameter, chosenNoiseParameter }) {
+  const { t } = useTranslation();
   const [QInt, setQInt] = useState(0);
   const [VSWRInt, setVSWRInt] = useState(0);
   const [gainInInt, setGainInInt] = useState(0);
@@ -74,12 +77,12 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
   return (
     <>
       <Typography variant="h5" sx={{ textAlign: "center", mb: 2 }}>
-        Settings & Features
+        {t("settings.title")}
       </Typography>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, lg: 2 }} sx={{ display: "flex" }}>
           <TextField
-            label="Zo"
+            label={t("settings.zo")}
             variant="outlined"
             size="small"
             sx={{ m: 0, p: 0, flex: 1 }}
@@ -94,12 +97,17 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
         </Grid>
         <Grid size={{ xs: 12, lg: 4 }} sx={{ display: "flex" }}>
           <TextField
-            label="Frequency"
+            label={t("settings.frequency")}
             variant="outlined"
             size="small"
             error={usedF !== userFrequency}
             helperText={
-              usedF === userFrequency ? "" : `f not in s-param. Using ${usedF / unitConverter[settings.frequencyUnit]}${settings.frequencyUnit}`
+              usedF === userFrequency
+                ? ""
+                : t("settings.fNotInSparam", {
+                    f: usedF / unitConverter[settings.frequencyUnit],
+                    unit: settings.frequencyUnit,
+                  })
             }
             sx={{ m: 0, p: 0, flex: 1 }}
             value={settings.frequency}
@@ -113,7 +121,7 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
         </Grid>
         <Grid size={{ xs: 12, lg: 4 }} sx={{ display: "flex" }}>
           <TextField
-            label="Frequency Span ±"
+            label={t("settings.frequencySpan")}
             variant="outlined"
             size="small"
             sx={{ m: 0, p: 0, flex: 1 }}
@@ -128,7 +136,7 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
         </Grid>
         <Grid size={{ xs: 12, lg: 2 }} sx={{ display: "flex" }}>
           <TextField
-            label="Resolution"
+            label={t("settings.resolution")}
             variant="outlined"
             size="small"
             sx={{ m: 0, p: 0, flex: 1 }}
@@ -136,7 +144,7 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
             onChange={(e) => setValue(e.target.value, "fRes", setSettings)}
             slotProps={{
               input: {
-                endAdornment: <InputAdornment position="end">pts</InputAdornment>,
+                endAdornment: <InputAdornment position="end">{t("common.pts")}</InputAdornment>,
               },
             }}
           />
@@ -149,7 +157,7 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
           setQInt={setQInt}
           settings={settings}
           setSettings={setSettings}
-          title="Constant Q-factor circles"
+          title={t("settings.qCircles")}
           index="qCircles"
           disabled={false}
         />
@@ -159,7 +167,7 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
           setQInt={setVSWRInt}
           settings={settings}
           setSettings={setSettings}
-          title="Constant VSWR circles"
+          title={t("settings.vswrCircles")}
           index="vswrCircles"
           disabled={false}
         />
@@ -169,11 +177,11 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
           setQInt={setNFInt}
           settings={settings}
           setSettings={setSettings}
-          title="Constant Noise Figure circles"
+          title={t("settings.nfCircles")}
           index="nfCircles"
           unit="dB"
           disabled={!s2p || !chosenNoiseParameter}
-          disabledText="Disabled — Add .s2p with noise"
+          disabledText={t("settings.disabledNoise")}
         />
         <CustomQTable
           QInt={gainInInt}
@@ -181,10 +189,11 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
           setQInt={setGainInInt}
           settings={settings}
           setSettings={setSettings}
-          title="Input Gain Circles"
+          title={t("settings.gainInCircles")}
           index="gainInCircles"
           unit="dB"
           disabled={!s2p}
+          disabledText={t("settings.disabledS2p")}
         />
 
         <CustomQTable
@@ -193,10 +202,11 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
           setQInt={setGainOutInt}
           settings={settings}
           setSettings={setSettings}
-          title="Output Gain Circles"
+          title={t("settings.gainOutCircles")}
           index="gainOutCircles"
           unit="dB"
           disabled={!s2p}
+          disabledText={t("settings.disabledS2p")}
         />
       </Grid>
     </>
@@ -204,21 +214,22 @@ export default function Settings({ settings, setSettings, usedF, chosenSparamete
 }
 
 function CustomMarkersTable({ settings, setSettings }) {
+  const { t } = useTranslation();
   const [polar, setPolar] = useState(false);
   const [zMarkersInt, setZMarkersInt] = useState([25, 25]);
 
   return (
     <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1, backgroundColor: "#effffd" }}>
       <Typography variant="h7" component="div" sx={{ pb: 0.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        Impedance markers
+        {t("settings.markersTitle")}
         <span>
           <label>
             <input type="radio" name="choice" checked={polar === false} onChange={() => setPolar(false)} />
-            Rectangular
+            {t("common.rectangular")}
           </label>
           <label>
             <input type="radio" name="choice" checked={polar === true} onChange={() => setPolar(true)} />
-            Polar
+            {t("common.polar")}
           </label>
         </span>
       </Typography>
@@ -226,16 +237,16 @@ function CustomMarkersTable({ settings, setSettings }) {
         <TableHead>
           <TableRow>
             <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              Name
+              {t("common.name")}
             </TableCell>
             <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              {polar ? "Magnitude" : "Real"}
+              {polar ? t("settings.magnitude") : t("settings.real")}
             </TableCell>
             <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              {polar ? "Angle(°)" : "Imaginary"}
+              {polar ? t("settings.angleDeg") : t("settings.imaginary")}
             </TableCell>
             <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-              Add
+              {t("common.add")}
             </TableCell>
           </TableRow>
         </TableHead>
@@ -312,6 +323,7 @@ function CustomMarkersTable({ settings, setSettings }) {
   );
 }
 function CustomQTable({ dB, QInt, maxValue, minValue, setQInt, settings, setSettings, title, index, unit, disabled, disabledText }) {
+  const { t } = useTranslation();
   const [unitdB, setUnitdB] = useState(false);
   return (
     <Grid
@@ -321,16 +333,17 @@ function CustomQTable({ dB, QInt, maxValue, minValue, setQInt, settings, setSett
       <DisabledOverlay disabled={disabled} disabledText={disabledText} />
       <TableContainer component={Paper} variant="outlined" sx={{ px: 1, py: 1, backgroundColor: "#effffd" }}>
         <Typography variant="h7" component="div" sx={{ pb: 0.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {title} {maxValue ? ` (max = ${maxValue.toPrecision(3)}dB)` : minValue ? ` (min = ${minValue.toPrecision(3)}dB)` : ""}
+          {title}
+          {maxValue ? t("settings.maxDb", { v: maxValue.toPrecision(3) }) : minValue ? t("settings.minDb", { v: minValue.toPrecision(3) }) : ""}
           {dB && (
             <span>
               <label>
                 <input type="radio" name="dbUnitChoice" checked={unitdB === false} onChange={() => setUnitdB(false)} />
-                V/V
+                {t("settings.vv")}
               </label>
               <label>
                 <input type="radio" name="dbUnitChoice" checked={unitdB === true} onChange={() => setUnitdB(true)} />
-                dB
+                {t("settings.db")}
               </label>
             </span>
           )}
@@ -339,10 +352,10 @@ function CustomQTable({ dB, QInt, maxValue, minValue, setQInt, settings, setSett
           <TableHead>
             <TableRow>
               <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-                Value
+                {t("common.value")}
               </TableCell>
               <TableCell align="center" sx={{ background: "rgb(37, 50, 64)", color: "white" }}>
-                Add
+                {t("common.add")}
               </TableCell>
             </TableRow>
           </TableHead>

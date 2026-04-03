@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -7,16 +8,14 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import Link from "@mui/material/Link";
 
 function Footer() {
+  const { t } = useTranslation();
   return (
     <Box sx={{ flexGrow: 1, mt: 5 }}>
       <AppBar position="static" sx={{ backgroundColor: "rgb(37, 50, 64)", py: 2 }}>
         <Toolbar>
           <Stack spacing={1} sx={{ width: "100%" }} direction={{ xs: "column", sm: "row" }}>
-            <Typography sx={{ flexGrow: 1 }}>
-              © {new Date().getFullYear()} Will Kelsey. This work is licensed under a Creative Commons Attribution 4.0 International License. You may
-              not resell this tool
-            </Typography>
-            <Typography sx={{ px: 2 }}>v2.0</Typography>
+            <Typography sx={{ flexGrow: 1 }}>{t("footer.license", { year: new Date().getFullYear() })}</Typography>
+            <Typography sx={{ px: 2 }}>{t("footer.version")}</Typography>
             <div
               style={{
                 marginLeft: "auto",

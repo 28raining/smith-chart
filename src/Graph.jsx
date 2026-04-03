@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import * as d3 from "d3";
 import { styled } from "@mui/material/styles";
 import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
@@ -86,6 +87,7 @@ function Graph({
   showIdeal,
   setShowIdeal,
 }) {
+  const { t } = useTranslation();
   const svgRef = useRef(null);
   const svgWrapper = useRef(null);
   const topGroupRef = useRef(null);
@@ -743,9 +745,9 @@ function Graph({
         showAdmittance={showAdmittance}
         setShowAdmittance={setShowAdmittance}
       />
-      <Tooltip title="Download SVG file">
+      <Tooltip title={t("graph.downloadSvg")}>
         <IconButton
-          aria-label="save"
+          aria-label={t("graph.saveAria")}
           onClick={() => {
             const svg = svgRef.current;
             // Serialize the SVG to a string
@@ -780,7 +782,7 @@ function Graph({
         {sParameters && sParameters.type === "s2p" && (
           <div style={{ fontWeight: "bold" }}>
             <input type="checkbox" checked={showStabilityPlot} onChange={() => setShowStabilityPlot(!showStabilityPlot)} />
-            <label>Stability circles</label>
+            <label>{t("graph.stabilityCircles")}</label>
           </div>
         )}
         {Object.keys(showSPlots).map((s) => {
@@ -797,11 +799,11 @@ function Graph({
         })}
         <div style={{ fontWeight: "bold" }}>
           <input type="checkbox" name="scales" checked={showZPlots} onChange={() => setShowZPlots(!showZPlots)} />
-          <label>{sParameters ? (sParameters.type == "s1p" ? "Z looking into DP1" : "Z") : "Z"}</label>
+          <label>{sParameters ? (sParameters.type == "s1p" ? t("graph.zDp1") : t("graph.zLabel")) : t("graph.zLabel")}</label>
         </div>
       </Stack>
       {nonIdealUsed >= 0 && (
-        <Tooltip title="set all ESR and ESL to zero">
+        <Tooltip title={t("graph.idealTooltip")}>
           <ToggleButton
             value="showIdeal"
             selected={showIdeal}
@@ -815,7 +817,7 @@ function Graph({
               mb: 0.5,
             }}
           >
-            Show Ideal
+            {t("graph.showIdeal")}
           </ToggleButton>
         </Tooltip>
       )}
@@ -827,7 +829,7 @@ function Graph({
           right: 4,
         }}
       >
-        Graph Settings
+        {t("graph.graphSettings")}
       </Link>
       <LightTooltip
         title={
@@ -880,6 +882,7 @@ function DialogGraphSettings({
   showAdmittance,
   setShowAdmittance,
 }) {
+  const { t } = useTranslation();
   const [tempRCircles, setTempRCircles] = useState(resistanceCircles.join(", "));
   const [tempReacCircles, setTempReacCircles] = useState(reactanceCircles.join(", "));
 
@@ -898,12 +901,12 @@ function DialogGraphSettings({
   }
   return (
     <Dialog onClose={handleClose} open={dialogOpen} maxWidth="xl" fullWidth>
-      <DialogTitle>Graph Settings</DialogTitle>
+      <DialogTitle>{t("graph.dialogTitle")}</DialogTitle>
       <DialogContent>
         <FormControl sx={{ minWidth: 250 }} fullWidth>
           <TextField
             sx={{ mt: 2, minWidth: 250 }}
-            label="Resistance Circles (Units of Zo)"
+            label={t("graph.resistanceCircles")}
             variant="outlined"
             size="small"
             value={tempRCircles}
@@ -911,7 +914,7 @@ function DialogGraphSettings({
           />
           <TextField
             sx={{ mt: 2 }}
-            label="Reactance Circles (Units of Zo)"
+            label={t("graph.reactanceCircles")}
             variant="outlined"
             size="small"
             value={tempReacCircles}
@@ -919,7 +922,7 @@ function DialogGraphSettings({
           />
           <FormControlLabel
             control={<Checkbox checked={showAdmittance} onChange={(e) => setShowAdmittance(e.target.checked)} />}
-            label="Show Admittance"
+            label={t("graph.showAdmittance")}
           />
         </FormControl>
       </DialogContent>
@@ -928,24 +931,17 @@ function DialogGraphSettings({
 }
 
 function HoverTooltip({ z, frequency, zo, freqUnit }) {
-  if (z.real < 0) return <p>Move cursor back inside the circle</p>;
+  const { t } = useTranslation();
+  if (z.real < 0) return <p>{t("graph.hoverOutside")}</p>;
   var res = processImpedance(z, zo);
   return (
     <>
-      {frequency && (
-        <p style={{ margin: 0, padding: 0 }}>
-          Frequency = {frequency / unitConverter[freqUnit]} {freqUnit}
-        </p>
-      )}
-      <p style={{ margin: 0, padding: 0 }}>
-        Impedance = {res.zStr} ({res.zPolarStr})
-      </p>
-      <p style={{ margin: 0, padding: 0 }}>Admittance = {res.admString}</p>
-      <p style={{ margin: 0, padding: 0 }}>
-        Refl-Coeff = {res.refStr} ({res.refPolarStr})
-      </p>
-      <p style={{ margin: 0, padding: 0 }}>VSWR = {res.vswr}</p>
-      <p style={{ margin: 0, padding: 0 }}>Q-Factor = {res.qFactor}</p>
+      {frequency && <p style={{ margin: 0, padding: 0 }}>{t("graph.frequency", { v: frequency / unitConverter[freqUnit], unit: freqUnit })}</p>}
+      <p style={{ margin: 0, padding: 0 }}>{t("graph.impedance", { z: res.zStr, polar: res.zPolarStr })}</p>
+      <p style={{ margin: 0, padding: 0 }}>{t("graph.admittance", { v: res.admString })}</p>
+      <p style={{ margin: 0, padding: 0 }}>{t("graph.reflCoeff", { v: res.refStr, polar: res.refPolarStr })}</p>
+      <p style={{ margin: 0, padding: 0 }}>{t("graph.vswr", { v: res.vswr })}</p>
+      <p style={{ margin: 0, padding: 0 }}>{t("graph.qFactorHover", { v: res.qFactor })}</p>
     </>
   );
 }
