@@ -3,6 +3,7 @@ import Tooltip from "@mui/material/Tooltip";
 import "uplot/dist/uPlot.min.css";
 import UplotReact from "uplot-react";
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import { processImpedance, rectangularToPolar, unitConverter } from "./commonFunctions";
 
@@ -190,24 +191,55 @@ const optionsGainInit = {
 //   });
 // }
 
-function renderChart_new(setCommon, containerRef, freqUnit) {
+function renderChart_new(setCommon, containerRef, freqUnit, t) {
+  const freqLabel = t("results.frequencyAxis", { unit: freqUnit });
   setCommon((o) => {
     return {
       ...o,
       width: containerRef.current.offsetWidth,
       series: o.series.map((s, i) => {
-        if (i === 0) return { ...s, label: `Frequency (${freqUnit})` };
+        if (i === 0) return { ...s, label: freqLabel };
         return s;
       }),
       axes: o.axes.map((a, i) => {
-        if (i === 0) return { ...a, label: `Frequency (${freqUnit})` };
+        if (i === 0) return { ...a, label: freqLabel };
         return a;
       }),
     };
   });
 }
 
+function localizedOptionsInit(t) {
+  return {
+    ...optionsInit,
+    series: [
+      { ...optionsInit.series[0], label: t("results.s11db") },
+      { ...optionsInit.series[1], label: t("results.s11ang") },
+    ],
+    axes: [
+      { ...optionsInit.axes[0], label: t("results.s11db") },
+      { ...optionsInit.axes[1], label: t("results.s11ang") },
+    ],
+  };
+}
+
+function localizedOptions2Init(t) {
+  return {
+    ...options2Init,
+    series: [{ ...options2Init.series[0], label: t("results.s21db") }],
+    axes: [{ ...options2Init.axes[0], label: t("results.s21db") }],
+  };
+}
+
+function localizedOptionsGainInit(t) {
+  return {
+    ...optionsGainInit,
+    axes: [{ ...optionsGainInit.axes[0], label: t("results.gainAxis") }],
+  };
+}
+
 function SPlot({ sparametersData, options, freqUnit, title }) {
+  const { t } = useTranslation();
   if (!sparametersData || sparametersData.length === 0) return null;
   return ["S11", "S12", "S21", "S22"].map((s) => {
     if (!(s in Object.values(sparametersData)[0])) return null;
@@ -228,7 +260,7 @@ function SPlot({ sparametersData, options, freqUnit, title }) {
     return (
       <div style={{ textAlign: "center" }} key={s}>
         <h5 style={{ marginTop: 15, marginBottom: 0 }}>
-          {title}: {s} magnitude and angle
+          {title}: {t("results.sMagPhase", { s })}
         </h5>
         <UplotReact options={sParamOpt} data={sData} />
       </div>
@@ -236,6 +268,7 @@ function SPlot({ sparametersData, options, freqUnit, title }) {
   });
 }
 function GainPlot({ gain, options, freqUnit, title, legend }) {
+  const { t } = useTranslation();
   if (!gain || Object.keys(gain).length === 0) return null;
   const sParamOpt = JSON.parse(JSON.stringify(options));
   sParamOpt.axes[1].label = legend;
@@ -247,7 +280,7 @@ function GainPlot({ gain, options, freqUnit, title, legend }) {
     }
     sData.push(m);
     sParamOpt.series.push({
-      label: i == gain.length - 1 ? legend : `tol ${i}`,
+      label: i == gain.length - 1 ? legend : t("results.tol", { i }),
       stroke: i == gain.length - 1 ? "blue" : "gray",
       width: 2,
       scale: "y",
@@ -263,6 +296,7 @@ function GainPlot({ gain, options, freqUnit, title, legend }) {
   );
 }
 function RPlot({ RefIn, options, freqUnit, title }) {
+  const { t } = useTranslation();
   if (!RefIn || Object.keys(RefIn).length === 0) return null;
   const sParamOpt = JSON.parse(JSON.stringify(options));
   // const f = [];
@@ -277,13 +311,13 @@ function RPlot({ RefIn, options, freqUnit, title }) {
     plotData.push(m, a);
     sParamOpt.series.push(
       {
-        label: i == RefIn.length - 1 ? "|S11| (dB)" : `|tol${i}|`,
+        label: i == RefIn.length - 1 ? t("results.s11db") : t("results.tolPipe", { i }),
         stroke: i == RefIn.length - 1 ? "blue" : "#4b4c80",
         width: 2,
         scale: "y",
       },
       {
-        label: i == RefIn.length - 1 ? "∠S11 (°)" : `∠tol${i}`,
+        label: i == RefIn.length - 1 ? t("results.s11ang") : t("results.tolAng", { i }),
         stroke: i == RefIn.length - 1 ? "red" : "#9c5656",
         width: 2,
         scale: "y2",
@@ -299,25 +333,30 @@ function RPlot({ RefIn, options, freqUnit, title }) {
 }
 
 export default function Results({ zProc, spanResults, freqUnit, plotType, sParameters, gainResults, noiseArray, RefIn, zo }) {
+  const { t, i18n } = useTranslation();
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
   // const [options, setOptions] = useState(optionsInit);
   // const [options2, setOptions2] = useState(options2Init);
   const [commonOptions, setCommonOptions] = useState(commonOptionsInit);
 
+  const loc1 = localizedOptionsInit(t);
+  const loc2 = localizedOptions2Init(t);
+  const locG = localizedOptionsGainInit(t);
+
   const options3 = {
     width: commonOptions.width,
     height: commonOptions.height,
-    series: [...commonOptions.series, ...options2Init.series],
-    axes: [...commonOptions.axes, ...options2Init.axes],
+    series: [...commonOptions.series, ...loc2.series],
+    axes: [...commonOptions.axes, ...loc2.axes],
     scales: options2Init.scales,
   };
 
   const options4 = {
     width: commonOptions.width,
     height: commonOptions.height,
-    series: [...commonOptions.series, ...optionsInit.series],
-    axes: [...commonOptions.axes, ...optionsInit.axes],
+    series: [...commonOptions.series, ...loc1.series],
+    axes: [...commonOptions.axes, ...loc1.axes],
     scales: optionsInit.scales,
   };
 
@@ -325,7 +364,7 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
     width: commonOptions.width,
     height: commonOptions.height,
     series: [...commonOptions.series, ...optionsGainInit.series],
-    axes: [...commonOptions.axes, ...optionsGainInit.axes],
+    axes: [...commonOptions.axes, ...locG.axes],
     scales: optionsGainInit.scales,
   };
 
@@ -333,7 +372,7 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
     width: commonOptions.width,
     height: commonOptions.height,
     series: commonOptions.series,
-    axes: [...commonOptions.axes, ...optionsInit.axes],
+    axes: [...commonOptions.axes, ...loc1.axes],
     scales: optionsInit.scales,
   };
 
@@ -385,22 +424,21 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
 
   useEffect(() => {
     function handleResize() {
-      // renderChart(setOptions, setOptions2, containerRef, freqUnit);
-      renderChart_new(setCommonOptions, containerRef, freqUnit);
+      renderChart_new(setCommonOptions, containerRef, freqUnit, t);
     }
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [freqUnit]);
+  }, [freqUnit, t, i18n.language]);
 
   // plot s-parameters straight from the file
   if (plotType === "sparam" && sParameters !== null) {
     const sparametersData = sParameters.data;
     return (
       <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-        <SPlot sparametersData={sparametersData} options={options4} freqUnit={freqUnit} title="Raw data" />
+        <SPlot sparametersData={sparametersData} options={options4} freqUnit={freqUnit} title={t("results.rawData")} />
       </div>
     );
 
@@ -408,38 +446,38 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
   } else if (plotType !== "sparam" && sParameters !== null) {
     return (
       <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-        <RPlot RefIn={RefIn} options={optionsS11} freqUnit={freqUnit} title="Z looking into DP1" />
-        <GainPlot gain={gainResults} options={optionsGain} freqUnit={freqUnit} title="System Gain" legend="Gain (dB)" />
-        <GainPlot gain={noiseArray} options={optionsGain} freqUnit={freqUnit} title="Noise Figure" legend="Noise Figure (dB)" />
+        <RPlot RefIn={RefIn} options={optionsS11} freqUnit={freqUnit} title={t("results.zDp1")} />
+        <GainPlot gain={gainResults} options={optionsGain} freqUnit={freqUnit} title={t("results.systemGain")} legend={t("results.gainLegend")} />
+        <GainPlot gain={noiseArray} options={optionsGain} freqUnit={freqUnit} title={t("results.noiseFigure")} legend={t("results.nfLegend")} />
       </div>
     );
   } else
     return (
       <>
         <Typography variant="h5" sx={{ textAlign: "center", mb: 2 }}>
-          Final Results
+          {t("results.finalResults")}
         </Typography>
         <Grid container spacing={1}>
           <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
-            <ImpedanceRes type="Impedance (Ω)" zStr={zStr} zPolarStr={zPolarStr} />
+            <ImpedanceRes type={t("results.impedanceOhm")} zStr={zStr} zPolarStr={zPolarStr} />
           </Grid>
-          <Tooltip title="Voltage Standing Wave Ratio" arrow placement="top">
+          <Tooltip title={t("results.vswrTooltip")} arrow placement="top">
             <Grid size={{ xs: 12, sm: 12, md: 12, lg: 3 }} sx={{ display: "flex" }}>
               <MiniRes type="VSWR" res={vswr} />
             </Grid>
           </Tooltip>
           <Grid size={{ xs: 12, sm: 12, md: 12, lg: 9 }} sx={{ display: "flex" }}>
-            <ImpedanceRes type="Reflection Coefficient" zStr={refStr} zPolarStr={refPolarStr} />
+            <ImpedanceRes type={t("results.reflectionCoeff")} zStr={refStr} zPolarStr={refPolarStr} />
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 12, lg: 3 }} sx={{ display: "flex" }}>
-            <MiniRes type="Q Factor" res={qFactor} />
+            <MiniRes type={t("results.qFactor")} res={qFactor} />
           </Grid>
         </Grid>
 
         <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
           <UplotReact options={options4} data={data} />
           <Typography sx={{ textAlign: "center", mt: 2 }}>
-            (assuming{" "}
+            {t("results.assuming")}{" "}
             <i>
               S<sub>11</sub>
               <sup>2</sup> + S<sub>21</sub>
@@ -450,11 +488,12 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
           <UplotReact options={options3} data={data2} />
         </div>
         <ul>
+          <li>{t("results.maxS21", { v: maxS21.toPrecision(6), f: maxF, unit: freqUnit })}</li>
           <li>
-            Max S21: {maxS21.toPrecision(6)} dB at {maxF} {freqUnit}
-          </li>
-          <li>
-            S21 3dB bandwidth: {db3_l == -1 || db3_m == -1 ? "N/A" : (db3_m - db3_l).toPrecision(6)} {freqUnit}
+            {t("results.bw3db", {
+              v: db3_l == -1 || db3_m == -1 ? t("results.na") : (db3_m - db3_l).toPrecision(6),
+              unit: freqUnit,
+            })}
           </li>
         </ul>
       </>

@@ -1,5 +1,6 @@
 /* global gtag */
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
@@ -54,6 +55,7 @@ var [stateInURL, defaultCircuit, urlContainsState] = updateObjectFromUrl(initial
 console.log("stateInURL", stateInURL, defaultCircuit, urlContainsState);
 
 function App() {
+  const { t, i18n } = useTranslation();
   const [userCircuit, setUserCircuit] = useState(defaultCircuit);
   const [settings, setSettings] = useState(stateInURL);
   const [urlSnackbar, setUrlSnackbar] = useState(false);
@@ -99,7 +101,7 @@ function App() {
         message="This Snackbar will be dismissed in 5 seconds."
       >
         <SnackbarContent
-          message="Some settings were loaded from the URL. Please click here to reset to the default state."
+          message={t("app.urlLoadedSnackbar")}
           sx={{
             backgroundColor: "#2196f3",
             color: "#fff",
@@ -123,13 +125,17 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    document.title = t("meta.pageTitle");
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute("content", t("meta.pageDescription"));
+  }, [i18n.language, t]);
+
   return (
     <ThemeProvider theme={theme}>
       <LetUserKnowAboutURL />
       <NavBar />
-      <Typography sx={{ color: "rgb(37, 50, 64)", mx: 3, mt: 1 }}>
-        Smith charts can help you design matching networks and obtain maximum power transfer between your source and load. Plot s-parameters.
-      </Typography>
+      <Typography sx={{ color: "rgb(37, 50, 64)", mx: 3, mt: 1 }}>{t("app.intro")}</Typography>
       <Box sx={{ flexGrow: 1, mx: { xs: 0, sm: 1, lg: 2 }, mt: 1 }}>
         <Grid container spacing={{ lg: 2, xs: 1 }}>
           <Grid size={{ sm: 12, md: 6 }}>
@@ -178,10 +184,8 @@ function App() {
                 {sParamIndex !== -1 && (
                   <Box display="flex" justifyContent="center" sx={{ mb: 2 }}>
                     <ToggleButtonGroup value={plotType} exclusive onChange={(e, newP) => setPlotType(newP)}>
-                      <ToggleButton value="sparam">Plot Raw S-Parameter Data</ToggleButton>
-                      <ToggleButton value="impedance">
-                        {s1pIndex !== -1 ? "Plot Reflection Coefficient Looking Into DP1" : "Plot System Gain & Noise"}
-                      </ToggleButton>
+                      <ToggleButton value="sparam">{t("app.plotSparam")}</ToggleButton>
+                      <ToggleButton value="impedance">{s1pIndex !== -1 ? t("app.plotImpedanceS1p") : t("app.plotImpedanceS2p")}</ToggleButton>
                     </ToggleButtonGroup>
                   </Box>
                 )}
@@ -225,14 +229,14 @@ function App() {
             <Card>
               <CardContent>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography>Comment section below</Typography>
+                  <Typography>{t("app.commentsTitle")}</Typography>
                   <Link
                     href="https://www.microwave-master.com/contact-us/"
                     onClick={() => gtag("event", "click_microwave_maser")}
                     target="_blank"
                     color="inherit"
                   >
-                    Get professional support from Microwave Master here
+                    {t("app.supportLink")}
                   </Link>
                 </div>
                 {!import.meta.env.DEV && <Comments website-id="12282" page-id="/smith_chart/" />}

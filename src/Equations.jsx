@@ -11,6 +11,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import { useTranslation } from "react-i18next";
 
 const asciiArtTransformer = `
  --- (L1-Lm) --- --- (L2-Lm) ---  <- look this way
@@ -20,11 +21,12 @@ Zl                Lm
 `;
 
 function Equations() {
+  const { t } = useTranslation();
   return (
     <>
       <Accordion>
         <AccordionSummary expandIcon={<ArrowDownwardIcon />} aria-controls="panel1-content" id="panel1-header">
-          <Typography component="span">Equations used by this site</Typography>
+          <Typography component="span">{t("equations.title")}</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Table
@@ -37,9 +39,9 @@ function Equations() {
           >
             <TableHead>
               <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                <TableCell>Item</TableCell>
-                <TableCell>Equation</TableCell>
-                <TableCell>Notes</TableCell>
+                <TableCell>{t("equations.item")}</TableCell>
+                <TableCell>{t("equations.equation")}</TableCell>
+                <TableCell>{t("equations.notes")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
