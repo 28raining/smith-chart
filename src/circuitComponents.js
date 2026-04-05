@@ -16,6 +16,7 @@ import s2p from "./assets/components/s2p.svg";
 
 import { unitConverter } from "./commonFunctions.js";
 import { parseTouchstoneFile } from "./sparam.js";
+import i18n from "./i18n.js";
 
 const sparamDefaultS1P = {
   data: {
@@ -405,7 +406,7 @@ export const circuitComponents = {
     },
     fromURL: (u) => {
       if (u[4] == "tooLong") {
-        alert("The saved state included a 1000+ character s-parameter file. That was not saved so must be manually re-entered");
+        alert(i18n.t("errors.sparamUrlTooLong"));
         return u[1] == "s1p" ? { ...sparamDefaultS1P } : { ...sparamDefaultS2P };
       }
       var rawString = `# ${u[2]} S MA R ${u[3]}`;

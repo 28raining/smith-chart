@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -18,7 +19,10 @@ import { theme } from "./commonFunctions.js"; // import your theme
 
 import SmithChartSvg from "./assets/smith-chart-icon.svg"; // import your SVG file
 import Home from "./assets/home.svg"; // import your SVG file
+import LanguageSwitcher from "./LanguageSwitcher.jsx";
+
 function NavBar() {
+  const { t } = useTranslation();
   const [urlSnackbar, setUrlSnackbar] = useState(false);
 
   return (
@@ -31,7 +35,7 @@ function NavBar() {
         message="This Snackbar will be dismissed in 5 seconds."
       >
         <SnackbarContent
-          message="Shareable URL copied to clipboard! Your whole website state is in the URL"
+          message={t("nav.urlCopied")}
           sx={{
             backgroundColor: "#2196f3",
             color: "#fff",
@@ -45,12 +49,13 @@ function NavBar() {
           <Toolbar style={{ minHeight: 0 }}>
             <img src={SmithChartSvg} alt="Smith Chart" width="50" height="50" style={{ marginRight: "10px" }} />
             <Typography variant="h6" component="div" sx={{ fontWeight: "bold", display: { xs: "none", sm: "block" } }}>
-              ONLINE SMITH CHART TOOL
+              {t("nav.title")}
             </Typography>
             <div style={{ flexGrow: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 4 }}>
-              <Tooltip title="Copy shareable URL" placement="bottom">
+              <LanguageSwitcher />
+              <Tooltip title={t("nav.copyUrl")} placement="bottom">
                 <IconButton
-                  aria-label="download"
+                  aria-label={t("nav.copyUrlAria")}
                   color="bland"
                   //on user click then copy url to clipboard
                   onClick={() => {
@@ -63,9 +68,9 @@ function NavBar() {
                   <GetAppIcon sx={{ fontSize: 30, color: "rgb(184, 255, 241)" }} />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Reset to initial state" placement="bottom">
+              <Tooltip title={t("nav.reset")} placement="bottom">
                 <IconButton
-                  aria-label="reset to initial state"
+                  aria-label={t("nav.resetAria")}
                   color="bland"
                   onClick={() => {
                     window.location.href = window.location.origin;
@@ -81,10 +86,10 @@ function NavBar() {
                 <img src={Home} alt="home" width="30" />
               </Button>
               <Button variant="contained" color="bland" component="a" href="https://onlinesmithchart.com">
-                Smith Chart
+                {t("nav.smithChart")}
               </Button>
               <Button variant="contained" color="bland" component="a" href="https://onlinecircuitsolver.com">
-                Circuit Solver
+                {t("nav.circuitSolver")}
               </Button>
               <Button variant="contained" color="bland" component="a" href="https://trgmc.net">
                 TRGMC

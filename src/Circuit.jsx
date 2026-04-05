@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -103,6 +104,7 @@ function toEngineeringNotation(num) {
 }
 
 function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, frequency, interpolation }) {
+  const { t } = useTranslation();
   const textInput = Object.keys(value)
     .map((x) => `${toEngineeringNotation(x)}, ${value[x].real}, ${value[x].imaginary}`)
     .join("\n");
@@ -110,8 +112,7 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
   const [customInput, setCustomInput] = useState(textInput);
 
   const validCheckerResults = checkCustomZValid(customInput);
-  const helperText =
-    "If the textbox contains a comma it's assumed your data is comma separated, otherwise assumes whitespace separated. Each line must have 3 non-blank numberical values. The only accepted characters are 0-9, '-', '+', '.', e, E and ','. Frequency must be increasing";
+  const helperText = t("circuit.custom.helperText");
 
   var objResult = {};
   if (validCheckerResults[0]) {
@@ -131,23 +132,23 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
           setModalOpen((o) => !o);
         }}
       >
-        Set Impedance vs Frequency
+        {t("circuit.custom.setZf")}
       </Button>
       <Dialog open={modalOpen} fullScreen>
         <Box sx={{ p: 2 }}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            Custom Impedance input box
+            {t("circuit.custom.modalTitle")}
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            Enter rows of impedance vs increasing frequency
+            {t("circuit.custom.desc1")}
             <br />
-            Don't enter units or characters; use 2440e6 notation for 2440MHz
+            {t("circuit.custom.desc2")}
             <br />
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            comma separated: FREQUENCY, REAL, IMAGINARY
+            {t("circuit.custom.desc3")}
             <br />
-            whitespace separated: FREQUENCY REAL IMAGINARY
+            {t("circuit.custom.desc4")}
             <br />
           </Typography>
           <TextField
@@ -174,8 +175,8 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
             });
           }}
         >
-          <FormControlLabel value="sah" control={<Radio />} label="Sample & Hold" />
-          <FormControlLabel value="linear" control={<Radio />} label="Linear Interpolation" />
+          <FormControlLabel value="sah" control={<Radio />} label={t("circuit.custom.sampleHold")} />
+          <FormControlLabel value="linear" control={<Radio />} label={t("circuit.custom.linear")} />
         </RadioGroup>
         <Button
           sx={{ m: 2 }}
@@ -198,7 +199,7 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
             setModalOpen(false);
           }}
         >
-          {validCheckerResults[0] ? "Save" : "Input error - remove component"}
+          {validCheckerResults[0] ? t("common.save") : t("circuit.custom.saveOrRemove")}
         </Button>
       </Dialog>
     </>
@@ -206,6 +207,7 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
 }
 
 function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setPlotType, setSettings, frequency }) {
+  const { t } = useTranslation();
   const [customInput, setCustomInput] = useState(value.raw ? value.raw : "");
   const [showAllData, setShowAllData] = useState(false);
   const allcols = ["S11", "S21", "S12", "S22"];
@@ -215,11 +217,12 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
   const validCheckerResults = parsed.error === null;
   const numRows = Object.keys(parsed.data).length;
   const defaultMaxRows = 300;
-  const helperText = customInput == "" ? "Copy in a file" : validCheckerResults ? `${numRows} data points parsed succesfully` : parsed.error;
+  const helperText =
+    customInput == "" ? t("circuit.sparam.copyFile") : validCheckerResults ? t("circuit.sparam.pointsParsed", { n: numRows }) : parsed.error;
   return (
     <>
       <Typography variant="caption" align="center" sx={{ display: "block" }}>
-        .{value.type} ~ GS0 = {gs0.toPrecision(3)}dB
+        {t("circuit.sparam.gs0", { type: value.type, v: gs0.toPrecision(3) })}
       </Typography>
       <Button
         sx={{ m: 2 }}
@@ -230,22 +233,23 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
           setModalOpen((o) => !o);
         }}
       >
-        Enter S-param file
+        {t("circuit.sparam.enterFile")}
       </Button>
       <Dialog open={modalOpen} fullScreen>
         <Box sx={{ p: 4 }}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            Paste .s1p or .s2p file contents below
+            {t("circuit.sparam.pasteTitle")}
           </Typography>
           <Box display="flex" alignItems="center" justifyContent="space-between">
             <Link onClick={() => setCustomInput(s2pExample)} sx={{ cursor: "pointer", px: 1 }}>
-              s2p example
+              {t("circuit.sparam.s2pExample")}
             </Link>
             <Link onClick={() => setCustomInput(s1pExample)} sx={{ cursor: "pointer", px: 1 }}>
-              s1p example
+              {t("circuit.sparam.s1pExample")}
             </Link>
             <small>
-              {customInput.length} characters{customInput.length > 1000 ? ": 1K max for URL saving" : ""}
+              {t("circuit.sparam.chars", { n: customInput.length })}
+              {customInput.length > 1000 ? t("circuit.sparam.urlLimit") : ""}
             </small>
             <Button
               sx={{ m: 0, ml: 1 }}
@@ -286,7 +290,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                 setModalOpen(false);
               }}
             >
-              {validCheckerResults ? "Save" : customInput == "" ? "No input - remove component?" : "Input error - remove component?"}
+              {validCheckerResults ? t("common.save") : customInput == "" ? t("circuit.sparam.noInputRemove") : t("circuit.sparam.inputErrorRemove")}
             </Button>
           </Box>
           <TextField
@@ -303,22 +307,30 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
           {validCheckerResults && (
             <>
               <ul style={{ marginTop: 0 }}>
-                <li>File type: .{parsed.type}</li>
-                <li>Frequency Unit: {parsed.settings.freq_unit}</li>
-                <li>Data Type: {parsed.settings.param}</li>
+                <li>{t("circuit.sparam.fileType", { type: parsed.type })}</li>
+                <li>{t("circuit.sparam.freqUnit", { u: parsed.settings.freq_unit })}</li>
+                <li>{t("circuit.sparam.dataType", { u: parsed.settings.param })}</li>
                 <li>
-                  Format: {parsed.settings.format} ({parsed.settings.format == "RI" ? "Rectangular" : "Polar"})
+                  {t("circuit.sparam.format", {
+                    f: parsed.settings.format,
+                    extra: parsed.settings.format == "RI" ? t("circuit.sparam.rectangular") : t("circuit.sparam.polar"),
+                  })}
                 </li>
-                <li>Zo: {parsed.settings.zo}</li>
+                <li>{t("circuit.sparam.zo", { v: parsed.settings.zo })}</li>
               </ul>
-              ABOVE TEXT FORMATTED INTO A TABLE{" "}
-              {numRows > defaultMaxRows && (showAllData ? "- All rows of data: " : `- First ${Math.min(defaultMaxRows, numRows)} rows of data: `)}
-              {numRows > defaultMaxRows && <button onClick={() => setShowAllData((o) => !o)}>{showAllData ? "Show less" : "Show all"}</button>}
+              {t("circuit.sparam.tableIntro")}{" "}
+              {numRows > defaultMaxRows &&
+                (showAllData ? t("circuit.sparam.rowsAll") : t("circuit.sparam.rowsFirst", { n: Math.min(defaultMaxRows, numRows) }))}
+              {numRows > defaultMaxRows && (
+                <button type="button" onClick={() => setShowAllData((o) => !o)}>
+                  {showAllData ? t("circuit.sparam.showLess") : t("circuit.sparam.showAll")}
+                </button>
+              )}
               <TableContainer sx={{ maxHeight: defaultMaxRows, border: "1px solid black" }}>
                 <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell key="frequency">Frequency ({parsed.settings.freq_unit})</TableCell>
+                      <TableCell key="frequency">{t("circuit.sparam.freqCol", { u: parsed.settings.freq_unit })}</TableCell>
                       {allcols.map((column) => {
                         if (!(column in Object.values(parsed.data)[0])) return null;
                         return [
@@ -349,12 +361,12 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                   </TableBody>
                 </Table>
               </TableContainer>
-              <Typography sx={{ display: "block", mt: 3 }}>Noise Data - note that noise frequencies not in s-param are discarded</Typography>
+              <Typography sx={{ display: "block", mt: 3 }}>{t("circuit.sparam.noiseTitle")}</Typography>
               <TableContainer sx={{ maxHeight: defaultMaxRows, border: "1px solid black" }}>
                 <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Frequency ({parsed.settings.freq_unit})</TableCell>
+                      <TableCell>{t("circuit.sparam.freqCol", { u: parsed.settings.freq_unit })}</TableCell>
                       <TableCell>NFmin</TableCell>
                       <TableCell>|GAMMAopt|</TableCell>
                       <TableCell>∠GAMMAopt</TableCell>
@@ -386,6 +398,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
 }
 
 function ImpedanceComponent({ real, imaginary, zToVal }) {
+  const { t } = useTranslation();
   const [editOpen, setEditOpen] = useState(false);
   const [editValue, setEditValue] = useState();
 
@@ -403,13 +416,13 @@ function ImpedanceComponent({ real, imaginary, zToVal }) {
     <>
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
         <Typography variant="caption" component="span" sx={{ mr: 0.5 }}>
-          Z =
+          {t("circuit.impedance.zEquals")}
         </Typography>
         <Typography variant="caption" component="span" sx={{ mr: 0.5 }}>
           {zStr}
         </Typography>
         {hasZToVal && (
-          <Tooltip title="Set impedance (auto-calculate component value)" arrow>
+          <Tooltip title={t("circuit.impedance.editZTooltip")} arrow>
             <IconButton
               size="small"
               sx={{ p: 0.2, height: "19px" }}
@@ -426,18 +439,18 @@ function ImpedanceComponent({ real, imaginary, zToVal }) {
 
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth>
         <Box sx={{ p: 2 }}>
-          <Typography variant="h6">Enter impedance</Typography>
+          <Typography variant="h6">{t("circuit.impedance.enterZTitle")}</Typography>
           <TextField
             size="small"
             fullWidth
             sx={{ mt: 1 }}
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            helperText="Enter numeric impedance (will be passed to the component calculator)"
+            helperText={t("circuit.impedance.enterZHelper")}
           />
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button onClick={() => setEditOpen(false)} sx={{ mr: 1 }}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               variant="contained"
@@ -447,7 +460,7 @@ function ImpedanceComponent({ real, imaginary, zToVal }) {
                 setEditOpen(false);
               }}
             >
-              Save
+              {t("common.save")}
             </Button>
           </Box>
         </Box>
@@ -489,11 +502,12 @@ function SliderAdjust({ handleChange, value, baseValue, unit }) {
 }
 
 function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, slider_im }) {
+  const { t } = useTranslation();
   return (
     <>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
         <TextField
-          label="Re"
+          label={t("common.re")}
           variant="outlined"
           size="small"
           sx={{
@@ -510,7 +524,7 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
         />
         <Typography sx={{ display: "flex", alignItems: "center", m: 0.0, p: 0 }}>+</Typography>
         <TextField
-          label="Im"
+          label={t("common.im")}
           variant="outlined"
           size="small"
           sx={{
@@ -535,6 +549,7 @@ function ComplexComponent({ real, imaginary, index, setUserCircuit, slider_re, s
 }
 
 function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUserCircuit }) {
+  const { t } = useTranslation();
   const modelValue = model ?? "coupledInductor";
   return (
     <>
@@ -550,13 +565,13 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
         <FormControlLabel
           value="coupledInductor"
           control={<Radio size="small" sx={{ p: 0.25 }} />}
-          label="Coupled-Inductor Model"
+          label={t("circuit.transformer.coupled")}
           sx={{ "& .MuiFormControlLabel-label": { fontSize: "0.7rem", lineHeight: 1 }, my: 0, mr: 1 }}
         />
         <FormControlLabel
           value="ideal"
           control={<Radio size="small" sx={{ p: 0.25 }} />}
-          label="Ideal Transformer"
+          label={t("circuit.transformer.ideal")}
           sx={{ "& .MuiFormControlLabel-label": { fontSize: "0.7rem", lineHeight: 1 }, my: 0 }}
         />
       </RadioGroup>
@@ -564,7 +579,7 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
         <>
           <Box sx={{ display: "flex", m: 0, p: 0, mt: 1, mb: 1.2 }}>
             <TextField
-              label="L1"
+              label={t("circuit.transformer.l1")}
               variant="outlined"
               size="small"
               sx={{ mx: 0.5, p: 0, padding: 0 }}
@@ -584,7 +599,7 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
           </Box>
           <Box sx={{ display: "flex", m: 0, p: 0, mb: 1.2 }}>
             <TextField
-              label="L2"
+              label={t("circuit.transformer.l2")}
               variant="outlined"
               size="small"
               sx={{ mx: 0.5, p: 0, padding: 0 }}
@@ -603,7 +618,7 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
             </Select>
           </Box>
           <TextField
-            label="Coupling Factor"
+            label={t("circuit.transformer.couplingFactor")}
             variant="outlined"
             size="small"
             sx={{ mx: 0.5, p: 0, padding: 0 }}
@@ -615,10 +630,10 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
       {modelValue === "ideal" && (
         <Box sx={{ display: "flex", alignItems: "center", m: 0, p: 0, mt: 1, ml: 1, gap: 0.5 }}>
           <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
-            1 :
+            {t("circuit.transformer.ratioPrefix")}
           </Typography>
           <TextField
-            label="Turns Ratio"
+            label={t("circuit.transformer.turnsRatio")}
             variant="outlined"
             size="small"
             sx={{ mx: 0.5, p: 0, padding: 0, flex: 1 }}
@@ -632,11 +647,12 @@ function TransformerComponent({ l1, unit_l1, l2, unit_l2, k, model, index, setUs
 }
 
 function InductorComponent({ value, unit, index, setUserCircuit, slider }) {
+  const { t } = useTranslation();
   return (
     <>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
         <TextField
-          label="Inductance"
+          label={t("circuit.labels.inductance")}
           variant="outlined"
           size="small"
           sx={{
@@ -664,6 +680,7 @@ function InductorComponent({ value, unit, index, setUserCircuit, slider }) {
 }
 
 function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequency, eeff }) {
+  const { t } = useTranslation();
   var length, metricLength;
   var convertedUnit = unit;
   var convertedValue = value;
@@ -683,11 +700,11 @@ function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequen
   return (
     <>
       <Typography variant="caption" align="center" sx={{ display: "block" }}>
-        length = {length}
+        {t("common.length")} = {length}
       </Typography>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
         <TextField
-          label="Length"
+          label={t("circuit.labels.length")}
           variant="outlined"
           size="small"
           sx={{
@@ -711,7 +728,7 @@ function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequen
         <SliderAdjust handleChange={(v) => setValue(v, "slider", setUserCircuit, index)} value={slider} baseValue={value} unit={unit} />
       </Box>
       <TextField
-        label="Zo"
+        label={t("circuit.labels.zo")}
         variant="outlined"
         size="small"
         sx={{ mx: 0.5, mb: 1.2, p: 0, padding: 0 }}
@@ -719,13 +736,13 @@ function WireComponent({ value, unit, index, setUserCircuit, slider, zo, frequen
         onChange={(e) => setValue(e.target.value, "zo", setUserCircuit, index)}
       />
       <TextField
-        label="Eeff"
+        label={t("circuit.labels.eeff")}
         variant="outlined"
         size="small"
         sx={{ mx: 0.5, mb: 1.2, p: 0, padding: 0 }}
         value={eeff}
         onChange={(e) => setValue(e.target.value, "eeff", setUserCircuit, index)}
-        helperText={eeff != 1 && (unit == "λ" || unit == "deg") ? "Note - physical line length is changed" : ""}
+        helperText={eeff != 1 && (unit == "λ" || unit == "deg") ? t("circuit.labels.eeffHelper") : ""}
       />
     </>
   );
@@ -758,11 +775,12 @@ function EsComponent({ type, value, setUserCircuit, index, showIdeal }) {
 }
 
 function ResistorComponent({ value, unit, index, setUserCircuit, slider }) {
+  const { t } = useTranslation();
   return (
     <>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
         <TextField
-          label="Resistance"
+          label={t("circuit.labels.resistance")}
           variant="outlined"
           size="small"
           sx={{
@@ -789,11 +807,12 @@ function ResistorComponent({ value, unit, index, setUserCircuit, slider }) {
   );
 }
 function CapacitorComponent({ value, unit, index, setUserCircuit, slider }) {
+  const { t } = useTranslation();
   return (
     <>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
         <TextField
-          label="Capacitance"
+          label={t("circuit.labels.capacitance")}
           variant="outlined"
           size="small"
           sx={{
@@ -820,11 +839,12 @@ function CapacitorComponent({ value, unit, index, setUserCircuit, slider }) {
   );
 }
 function LCComponent({ value_l, unit_l, value_c, unit_c, index, setUserCircuit }) {
+  const { t } = useTranslation();
   return (
     <>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
         <TextField
-          label="Inductance"
+          label={t("circuit.labels.inductance")}
           variant="outlined"
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
@@ -839,7 +859,7 @@ function LCComponent({ value_l, unit_l, value_c, unit_c, index, setUserCircuit }
       </Box>
       <Box sx={{ display: "flex", m: 0, p: 0, mt: 1 }}>
         <TextField
-          label="Capacitance"
+          label={t("circuit.labels.capacitance")}
           variant="outlined"
           size="small"
           sx={{ mx: 0.5, p: 0, padding: 0 }}
@@ -857,11 +877,12 @@ function LCComponent({ value_l, unit_l, value_c, unit_c, index, setUserCircuit }
 }
 
 function ToleranceComponent({ tol, index, setUserCircuit }) {
+  const { t } = useTranslation();
   if (tol === undefined) tol = "";
   return (
     <TextField
       size="small"
-      label="Tolerance"
+      label={t("circuit.labels.tolerance")}
       sx={{ m: 0.6 }}
       style={{ marginTop: "auto" }}
       slotProps={{
@@ -876,6 +897,7 @@ function ToleranceComponent({ tol, index, setUserCircuit }) {
 }
 
 function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSettings, showIdeal }) {
+  const { t } = useTranslation();
   const w = 2 * Math.PI * frequency;
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSparam, setModalSparam] = useState(false);
@@ -1028,7 +1050,9 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
         // if `esr` is 0 or undefined, don't return anything
         return component.esr === 0 || component.esr === undefined ? null : (
           <Typography variant="caption" align="center" sx={{ display: "block" }}>
-            Q Factor = {((component.value * 2 * Math.PI * frequency * unitConverter[component.unit]) / component.esr).toPrecision(3)}
+            {t("circuit.labels.qFactorEquals", {
+              v: ((component.value * 2 * Math.PI * frequency * unitConverter[component.unit]) / component.esr).toPrecision(3),
+            })}
           </Typography>
         );
       case "esl":
@@ -1047,7 +1071,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
         {Object.keys(circuitComponents).map((k, i) => {
           const c = circuitComponents[k];
           if ("unselectable" in c) return null;
-          else if (c.name == "S-Parameter" && sParamIndex !== -1)
+          else if (k === "sparam" && sParamIndex !== -1)
             return null; //only one s-parameter component allowed
           else
             return (
@@ -1083,7 +1107,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
                 >
                   <img src={c.src} width="100%" />
                   <Typography variant="caption" align="center" gutterBottom sx={{ display: "block" }}>
-                    {c.name}
+                    {t(`circuit.components.${k}`)}
                   </Typography>
                 </Button>
               </Grid>
@@ -1092,17 +1116,18 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
       </Grid>
       <Dialog open={shortedStubDialogOpen} onClose={() => setShortedStubDialogOpen(false)}>
         <Box sx={{ p: 2 }}>
-          <Typography sx={{ mb: 2 }}>
-            Shorted-stub arc starts at 0-ohms (length = 0), therefore will not be connected to the previous point. This may seem unintuitive but makes
-            more sense once considering frequency-span and tolerance
-          </Typography>
+          <Typography sx={{ mb: 2 }}>{t("circuit.shortedStubDialog")}</Typography>
           <Button variant="contained" onClick={() => setShortedStubDialogOpen(false)}>
-            OK
+            {t("common.ok")}
           </Button>
         </Box>
       </Dialog>
       <div style={{ display: "flex", width: "100%" }}>
-        <p>Click components above to add them to the circuit below. Impedance is looking {s1pIndex === -1 ? "towards the BLACK BOX" : "into DP1"}</p>
+        <p>
+          {t("circuit.hint", {
+            direction: s1pIndex === -1 ? t("circuit.towardsBlackBox") : t("circuit.intoDp1"),
+          })}
+        </p>
       </div>
 
       <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 4, lg: 8, xl: 12 }}>
@@ -1192,7 +1217,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
                     color: { color },
                   }}
                 >
-                  DP{i}
+                  {t("circuit.dp", { i })}
                 </Typography>
               </Box>
               {comp.circuitInputs.map((input) => componentMap(input, c, i))}
