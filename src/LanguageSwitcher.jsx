@@ -1,40 +1,51 @@
 import { useTranslation } from "react-i18next";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import Tooltip from "@mui/material/Tooltip";
+import FormControl from "@mui/material/FormControl";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
 import { supportedLanguages } from "./i18n.js";
+
+function resolveCurrentCode(i18n) {
+  const raw = i18n.resolvedLanguage || i18n.language || "en";
+  const base = raw.split("-")[0];
+  const match = supportedLanguages.find((l) => l.code === raw || l.code === base);
+  return match ? match.code : "en";
+}
 
 export default function LanguageSwitcher() {
   const { i18n, t } = useTranslation();
-  const current = supportedLanguages.some((l) => l.code === i18n.language) ? i18n.language : "en";
+  const current = resolveCurrentCode(i18n);
+  const currentLabel = supportedLanguages.find((l) => l.code === current)?.label ?? current;
 
   return (
-    <Tooltip title={t("language.label")}>
-      <ToggleButtonGroup
+    <FormControl size="small" sx={{ minWidth: "10.5rem" }}>
+      <Select
         value={current}
-        exclusive
-        size="small"
-        onChange={(_, v) => v && i18n.changeLanguage(v)}
+        onChange={(e) => i18n.changeLanguage(e.target.value)}
+        inputProps={{ "aria-label": t("language.label") }}
+        renderValue={() => currentLabel}
         sx={{
-          "& .MuiToggleButton-root": {
-            color: "rgb(184, 255, 241)",
+          color: "rgb(184, 255, 241)",
+          fontSize: "0.8125rem",
+          "& .MuiOutlinedInput-notchedOutline": {
             borderColor: "rgba(184, 255, 241, 0.5)",
-            py: 0.25,
-            px: 1,
-            fontSize: "0.75rem",
           },
-          "& .Mui-selected": {
-            backgroundColor: "rgba(184, 255, 241, 0.2) !important",
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "rgb(184, 255, 241)",
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "rgb(184, 255, 241)",
+          },
+          "& .MuiSvgIcon-root": {
             color: "rgb(184, 255, 241)",
           },
         }}
       >
-        {supportedLanguages.map(({ code }) => (
-          <ToggleButton key={code} value={code}>
-            {code.toUpperCase()}
-          </ToggleButton>
+        {supportedLanguages.map(({ code, label }) => (
+          <MenuItem key={code} value={code}>
+            {label}
+          </MenuItem>
         ))}
-      </ToggleButtonGroup>
-    </Tooltip>
+      </Select>
+    </FormControl>
   );
 }
