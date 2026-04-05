@@ -7,10 +7,10 @@ import fr from "./locales/fr.json";
 import tr from "./locales/tr.json";
 
 export const supportedLanguages = [
-  { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "tr", label: "Türkçe" },
+  { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "es", label: "Español", flag: "🇪🇸" },
+  { code: "fr", label: "Français", flag: "🇫🇷" },
+  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
 ];
 
 i18n

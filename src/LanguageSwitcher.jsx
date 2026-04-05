@@ -1,8 +1,22 @@
 import { useTranslation } from "react-i18next";
+import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import { supportedLanguages } from "./i18n.js";
+
+function LanguageOption({ flag, label }) {
+  return (
+    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: flag ? 0.75 : 0 }}>
+      {flag ? (
+        <Box component="span" aria-hidden sx={{ fontSize: "1.1em", lineHeight: 1 }}>
+          {flag}
+        </Box>
+      ) : null}
+      <span>{label}</span>
+    </Box>
+  );
+}
 
 function resolveCurrentCode(i18n) {
   const raw = i18n.resolvedLanguage || i18n.language || "en";
@@ -14,15 +28,17 @@ function resolveCurrentCode(i18n) {
 export default function LanguageSwitcher() {
   const { i18n, t } = useTranslation();
   const current = resolveCurrentCode(i18n);
-  const currentLabel = supportedLanguages.find((l) => l.code === current)?.label ?? current;
+  const currentEntry = supportedLanguages.find((l) => l.code === current);
+  const currentLabel = currentEntry?.label ?? current;
+  const currentFlag = currentEntry?.flag;
 
   return (
-    <FormControl size="small" sx={{ minWidth: "10.5rem" }}>
+    <FormControl size="small" sx={{ minWidth: "11.5rem" }}>
       <Select
         value={current}
         onChange={(e) => i18n.changeLanguage(e.target.value)}
         inputProps={{ "aria-label": t("language.label") }}
-        renderValue={() => currentLabel}
+        renderValue={() => <LanguageOption flag={currentFlag} label={currentLabel} />}
         sx={{
           color: "rgb(184, 255, 241)",
           fontSize: "0.8125rem",
@@ -40,9 +56,9 @@ export default function LanguageSwitcher() {
           },
         }}
       >
-        {supportedLanguages.map(({ code, label }) => (
+        {supportedLanguages.map(({ code, label, flag }) => (
           <MenuItem key={code} value={code}>
-            {label}
+            <LanguageOption flag={flag} label={label} />
           </MenuItem>
         ))}
       </Select>
