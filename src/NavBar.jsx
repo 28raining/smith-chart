@@ -46,12 +46,23 @@ function NavBar() {
       </Snackbar>
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static" sx={{ backgroundColor: "rgb(37, 50, 64)", py: 1 }}>
-          <Toolbar style={{ minHeight: 0 }}>
-            <img src={SmithChartSvg} alt="Smith Chart" width="50" height="50" style={{ marginRight: "10px" }} />
-            <Typography variant="h6" component="div" sx={{ fontWeight: "bold", display: { xs: "none", sm: "block" } }}>
-              {t("nav.title")}
-            </Typography>
-            <div style={{ flexGrow: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 4 }}>
+          <Toolbar
+            style={{ minHeight: 0 }}
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              justifyContent: "space-between",
+            }}
+          >
+            <Stack spacing={1} direction="row" alignItems="center">
+              <img src={SmithChartSvg} alt="Smith Chart" width="50" height="50" style={{ marginRight: "10px", display: "block" }} />
+              <Typography variant="h6" component="div" sx={{ fontWeight: "bold", display: { xs: "none", sm: "none", md: "block" } }}>
+                {t("nav.title")}
+              </Typography>
+            </Stack>
+            <Stack spacing={1} direction={{ xs: "column", sm: "row" }} alignItems="center">
               <LanguageSwitcher />
               <Tooltip title={t("nav.copyUrl")} placement="bottom">
                 <IconButton
@@ -79,19 +90,19 @@ function NavBar() {
                   <RestartAltIcon sx={{ fontSize: 30, color: "rgb(184, 255, 241)" }} />
                 </IconButton>
               </Tooltip>
-            </div>
+            </Stack>
 
             <Stack spacing={1} direction={{ xs: "column", sm: "row" }}>
-              <Button variant="contained" color="bland" component="a" href="https://www.will-kelsey.com">
-                <img src={Home} alt="home" width="30" />
+              <Button variant="contained" color="bland" component="a" href="https://www.will-kelsey.com" size="small">
+                <img src={Home} alt="home" width="24" />
               </Button>
-              <Button variant="contained" color="bland" component="a" href="https://onlinesmithchart.com">
+              <Button variant="contained" color="bland" component="a" href="https://onlinesmithchart.com" size="small">
                 {t("nav.smithChart")}
               </Button>
-              <Button variant="contained" color="bland" component="a" href="https://onlinecircuitsolver.com">
+              <Button variant="contained" color="bland" component="a" href="https://onlinecircuitsolver.com" size="small">
                 {t("nav.circuitSolver")}
               </Button>
-              <Button variant="contained" color="bland" component="a" href="https://trgmc.net">
+              <Button variant="contained" color="bland" component="a" href="https://trgmc.net" size="small">
                 TRGMC
               </Button>
             </Stack>

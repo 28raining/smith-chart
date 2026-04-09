@@ -15,6 +15,12 @@
 
 body {
   margin: 0;
+  overflow-x: hidden;
+}
+
+html,
+#root {
+  overflow-x: hidden;
 }
 .circuitDrawing:nth-child(even) {
   background-color: rgb(247, 247, 247); /* Change this to your desired color */
