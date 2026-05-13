@@ -1,6 +1,6 @@
 /* global gtag */
 import { useState, useEffect, useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
@@ -39,6 +39,8 @@ import { allImpedanceCalculations } from "./impedanceFunctions.js";
 // import { sParamFrequencyRange } from "./sparam.js"; // Import the sParamFrequencyRange function
 
 import debounce from "lodash/debounce";
+
+const CHATGPT_HELPER_PROJECT_URL = "https://chatgpt.com/g/g-p-69ee7cba04888191bc878377f29b9f76-onlinesmithchart-helper/project";
 
 const initialState = {
   zo: 50,
@@ -169,8 +171,13 @@ function App() {
       <Dialog open={helperModalOpen} onClose={() => setHelperModalOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{t("app.helperModalTitle")}</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            {t("app.helperModalIntro")}
+          <Typography variant="body2" sx={{ mb: 2 }} component="div">
+            <Trans
+              i18nKey="app.helperModalIntro"
+              components={{
+                chatgptProject: <Link href={CHATGPT_HELPER_PROJECT_URL} target="_blank" rel="noopener noreferrer" underline="always" />,
+              }}
+            />
           </Typography>
           <Button variant="contained" startIcon={<ContentCopy />} onClick={() => void handleCopyHelperContext()} fullWidth>
             {t("app.helperCopyButton")}

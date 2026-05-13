@@ -36,7 +36,7 @@
     "supportLink": "Microwave Master’dan profesyonel destek alın",
     "helperButton": "OnlineSmithChart Yardımcısı",
     "helperModalTitle": "AI yardımcı (kendi sohbetiniz)",
-    "helperModalIntro": "Paylaşılan ChatGPT projesi yalnızca birkaç kullanıcıya izin verir. Bunun yerine: aşağıdaki yönergeleri kopyalayın, ChatGPT, Claude veya başka bir asistanda yeni bir sohbet açın ve ilk mesajınız olarak yapıştırın.",
+    "helperModalIntro": "<chatgptProject>Paylaşılan ChatGPT projesi</chatgptProject> yalnızca birkaç kullanıcıya izin verir. Bunun yerine: aşağıdaki yönergeleri kopyalayın, ChatGPT, Claude veya başka bir asistanda yeni bir sohbet açın ve ilk mesajınız olarak yapıştırın.",
     "helperCopyButton": "Yönergeleri panoya kopyala",
     "helperCopiedSnackbar": "Kopyalandı. Asistanınıza ilk mesaj olarak yapıştırın."
   },

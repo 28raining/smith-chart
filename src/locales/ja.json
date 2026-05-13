@@ -36,7 +36,7 @@
     "supportLink": "Microwave Masterのプロフェッショナルサポートはこちら",
     "helperButton": "OnlineSmithChart ヘルパー",
     "helperModalTitle": "AIヘルパー（ご自身のチャット）",
-    "helperModalIntro": "共有の ChatGPT プロジェクトは少数のユーザーに限られています。代わりに、下の指示をコピーし、ChatGPT・Claude など新しいチャットを開き、最初のメッセージとして貼り付けてください。",
+    "helperModalIntro": "<chatgptProject>共有の ChatGPT プロジェクト</chatgptProject>は少数のユーザーに限られています。代わりに、下の指示をコピーし、ChatGPT・Claude など新しいチャットを開き、最初のメッセージとして貼り付けてください。",
     "helperCopyButton": "指示をクリップボードにコピー",
     "helperCopiedSnackbar": "コピーしました。アシスタントの最初のメッセージとして貼り付けてください。"
   },

@@ -36,7 +36,7 @@
     "supportLink": "在此获取 Microwave Master 的专业支持",
     "helperButton": "OnlineSmithChart 助手",
     "helperModalTitle": "AI 助手（使用您自己的对话）",
-    "helperModalIntro": "共享的 ChatGPT 项目人数有限。请改为：复制下方说明，在 ChatGPT、Claude 或其他助手中新建对话，并将其作为第一条消息粘贴发送。",
+    "helperModalIntro": "<chatgptProject>共享的 ChatGPT 项目</chatgptProject>人数有限。请改为：复制下方说明，在 ChatGPT、Claude 或其他助手中新建对话，并将其作为第一条消息粘贴发送。",
     "helperCopyButton": "将说明复制到剪贴板",
     "helperCopiedSnackbar": "已复制。请将其作为第一条消息粘贴到您的助手中。"
   },

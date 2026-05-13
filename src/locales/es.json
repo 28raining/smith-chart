@@ -36,7 +36,7 @@
     "supportLink": "Soporte profesional con Microwave Master",
     "helperButton": "Asistente OnlineSmithChart",
     "helperModalTitle": "Asistente de IA (tu propio chat)",
-    "helperModalIntro": "El proyecto compartido de ChatGPT solo admite unos pocos usuarios. Haz esto: copia las instrucciones de abajo, abre un chat nuevo en ChatGPT, Claude u otro asistente y pégalo como primer mensaje.",
+    "helperModalIntro": "El <chatgptProject>proyecto compartido de ChatGPT</chatgptProject> solo admite unos pocos usuarios. Haz esto: copia las instrucciones de abajo, abre un chat nuevo en ChatGPT, Claude u otro asistente y pégalo como primer mensaje.",
     "helperCopyButton": "Copiar instrucciones al portapapeles",
     "helperCopiedSnackbar": "Copiado. Pégalo en tu asistente como primer mensaje."
   },
