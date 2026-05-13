@@ -33,7 +33,12 @@
     "plotImpedanceS1p": "Plot Reflection Coefficient Looking Into DP1",
     "plotImpedanceS2p": "Plot System Gain & Noise",
     "commentsTitle": "Comment section below",
-    "supportLink": "Get professional support from Microwave Master here"
+    "supportLink": "Get professional support from Microwave Master here",
+    "helperButton": "OnlineSmithChart Helper",
+    "helperModalTitle": "AI helper (your own chat)",
+    "helperModalIntro": "The shared ChatGPT project only allows a few users. Instead: copy the instructions below, open a new chat in ChatGPT, Claude, or another assistant, and paste them as your first message.",
+    "helperCopyButton": "Copy instructions to clipboard",
+    "helperCopiedSnackbar": "Copied. Paste into your assistant as the first message."
   },
   "footer": {
     "license": "© {{year}} Will Kelsey. This work is licensed under a Creative Commons Attribution 4.0 International License. You may not resell this tool",

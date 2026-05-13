@@ -33,7 +33,12 @@
     "plotImpedanceS1p": "DP1を見た反射係数をプロット",
     "plotImpedanceS2p": "システム利得とノイズをプロット",
     "commentsTitle": "下にコメント欄",
-    "supportLink": "Microwave Masterのプロフェッショナルサポートはこちら"
+    "supportLink": "Microwave Masterのプロフェッショナルサポートはこちら",
+    "helperButton": "OnlineSmithChart ヘルパー",
+    "helperModalTitle": "AIヘルパー（ご自身のチャット）",
+    "helperModalIntro": "共有の ChatGPT プロジェクトは少数のユーザーに限られています。代わりに、下の指示をコピーし、ChatGPT・Claude など新しいチャットを開き、最初のメッセージとして貼り付けてください。",
+    "helperCopyButton": "指示をクリップボードにコピー",
+    "helperCopiedSnackbar": "コピーしました。アシスタントの最初のメッセージとして貼り付けてください。"
   },
   "footer": {
     "license": "© {{year}} Will Kelsey. 本作品はクリエイティブ・コモンズ表示4.0国際ライセンスの下で提供されています。本ツールの再販は禁止です",

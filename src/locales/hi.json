@@ -33,7 +33,12 @@
     "plotImpedanceS1p": "DP1 में देखने पर प्रतिबिंब गुणांक प्लॉट करें",
     "plotImpedanceS2p": "सिस्टम गेन और शोर प्लॉट करें",
     "commentsTitle": "नीचे टिप्पणी अनुभाग",
-    "supportLink": "Microwave Master से पेशेवर सहायता यहाँ प्राप्त करें"
+    "supportLink": "Microwave Master से पेशेवर सहायता यहाँ प्राप्त करें",
+    "helperButton": "OnlineSmithChart सहायक",
+    "helperModalTitle": "AI सहायक (अपनी चैट)",
+    "helperModalIntro": "साझा ChatGPT प्रोजेक्ट में केवल कुछ उपयोगकर्ता हो सकते हैं। इसके बजाय: नीचे दिए निर्देश कॉपी करें, ChatGPT, Claude या किसी अन्य सहायक में नई चैट खोलें और उन्हें पहला संदेश चिपकाएँ।",
+    "helperCopyButton": "निर्देश क्लिपबोर्ड पर कॉपी करें",
+    "helperCopiedSnackbar": "कॉपी हो गया। इन्हें अपने सहायक में पहला संदेश चिपकाएँ।"
   },
   "footer": {
     "license": "© {{year}} Will Kelsey। यह कार्य Creative Commons Attribution 4.0 International लाइसेंस के अंतर्गत है। आप इस टूल को पुनः बेच नहीं सकते",

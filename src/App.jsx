@@ -9,7 +9,13 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import Snackbar from "@mui/material/Snackbar";
 import SnackbarContent from "@mui/material/SnackbarContent";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
 import CardContent from "@mui/material/CardContent";
+import ContentCopy from "@mui/icons-material/ContentCopy";
 import { ThemeProvider } from "@mui/material/styles";
 import NavBar from "./NavBar.jsx";
 import Footer from "./Footer.jsx";
@@ -25,6 +31,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 import { syncObjectToUrl, updateObjectFromUrl } from "./urlFunctions.js"; // Import the syncObjectToUrl function
+import { HELPER_ASSISTANT_CONTEXT } from "./helperAssistantContext.js";
 import { theme, convertSettingsToFloat } from "./commonFunctions.js";
 import { circuitComponents } from "./circuitComponents.js";
 
@@ -61,6 +68,8 @@ function App() {
   const [urlSnackbar, setUrlSnackbar] = useState(false);
   const [plotType, setPlotType] = useState("impedance");
   const [showIdeal, setShowIdeal] = useState(false);
+  const [helperModalOpen, setHelperModalOpen] = useState(false);
+  const [helperCopiedOpen, setHelperCopiedOpen] = useState(false);
 
   const settingsFloat = convertSettingsToFloat(JSON.parse(JSON.stringify(settings)));
 
@@ -90,6 +99,23 @@ function App() {
     setUserCircuit([{ ...initialCircuit[0] }]);
     setUrlSnackbar(false);
   };
+
+  async function handleCopyHelperContext() {
+    try {
+      await navigator.clipboard.writeText(HELPER_ASSISTANT_CONTEXT);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = HELPER_ASSISTANT_CONTEXT;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setHelperCopiedOpen(true);
+  }
 
   function LetUserKnowAboutURL() {
     return (
@@ -133,6 +159,27 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
+      <Snackbar
+        open={helperCopiedOpen}
+        autoHideDuration={4000}
+        onClose={() => setHelperCopiedOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        message={t("app.helperCopiedSnackbar")}
+      />
+      <Dialog open={helperModalOpen} onClose={() => setHelperModalOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{t("app.helperModalTitle")}</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            {t("app.helperModalIntro")}
+          </Typography>
+          <Button variant="contained" startIcon={<ContentCopy />} onClick={() => void handleCopyHelperContext()} fullWidth>
+            {t("app.helperCopyButton")}
+          </Button>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setHelperModalOpen(false)}>{t("common.cancel")}</Button>
+        </DialogActions>
+      </Dialog>
       <LetUserKnowAboutURL />
       <NavBar />
       <Typography sx={{ color: "rgb(37, 50, 64)", mx: 3, mt: 1 }}>{t("app.intro")}</Typography>
@@ -230,13 +277,15 @@ function App() {
               <CardContent>
                 <Box sx={{ mb: 2 }}>
                   <Link
-                    href="https://chatgpt.com/g/g-p-69ee7cba04888191bc878377f29b9f76-onlinesmithchart-helper/project"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    color="#1976d2"
+                    component="button"
+                    type="button"
+                    variant="body1"
+                    onClick={() => setHelperModalOpen(true)}
+                    color="primary"
                     underline="always"
+                    sx={{ verticalAlign: "baseline", cursor: "pointer", fontFamily: "inherit" }}
                   >
-                    Ask OnlineSmithChart Helper (ChatGPT)
+                    {t("app.helperButton")}
                   </Link>
                 </Box>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>

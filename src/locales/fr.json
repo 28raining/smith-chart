@@ -33,7 +33,12 @@
     "plotImpedanceS1p": "Tracer le coefficient de réflexion vu à DP1",
     "plotImpedanceS2p": "Tracer le gain et le bruit du système",
     "commentsTitle": "Section commentaires ci-dessous",
-    "supportLink": "Assistance professionnelle via Microwave Master"
+    "supportLink": "Assistance professionnelle via Microwave Master",
+    "helperButton": "Assistant OnlineSmithChart",
+    "helperModalTitle": "Assistant IA (votre propre chat)",
+    "helperModalIntro": "Le projet ChatGPT partagé n’accepte que quelques utilisateurs. À la place : copiez les instructions ci-dessous, ouvrez un nouveau chat dans ChatGPT, Claude ou un autre assistant, et collez-les comme premier message.",
+    "helperCopyButton": "Copier les instructions dans le presse-papiers",
+    "helperCopiedSnackbar": "Copié. Collez dans votre assistant comme premier message."
   },
   "footer": {
     "license": "© {{year}} Will Kelsey. Cette œuvre est sous licence Creative Commons Attribution 4.0 International. Vous ne pouvez pas revendre cet outil",
