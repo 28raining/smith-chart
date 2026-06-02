@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as d3 from "d3";
+import { select, pointer } from "d3-selection";
 import { styled } from "@mui/material/styles";
 import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
 import SaveIcon from "@mui/icons-material/Save";
@@ -139,7 +139,7 @@ function Graph({
 
   //draw the constant-Q circles
   useEffect(() => {
-    var userSVG = d3.select(qCirclesRef.current);
+    var userSVG = select(qCirclesRef.current);
     userSVG.selectAll("*").remove();
     var path, coord, imag;
     for (const q of qCircles) {
@@ -175,7 +175,7 @@ function Graph({
 
   //draw the constant VSWR circles
   useEffect(() => {
-    var userSVG = d3.select(vswrCirclesRef.current);
+    var userSVG = select(vswrCirclesRef.current);
     userSVG.selectAll("*").remove();
     for (const v of vswrCircles) {
       // When imaginary = 0, r/zo = VSWR. This is the radius of the circle
@@ -196,7 +196,7 @@ function Graph({
   //Plot S11
   useEffect(() => {
     const sParamSnap = [];
-    var userSVG = d3.select(sParamsRef.current);
+    var userSVG = select(sParamsRef.current);
     userSVG.selectAll("*").remove();
     if (sParameters !== null) {
       const sparametersData = sParameters.data;
@@ -256,7 +256,7 @@ function Graph({
 
   //draw the custom markers
   useEffect(() => {
-    var userSVG = d3.select(zMarkersRef.current);
+    var userSVG = select(zMarkersRef.current);
     userSVG.selectAll("*").remove();
     zMarkers.forEach((m, i) => {
       // When imaginary = 0, r/zo = VSWR. This is the radius of the circle
@@ -269,7 +269,7 @@ function Graph({
 
   //draw the stability circles
   useEffect(() => {
-    var userSVG = d3.select(stabilityCirclesRef.current);
+    var userSVG = select(stabilityCirclesRef.current);
     userSVG.selectAll("*").remove();
     if (!showStabilityPlot) return;
     if (!chosenSparameter) return;
@@ -305,7 +305,7 @@ function Graph({
 
   //draw the noise Figure circles
   useEffect(() => {
-    var userSVG = d3.select(nfCirclesRef.current);
+    var userSVG = select(nfCirclesRef.current);
     userSVG.selectAll("*").remove();
     if (!chosenSparameter) return;
 
@@ -379,8 +379,8 @@ function Graph({
   //initializing the smith chart diagrams
   useEffect(() => {
     // Set width, the x,y plane and some global default colors
-    d3.select(svgRef.current).attr("width", width).attr("height", width);
-    d3.select(topGroupRef.current)
+    select(svgRef.current).attr("width", width).attr("height", width);
+    select(topGroupRef.current)
       .attr("transform", `translate(${width}, ${0.5 * width})`)
       .attr("fill", "none")
       .attr("stroke", "black")
@@ -393,21 +393,21 @@ function Graph({
     if (zo <= 0) return;
 
     var re, im, cx, cy, r, xEnd, yEnd;
-    var svg = d3.select(svgRef.current);
-    var svgGroup = d3.select(topGroupRef.current);
+    var svg = select(svgRef.current);
+    var svgGroup = select(topGroupRef.current);
 
     svg.on("mousemove", null);
     svg.on("mouseleave", null);
 
     svg.on("mousemove", (event) => {
-      var dpCircles = d3.select(dpCirclesRef.current);
+      var dpCircles = select(dpCirclesRef.current);
       dpCircles.selectAll(".hoverDp").classed("hoverDp", false);
-      // var sparamSVG = d3.select(sParamsRef.current);
+      // var sparamSVG = select(sParamsRef.current);
       // sparamSVG.selectAll(".hoverDp").classed("hoverDp", false);
-      var sparamSVG = d3.select(hoverRectsRef.current);
+      var sparamSVG = select(hoverRectsRef.current);
       sparamSVG.selectAll("*").remove();
 
-      const [mouseX, mouseY] = d3.pointer(event, svgGroup.node());
+      const [mouseX, mouseY] = pointer(event, svgGroup.node());
       var x = mouseX / (0.5 * width);
       var y = mouseY / (0.5 * width);
       var snapped = false;
@@ -485,7 +485,7 @@ function Graph({
       }
     });
     svg.on("mouseleave", (event) => {
-      const [mouseX, mouseY] = d3.pointer(event, svg.node());
+      const [mouseX, mouseY] = pointer(event, svg.node());
       var x = mouseX / (0.5 * width) - 2;
       var y = mouseY / (0.5 * width) - 1;
       var [re /*im*/] = smithCoordinatesToImpedance(x, y);
@@ -535,9 +535,9 @@ function Graph({
   useEffect(() => {
     if (zo <= 0) return;
     // console.log("running a");
-    var impedanceArc = d3.select(impedanceArcsRef.current);
+    var impedanceArc = select(impedanceArcsRef.current);
     impedanceArc.selectAll("*").remove();
-    var dpCircles = d3.select(dpCirclesRef.current);
+    var dpCircles = select(dpCirclesRef.current);
     dpCircles.selectAll("*").remove();
     var hoverSnaps = [];
     if (showZPlots) {
@@ -683,7 +683,7 @@ function Graph({
 
   //draw the labels
   useEffect(() => {
-    var svgLabels = d3.select(labelsRef.current);
+    var svgLabels = select(labelsRef.current);
     svgLabels.selectAll("*").remove();
     resistanceCircles.map((z) => {
       // var dispRes = zo * z;
@@ -1113,7 +1113,7 @@ function createLabelStability(svg, x, y, text, angle, size) {
 }
 
 function initializeSmithChart(tracingArcsRef, width, resistanceCircles, reactanceCircles, showAdmittance) {
-  var tracingArcs = d3.select(tracingArcsRef.current).attr("stroke", "rgba(0, 0, 0, 0.75)");
+  var tracingArcs = select(tracingArcsRef.current).attr("stroke", "rgba(0, 0, 0, 0.75)");
   tracingArcs.selectAll("*").remove();
 
   resistanceCircles.map((r) => {

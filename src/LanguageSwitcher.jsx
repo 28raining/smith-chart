@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import { supportedLanguages } from "./i18n.js";
+import { changeLanguage, supportedLanguages } from "./i18n.js";
 
 function LanguageOption({ flag, label }) {
   return (
@@ -36,7 +36,7 @@ export default function LanguageSwitcher() {
     <FormControl size="small" sx={{ minWidth: "11.5rem" }}>
       <Select
         value={current}
-        onChange={(e) => i18n.changeLanguage(e.target.value)}
+        onChange={(e) => changeLanguage(e.target.value)}
         inputProps={{ "aria-label": t("language.label") }}
         renderValue={() => <LanguageOption flag={currentFlag} label={currentLabel} />}
         sx={{
