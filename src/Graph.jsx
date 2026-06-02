@@ -582,7 +582,12 @@ function Graph({
               }
             } else {
               //the last entry in z array is the circuit without any tolerance applied
-              lastDpColor = cumulatedDP == 0 ? arcColors[dp % 10] : arcColors[(cumulatedDP - dp) % 10];
+              lastDpColor =
+                cumulatedDP == 0
+                  ? sParameters && sParameters.type === "s1p"
+                    ? arcColors[(zResultsSrc[0].arcs[0].length - dp) % arcColors.length]
+                    : arcColors[dp % arcColors.length]
+                  : arcColors[(cumulatedDP - dp) % arcColors.length];
               impedanceArc
                 .append("path")
                 .attr("stroke-linecap", "round")
@@ -667,7 +672,6 @@ function Graph({
             .attr("stroke-linejoin", "round")
             .attr("fill", "none")
             .attr("stroke", "red")
-            // .attr("stroke", arcColors[zResultsSrc[0].length - (1 % 10)])
             .attr("stroke-width", 1)
             .attr("d", mainSpanArc);
         }
@@ -675,7 +679,7 @@ function Graph({
       }
     }
     setHSnaps(hoverSnaps);
-  }, [zResultsSrc, zo, spanResults, width, plotType, frequency, showZPlots]);
+  }, [zResultsSrc, zo, spanResults, width, plotType, frequency, showZPlots, sParameters]);
 
   //draw the labels
   useEffect(() => {

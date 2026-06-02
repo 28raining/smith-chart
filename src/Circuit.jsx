@@ -1137,7 +1137,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
       <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 4, lg: 8, xl: 10 }}>
         {userCircuit.map((c, i) => {
           const comp = circuitComponents[c.name];
-          const color = arcColors[i % arcColors.length];
+          const plotColor = arcColors[i % arcColors.length];
           return (
             <Grid size={2} key={i} sx={{ display: "flex", flexDirection: "column", borderRadius: 1 }} className="circuitDrawing">
               <Box sx={{ position: "relative" }}>
@@ -1218,7 +1218,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
                     position: "absolute",
                     top: 0,
                     left: 3,
-                    color,
+                    color: plotColor,
                   }}
                 >
                   {t("circuit.dp", { i })}
