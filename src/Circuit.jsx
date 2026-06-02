@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -243,7 +244,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
           <Typography id="modal-modal-title" variant="h6" component="h2">
             {t("circuit.sparam.pasteTitle")}
           </Typography>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
             <Link onClick={() => setCustomInput(s2pExample)} sx={{ cursor: "pointer", px: 1 }}>
               {t("circuit.sparam.s2pExample")}
             </Link>
@@ -295,7 +296,7 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
             >
               {validCheckerResults ? t("common.save") : customInput == "" ? t("circuit.sparam.noInputRemove") : t("circuit.sparam.inputErrorRemove")}
             </Button>
-          </Box>
+          </Stack>
           <TextField
             sx={{ width: "100%", p: 1 }}
             error={!validCheckerResults}
@@ -405,13 +406,13 @@ function ImpedanceComponent({ real, imaginary, zToVal }) {
   const [editOpen, setEditOpen] = useState(false);
   const [editValue, setEditValue] = useState();
 
-  real = Number(real).toFixed(2);
-  imaginary = Number(imaginary).toFixed(2);
-  var zStr = "";
-  if (real == 0) zStr = `${imaginary}jΩ`;
-  else if (imaginary == 0) zStr = `${real}Ω`;
-  else if (imaginary < 0) zStr = `${real}Ω - ${-imaginary}jΩ`;
-  else zStr = `${real}Ω + ${imaginary}jΩ`;
+  const formattedReal = Number(real).toFixed(2);
+  const formattedImaginary = Number(imaginary).toFixed(2);
+  let zStr;
+  if (formattedReal == 0) zStr = `${formattedImaginary}jΩ`;
+  else if (formattedImaginary == 0) zStr = `${formattedReal}Ω`;
+  else if (formattedImaginary < 0) zStr = `${formattedReal}Ω - ${-formattedImaginary}jΩ`;
+  else zStr = `${formattedReal}Ω + ${formattedImaginary}jΩ`;
 
   const hasZToVal = typeof zToVal === "function";
 
@@ -1139,7 +1140,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
           const color = arcColors[i % arcColors.length];
           return (
             <Grid size={2} key={i} sx={{ display: "flex", flexDirection: "column", borderRadius: 1 }} className="circuitDrawing">
-              <Box position="relative">
+              <Box sx={{ position: "relative" }}>
                 <img src={comp.src} width="100%" />
                 {i == 0 || userCircuit[i].name == "loadTerm" ? null : (
                   <IconButton
@@ -1217,7 +1218,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
                     position: "absolute",
                     top: 0,
                     left: 3,
-                    color: { color },
+                    color,
                   }}
                 >
                   {t("circuit.dp", { i })}

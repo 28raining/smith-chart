@@ -119,29 +119,6 @@ function App() {
     setHelperCopiedOpen(true);
   }
 
-  function LetUserKnowAboutURL() {
-    return (
-      <Snackbar
-        open={urlSnackbar}
-        autoHideDuration={10000}
-        onClose={() => setUrlSnackbar(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        message="This Snackbar will be dismissed in 5 seconds."
-      >
-        <SnackbarContent
-          message={t("app.urlLoadedSnackbar")}
-          sx={{
-            backgroundColor: "#2196f3",
-            color: "#fff",
-            cursor: "pointer", // Indicate clickable
-            maxWidth: 200,
-          }}
-          onClick={handleSnackbarClick}
-        />
-      </Snackbar>
-    );
-  }
-
   //open the snackbar after 1 seconds if there is state in the URL
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -187,7 +164,24 @@ function App() {
           <Button onClick={() => setHelperModalOpen(false)}>{t("common.cancel")}</Button>
         </DialogActions>
       </Dialog>
-      <LetUserKnowAboutURL />
+      <Snackbar
+        open={urlSnackbar}
+        autoHideDuration={10000}
+        onClose={() => setUrlSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        message="This Snackbar will be dismissed in 5 seconds."
+      >
+        <SnackbarContent
+          message={t("app.urlLoadedSnackbar")}
+          sx={{
+            backgroundColor: "#2196f3",
+            color: "#fff",
+            cursor: "pointer",
+            maxWidth: 200,
+          }}
+          onClick={handleSnackbarClick}
+        />
+      </Snackbar>
       <NavBar />
       <Typography sx={{ color: "rgb(37, 50, 64)", mx: 3, mt: 1 }}>{t("app.intro")}</Typography>
       <Box sx={{ flexGrow: 1, mx: { xs: 0, sm: 1, lg: 2 }, mt: 1 }}>

@@ -56,13 +56,13 @@ function NavBar() {
               justifyContent: "space-between",
             }}
           >
-            <Stack spacing={1} direction="row" alignItems="center">
+            <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
               <img src={SmithChartSvg} alt="Smith Chart" width="50" height="50" style={{ marginRight: "10px", display: "block" }} />
               <Typography variant="h6" component="div" sx={{ fontWeight: "bold", display: { xs: "none", sm: "none", md: "block" } }}>
                 {t("nav.title")}
               </Typography>
             </Stack>
-            <Stack spacing={1} direction={{ xs: "column", sm: "row" }} alignItems="center">
+            <Stack spacing={1} direction={{ xs: "column", sm: "row" }} sx={{ alignItems: "center" }}>
               <LanguageSwitcher />
               <Tooltip title={t("nav.copyUrl")} placement="bottom">
                 <IconButton

@@ -48,7 +48,6 @@ export function calculateImpedance(userCircuit, frequency, resolution, showIdeal
   var startReal, startImaginary, startAdmittance, endImpedance;
   var newAdmittance = {};
   var newImpedance = {};
-  var impedanceResolution = [];
   var component;
   var prevResult;
   var esr, esl;
@@ -60,7 +59,7 @@ export function calculateImpedance(userCircuit, frequency, resolution, showIdeal
   var w = 2 * Math.PI * frequency;
   var i, j;
   for (i = 1; i < userCircuit.length; i++) {
-    impedanceResolution = [];
+    let impedanceResolution = [];
     component = userCircuit[i];
     prevResult = impedanceResults[impedanceResults.length - 1];
     startReal = prevResult[prevResult.length - 1].real;
