@@ -230,7 +230,7 @@ function App() {
             <Card>
               <CardContent>
                 {sParamIndex !== -1 && (
-                  <Box display="flex" justifyContent="center" sx={{ mb: 2 }}>
+                  <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                     <ToggleButtonGroup value={plotType} exclusive onChange={(e, newP) => setPlotType(newP)}>
                       <ToggleButton value="sparam">{t("app.plotSparam")}</ToggleButton>
                       <ToggleButton value="impedance">{s1pIndex !== -1 ? t("app.plotImpedanceS1p") : t("app.plotImpedanceS2p")}</ToggleButton>

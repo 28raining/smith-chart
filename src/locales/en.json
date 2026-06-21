@@ -175,7 +175,7 @@
       "rectangular": "Rectangular",
       "polar": "Polar",
       "zo": "Zo: {{v}}",
-      "tableIntro": "ABOVE TEXT FORMATTED INTO A TABLE",
+      "tableIntro": "ABOVE TEXT FORMATTED INTO A MAGNITUDE - ANGLE TABLE",
       "rowsFirst": "- First {{n}} rows of data: ",
       "rowsAll": "- All rows of data: ",
       "showLess": "Show less",

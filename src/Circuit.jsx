@@ -347,21 +347,23 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {Object.keys(parsed.data).map((f, i) => {
-                      if (!showAllData) if (i > defaultMaxRows) return null; // limit to defaultMaxRows rows for performance
-                      return (
-                        <TableRow hover tabIndex={-1} key={f}>
-                          <TableCell key="freq">{(f / unitConverter[parsed.settings.freq_unit]).toLocaleString()}</TableCell>
-                          {allcols.map((column) => {
-                            if (!(column in parsed.data[f])) return null;
-                            return [
-                              <TableCell key="mag">{parsed.data[f][column].magnitude.toFixed(4)}</TableCell>,
-                              <TableCell key="ang">{parsed.data[f][column].angle.toFixed(4)}</TableCell>,
-                            ];
-                          })}
-                        </TableRow>
-                      );
-                    })}
+                    {Object.keys(parsed.data)
+                      .sort((a, b) => Number(a) - Number(b))
+                      .map((f, i) => {
+                        if (!showAllData) if (i > defaultMaxRows) return null; // limit to defaultMaxRows rows for performance
+                        return (
+                          <TableRow hover tabIndex={-1} key={f}>
+                            <TableCell key="freq">{(f / unitConverter[parsed.settings.freq_unit]).toLocaleString()}</TableCell>
+                            {allcols.map((column) => {
+                              if (!(column in parsed.data[f])) return null;
+                              return [
+                                <TableCell key="mag">{parsed.data[f][column].magnitude.toFixed(4)}</TableCell>,
+                                <TableCell key="ang">{parsed.data[f][column].angle.toFixed(4)}</TableCell>,
+                              ];
+                            })}
+                          </TableRow>
+                        );
+                      })}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -378,18 +380,20 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {Object.keys(parsed.noise).map((f, i) => {
-                      if (!showAllData) if (i > defaultMaxRows) return null; // limit to defaultMaxRows rows for performance
-                      return (
-                        <TableRow hover tabIndex={-1} key={f}>
-                          <TableCell key="freq">{(f / unitConverter[parsed.settings.freq_unit]).toLocaleString()}</TableCell>
-                          <TableCell key="nfmin">{parsed.noise[f].fmin}</TableCell>
-                          <TableCell key="gamma_mag">{parsed.noise[f].gamma.magnitude}</TableCell>
-                          <TableCell key="gamma_ang">{parsed.noise[f].gamma.angle}</TableCell>
-                          <TableCell key="rn">{parsed.noise[f].rn}</TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    {Object.keys(parsed.noise)
+                      .sort((a, b) => Number(a) - Number(b))
+                      .map((f, i) => {
+                        if (!showAllData) if (i > defaultMaxRows) return null; // limit to defaultMaxRows rows for performance
+                        return (
+                          <TableRow hover tabIndex={-1} key={f}>
+                            <TableCell key="freq">{(f / unitConverter[parsed.settings.freq_unit]).toLocaleString()}</TableCell>
+                            <TableCell key="nfmin">{parsed.noise[f].fmin}</TableCell>
+                            <TableCell key="gamma_mag">{parsed.noise[f].gamma.magnitude}</TableCell>
+                            <TableCell key="gamma_ang">{parsed.noise[f].gamma.angle}</TableCell>
+                            <TableCell key="rn">{parsed.noise[f].rn}</TableCell>
+                          </TableRow>
+                        );
+                      })}
                   </TableBody>
                 </Table>
               </TableContainer>

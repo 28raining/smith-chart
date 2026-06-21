@@ -132,8 +132,12 @@ export function sparamZout(sparamPolar, reflSourcePolar) {
   return { polar: polar, rectangular: rout };
 }
 
+function touchstoneFrequencyHz(freq, fUnit) {
+  return Math.round(parseFloat(freq) * unitConverter[fUnit]);
+}
+
 function sParamDataToPolar(splLine, format, fUnit, zo) {
-  const frequency = parseFloat(splLine[0]) * unitConverter[fUnit];
+  const frequency = touchstoneFrequencyHz(splLine[0], fUnit);
   var sparam = {};
   if (format == "RI") {
     if (splLine.length == 3) {
@@ -177,11 +181,57 @@ function sParamDataToPolar(splLine, format, fUnit, zo) {
       };
     }
   }
+  if (!sparam.S11) return [frequency, null];
   //convert S11 to a Z for s1p matching
   const rS11 = polarToRectangular(sparam.S11);
   sparam.zS11 = reflToZ(rS11, zo);
 
   return [frequency, sparam];
+}
+
+const TOUCHSTONE_OPTIONS_EXAMPLE = "# GHz S DB R 50";
+
+function guessTouchstoneFormatFromDataLine(dataLine) {
+  const parts = dataLine.trim().split(/\s+/);
+  if (parts.length < 2) return null;
+  const firstValue = parseFloat(parts[1]);
+  if (Number.isNaN(firstValue)) return null;
+  if (firstValue >= -1 && firstValue <= 1) return "MA";
+  if (firstValue < 0) return "DB";
+  return "RI";
+}
+
+function touchstoneOptionsError(firstNonEmptyLine, firstDataLine) {
+  const trimmed = firstNonEmptyLine.trim();
+  const formatHint = guessTouchstoneFormatFromDataLine(firstDataLine ?? trimmed);
+  const suggestedHeader = formatHint ? `# GHz S ${formatHint} R 50` : TOUCHSTONE_OPTIONS_EXAMPLE;
+  const formatSuffix = formatHint ? ` Your magnitude values look like ${formatHint}, so try \`${suggestedHeader}\`.` : "";
+
+  if (trimmed.startsWith("!")) {
+    const looksLikeColumnHeader = /freq|s11|s21|s12|s22|mag|ang/i.test(trimmed);
+    if (looksLikeColumnHeader) {
+      return (
+        `Missing Touchstone options line. Lines starting with ! are comments and are ignored — ` +
+        `add a # header before your data, e.g. \`${suggestedHeader}\`.` +
+        (formatSuffix || ` Use RI (real/imag), MA (magnitude/angle), or DB (dB/angle) to match your data columns.`)
+      );
+    }
+    return `Missing Touchstone options line. The first non-comment line must start with #, ` + `e.g. \`${suggestedHeader}\`.${formatSuffix}`;
+  }
+
+  if (trimmed.startsWith("#")) {
+    return `Unrecognized Touchstone options line: "${trimmed}". ` + `Expected \`# <freq_unit> S <RI|MA|DB> R <Z0>\`, e.g. \`${suggestedHeader}\`.`;
+  }
+
+  if (/^[-+]?\d/.test(trimmed)) {
+    const freqPreview = trimmed.split(/\s+/)[0];
+    return (
+      `Missing Touchstone options line. The file starts with data (${freqPreview} …). ` +
+      `Add a # header before the data, e.g. \`${suggestedHeader}\`.${formatSuffix}`
+    );
+  }
+
+  return `Invalid Touchstone file format. Expected first line: \`# <freq_unit> S <RI|MA|DB> R <Z0>\`, e.g. \`${suggestedHeader}\`.`;
 }
 
 export function parseTouchstoneFile(content) {
@@ -200,8 +250,9 @@ export function parseTouchstoneFile(content) {
   }
 
   var lines = content.trim().replace(/–/g, "-").split(/\r?\n/); // split by line, remove empty lines and replace long dash with short dash
+  const firstNonEmptyLine = lines.find((line) => line.trim() !== "") ?? "";
   lines = lines.filter((line) => !(line.trim().startsWith("!") && !line.includes("Noise parameters"))); //remove comments
-  const match = lines[0].match(optionsRegex);
+  const match = lines[0]?.match(optionsRegex);
   if (match?.groups) {
     // console.log("parsedSettings", match.groups);
     results["settings"] = { ...match.groups };
@@ -210,11 +261,17 @@ export function parseTouchstoneFile(content) {
       return results;
     }
   } else {
-    results.error = "Invalid Touchstone file format";
+    results.error = touchstoneOptionsError(firstNonEmptyLine, lines[0]);
     return results;
   }
   results["settings"].freq_unit = correctUnitCase(results["settings"].freq_unit);
+  results["settings"].format = results["settings"].format.toUpperCase();
   results["settings"].zo = parseFloat(results["settings"].zo);
+  const validFormats = ["RI", "MA", "DB"];
+  if (!validFormats.includes(results["settings"].format)) {
+    results.error = `Unsupported data format "${match.groups.format}". Use RI, MA, or DB.`;
+    return results;
+  }
   // console.log("unit", results["settings"].freq_unit, unitConverter[results["settings"].freq_unit]);
   for (line = 1; line < lines.length; line++) {
     if (lines[line].includes("! Noise parameters")) {
@@ -227,6 +284,10 @@ export function parseTouchstoneFile(content) {
       return results;
     }
     const [f, d] = sParamDataToPolar(splLine, results["settings"].format, results["settings"].freq_unit, results["settings"].zo);
+    if (d === null) {
+      results.error = `Could not parse line ${line + 1} as ${results["settings"].format} format: ${lines[line]}`;
+      return results;
+    }
     results["data"][f] = d;
     results["type"] = splLine.length == 0 ? null : splLine.length == 9 ? "s2p" : "s1p";
   }
@@ -242,7 +303,7 @@ export function parseTouchstoneFile(content) {
         // console.log("noiseData", match.groups);
         const { freq, ...rest } = match.groups;
         // rest.rn = rest.rn
-        const f = freq * unitConverter[results["settings"].freq_unit];
+        const f = touchstoneFrequencyHz(freq, results["settings"].freq_unit);
         if (!(f in results["data"])) continue; // skip if noise frequency not in data
         results.noise[f] = {};
         results.noise[f].rn = rest.rn * results["settings"].zo; //convert rn to Ohms

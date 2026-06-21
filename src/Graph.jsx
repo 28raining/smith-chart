@@ -859,8 +859,8 @@ function Graph({
         direction="column"
         spacing={1}
         useFlexGap
-        alignItems="flex-start"
         sx={{
+          alignItems: "flex-start",
           px: 1,
           py: 0.5,
           width: "100%",
@@ -869,7 +869,7 @@ function Graph({
           boxSizing: "border-box",
         }}
       >
-        <Stack direction="row" flexWrap="wrap" spacing={1} useFlexGap alignItems="center" sx={{ minWidth: 0, maxWidth: "100%" }}>
+        <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap", minWidth: 0, maxWidth: "100%" }}>
           <div>
             <input type="checkbox" name="scales" checked={showZPlots} onChange={() => setShowZPlots(!showZPlots)} />
             <label>{sParameters ? (sParameters.type == "s1p" ? t("graph.zDp1") : t("graph.zLabel")) : t("graph.zLabel")}</label>
@@ -892,11 +892,11 @@ function Graph({
         {hasSParamCheckboxes && (
           <Stack
             direction="row"
-            flexWrap="wrap"
             spacing={1}
             useFlexGap
-            alignItems="center"
             sx={{
+              alignItems: "center",
+              flexWrap: "wrap",
               minWidth: 0,
               maxWidth: "100%",
               justifyContent: "flex-start",

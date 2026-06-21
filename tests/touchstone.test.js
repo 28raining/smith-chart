@@ -150,3 +150,78 @@ test("Test stability circles", () => {
 });
 
 //FIXME - test sparamNoiseCircles directly
+
+test("Touchstone missing options line with ! column header", () => {
+  const userInput = `! freq S11_mag S11_ang S21_mag S21_ang S12_mag S12_ang S22_mag S22_ang
+1.800 -8.52 -165.3 -25.4 78.5 -28.7 -82.3 -12.3 142.7
+1.850 -8.94 -158.2 -25.1 75.2 -28.5 -80.1 -12.5 138.4`;
+
+  const result = parseTouchstoneFile(userInput);
+
+  expect(result.error).toContain("Missing Touchstone options line");
+  expect(result.error).toContain("!");
+  expect(result.error).toContain("Your magnitude values look like DB");
+  expect(result.error).toContain("# GHz S DB R 50");
+});
+
+test("Touchstone missing options line starting with data", () => {
+  const result = parseTouchstoneFile("1.800 -8.52 -165.3 -25.4 78.5 -28.7 -82.3 -12.3 142.7");
+
+  expect(result.error).toContain("Missing Touchstone options line");
+  expect(result.error).toContain("1.800");
+  expect(result.error).toContain("DB");
+});
+
+test("Touchstone invalid # options line", () => {
+  const result = parseTouchstoneFile("# GHz S MA\n1.0 0.1 10");
+
+  expect(result.error).toContain("Unrecognized Touchstone options line");
+});
+
+test("Touchstone user data parses with DB header", () => {
+  const userInput = `# GHz S DB R 50
+1.800 -8.52 -165.3 -25.4 78.5 -28.7 -82.3 -12.3 142.7
+1.850 -8.94 -158.2 -25.1 75.2 -28.5 -80.1 -12.5 138.4`;
+
+  const result = parseTouchstoneFile(userInput);
+
+  expect(result.error).toBeNull();
+  expect(result.type).toBe("s2p");
+  expect(Object.keys(result.data)).toHaveLength(2);
+});
+
+test("Touchstone accepts lowercase dB format token", () => {
+  const result = parseTouchstoneFile("# GHz S dB R 50\n1.0 -10 45");
+
+  expect(result.error).toBeNull();
+  expect(result.settings.format).toBe("DB");
+});
+
+test("Touchstone 2.050 GHz row stays in frequency order", () => {
+  const userInput = `# GHz S DB R 50
+1.800 -8.52 -165.3 -25.4 78.5 -28.7 -82.3 -12.3 142.7
+1.850 -8.94 -158.2 -25.1 75.2 -28.5 -80.1 -12.5 138.4
+1.900 -9.41 -151.6 -24.8 71.8 -28.3 -77.8 -12.8 134.2
+1.950 -9.93 -145.4 -24.5 68.3 -28.1 -75.4 -13.1 129.8
+2.000 -10.46 -139.5 -24.2 64.7 -27.9 -72.9 -13.5 125.3
+2.050 -11.02 -133.8 -23.9 61.0 -27.7 -70.3 -13.9 120.7
+2.100 -11.59 -128.2 -23.6 57.2 -27.5 -67.6 -14.4 115.9
+2.150 -12.15 -122.7 -23.3 53.3 -27.3 -64.8 -14.9 110.9
+2.200 -12.04 -117.2 -23.1 49.3 -27.1 -61.9 -15.5 105.8
+2.250 -11.23 -111.5 -22.8 45.2 -26.9 -58.9 -16.1 100.5
+2.300 -10.15 -105.7 -22.6 41.0 -26.7 -55.8 -16.8 95.1
+2.350 -9.28 -99.8 -22.4 36.7 -26.5 -52.6 -17.6 89.5
+2.400 -8.73 -93.8 -22.2 32.3 -26.3 -49.3 -18.4 83.8`;
+
+  const result = parseTouchstoneFile(userInput);
+  const freqsGHz = Object.keys(result.data).map((f) => Number(f) / 1e9);
+
+  expect(result.error).toBeNull();
+  expect(freqsGHz).toEqual([1.8, 1.85, 1.9, 1.95, 2, 2.05, 2.1, 2.15, 2.2, 2.25, 2.3, 2.35, 2.4]);
+});
+
+test("Touchstone invalid format token does not crash", () => {
+  const result = parseTouchstoneFile("# GHz S M R 50\n1.0 0.5 45");
+
+  expect(result.error).toContain("Unsupported data format");
+});
