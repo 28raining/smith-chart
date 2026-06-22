@@ -4,6 +4,9 @@ import { useTranslation, Trans } from "react-i18next";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import ViewColumnIcon from "@mui/icons-material/ViewColumn";
+import ViewAgendaIcon from "@mui/icons-material/ViewAgenda";
 
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
@@ -41,6 +44,15 @@ import { allImpedanceCalculations } from "./impedanceFunctions.js";
 import debounce from "lodash/debounce";
 
 const CHATGPT_HELPER_PROJECT_URL = "https://chatgpt.com/g/g-p-69ee7cba04888191bc878377f29b9f76-onlinesmithchart-helper/project";
+const STACKED_LAYOUT_STORAGE_KEY = "smith-chart-stacked-layout";
+
+function readStackedLayoutPreference() {
+  try {
+    return localStorage.getItem(STACKED_LAYOUT_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
 
 const initialState = {
   zo: 50,
@@ -65,6 +77,7 @@ console.log("stateInURL", stateInURL, defaultCircuit, urlContainsState);
 
 function App() {
   const { t, i18n } = useTranslation();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up("md"));
   const [userCircuit, setUserCircuit] = useState(defaultCircuit);
   const [settings, setSettings] = useState(stateInURL);
   const [urlSnackbar, setUrlSnackbar] = useState(false);
@@ -72,6 +85,7 @@ function App() {
   const [showIdeal, setShowIdeal] = useState(false);
   const [helperModalOpen, setHelperModalOpen] = useState(false);
   const [helperCopiedOpen, setHelperCopiedOpen] = useState(false);
+  const [stackedLayout, setStackedLayout] = useState(readStackedLayoutPreference);
 
   const settingsFloat = convertSettingsToFloat(JSON.parse(JSON.stringify(settings)));
 
@@ -136,6 +150,21 @@ function App() {
     if (meta) meta.setAttribute("content", t("meta.pageDescription"));
   }, [i18n.language, t]);
 
+  function handleLayoutChange(_event, newLayout) {
+    if (newLayout == null) return;
+    const isStacked = newLayout === "stacked";
+    setStackedLayout(isStacked);
+    try {
+      localStorage.setItem(STACKED_LAYOUT_STORAGE_KEY, String(isStacked));
+    } catch {
+      // localStorage unavailable
+    }
+  }
+
+  const useStackedLayout = isLargeScreen && stackedLayout;
+  const circuitGridSize = useStackedLayout ? { xs: 12 } : { sm: 12, md: 6 };
+  const graphGridSize = useStackedLayout ? { xs: 12 } : { xs: 12, sm: 12, md: 6, lg: 6 };
+
   return (
     <ThemeProvider theme={theme}>
       <Snackbar
@@ -183,10 +212,41 @@ function App() {
         />
       </Snackbar>
       <NavBar />
-      <Typography sx={{ color: "rgb(37, 50, 64)", mx: 3, mt: 1 }}>{t("app.intro")}</Typography>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 1,
+          color: "rgb(37, 50, 64)",
+          mx: 3,
+          mt: 1,
+        }}
+      >
+        <Typography sx={{ flex: 1, minWidth: 240 }}>{t("app.intro")}</Typography>
+        {isLargeScreen && (
+          <ToggleButtonGroup
+            value={stackedLayout ? "stacked" : "sideBySide"}
+            exclusive
+            onChange={handleLayoutChange}
+            size="small"
+            aria-label={t("app.layoutToggleAria")}
+          >
+            <ToggleButton value="sideBySide" aria-label={t("app.layoutSideBySide")}>
+              <ViewColumnIcon sx={{ mr: 0.75 }} fontSize="small" />
+              {t("app.layoutSideBySide")}
+            </ToggleButton>
+            <ToggleButton value="stacked" aria-label={t("app.layoutStacked")}>
+              <ViewAgendaIcon sx={{ mr: 0.75 }} fontSize="small" />
+              {t("app.layoutStacked")}
+            </ToggleButton>
+          </ToggleButtonGroup>
+        )}
+      </Box>
       <Box sx={{ flexGrow: 1, mx: { xs: 0, sm: 1, lg: 2 }, mt: 1 }}>
         <Grid container spacing={{ lg: 2, xs: 1 }}>
-          <Grid size={{ sm: 12, md: 6 }}>
+          <Grid size={circuitGridSize}>
             <Card>
               <CardContent>
                 <Circuit
@@ -196,11 +256,12 @@ function App() {
                   setPlotType={setPlotType}
                   setSettings={setSettings}
                   showIdeal={showIdeal}
+                  stackedLayout={useStackedLayout}
                 />
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ xs: 12, sm: 12, md: 6, lg: 6 }}>
+          <Grid size={graphGridSize}>
             <Card sx={{ padding: 0 }}>
               <Graph
                 zResultsSrc={multiZResults}

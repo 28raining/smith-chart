@@ -38,7 +38,10 @@
     "helperModalTitle": "AI helper (your own chat)",
     "helperModalIntro": "The <chatgptProject>shared ChatGPT project</chatgptProject> only allows a few users. Instead: copy the instructions below, open a new chat in ChatGPT, Claude, or another assistant, and paste them as your first message.",
     "helperCopyButton": "Copy instructions to clipboard",
-    "helperCopiedSnackbar": "Copied. Paste into your assistant as the first message."
+    "helperCopiedSnackbar": "Copied. Paste into your assistant as the first message.",
+    "layoutToggleAria": "Adjust circuit and chart layout",
+    "layoutSideBySide": "Side by side",
+    "layoutStacked": "Stacked"
   },
   "footer": {
     "license": "© {{year}} Will Kelsey. This work is licensed under a Creative Commons Attribution 4.0 International License. You may not resell this tool",

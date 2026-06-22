@@ -38,7 +38,10 @@
     "helperModalTitle": "Asistente de IA (tu propio chat)",
     "helperModalIntro": "El <chatgptProject>proyecto compartido de ChatGPT</chatgptProject> solo admite unos pocos usuarios. Haz esto: copia las instrucciones de abajo, abre un chat nuevo en ChatGPT, Claude u otro asistente y pégalo como primer mensaje.",
     "helperCopyButton": "Copiar instrucciones al portapapeles",
-    "helperCopiedSnackbar": "Copiado. Pégalo en tu asistente como primer mensaje."
+    "helperCopiedSnackbar": "Copiado. Pégalo en tu asistente como primer mensaje.",
+    "layoutToggleAria": "Ajustar la disposición del circuito y el diagrama",
+    "layoutSideBySide": "Lado a lado",
+    "layoutStacked": "Apilado"
   },
   "footer": {
     "license": "© {{year}} Will Kelsey. Esta obra tiene licencia Creative Commons Atribución 4.0 Internacional. No puede revender esta herramienta",

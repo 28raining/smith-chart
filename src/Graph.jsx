@@ -121,8 +121,8 @@ function Graph({
   const [stabilityCirclesToastOpen, setStabilityCirclesToastOpen] = useState(false);
 
   function updateWidth() {
+    if (!svgWrapper.current) return;
     var newWidth = svgWrapper.current.offsetWidth;
-    // console.log('neww', newWidth);
     if (newWidth > 700) setWidth(650);
     else if (newWidth > 600) setWidth(550);
     else if (newWidth > 460) setWidth(450);
@@ -132,8 +132,13 @@ function Graph({
   useEffect(() => {
     updateWidth();
     window.addEventListener("resize", updateWidth);
+    const resizeObserver = svgWrapper.current && new ResizeObserver(updateWidth);
+    if (resizeObserver && svgWrapper.current) {
+      resizeObserver.observe(svgWrapper.current);
+    }
     return () => {
       window.removeEventListener("resize", updateWidth);
+      resizeObserver?.disconnect();
     };
   }, []);
 

@@ -904,7 +904,7 @@ function ToleranceComponent({ tol, index, setUserCircuit }) {
   );
 }
 
-function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSettings, showIdeal }) {
+function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSettings, showIdeal, stackedLayout = false }) {
   const { t } = useTranslation();
   const w = 2 * Math.PI * frequency;
   const [modalOpen, setModalOpen] = useState(false);
@@ -1072,10 +1072,12 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
 
   const lastElIsFixed = userCircuit[userCircuit.length - 1].name == "loadTerm" || userCircuit[userCircuit.length - 1].type == "s1p";
   const lastElement = lastElIsFixed ? userCircuit.length - 2 : userCircuit.length - 1;
+  const selectorColumns = stackedLayout ? { xs: 6, sm: 12, md: 16, lg: 24 } : { xs: 6, sm: 12, md: 8, lg: 12 };
+  const drawingColumns = stackedLayout ? { xs: 4, sm: 8, md: 12, lg: 16, xl: 20 } : { xs: 4, sm: 8, md: 4, lg: 8, xl: 10 };
 
   return (
     <ThemeProvider theme={theme}>
-      <Grid container spacing={0} columns={{ xs: 6, sm: 12, md: 8, lg: 12 }}>
+      <Grid container spacing={0} columns={selectorColumns}>
         {Object.keys(circuitComponents).map((k, i) => {
           const c = circuitComponents[k];
           if ("unselectable" in c) return null;
@@ -1138,7 +1140,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
         </p>
       </div>
 
-      <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 4, lg: 8, xl: 10 }}>
+      <Grid container spacing={0} columns={drawingColumns}>
         {userCircuit.map((c, i) => {
           const comp = circuitComponents[c.name];
           const plotColor = arcColors[i % arcColors.length];

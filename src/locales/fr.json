@@ -38,7 +38,10 @@
     "helperModalTitle": "Assistant IA (votre propre chat)",
     "helperModalIntro": "Le <chatgptProject>projet ChatGPT partagé</chatgptProject> n’accepte que quelques utilisateurs. À la place : copiez les instructions ci-dessous, ouvrez un nouveau chat dans ChatGPT, Claude ou un autre assistant, et collez-les comme premier message.",
     "helperCopyButton": "Copier les instructions dans le presse-papiers",
-    "helperCopiedSnackbar": "Copié. Collez dans votre assistant comme premier message."
+    "helperCopiedSnackbar": "Copié. Collez dans votre assistant comme premier message.",
+    "layoutToggleAria": "Ajuster la disposition du circuit et de l’abaque",
+    "layoutSideBySide": "Côte à côte",
+    "layoutStacked": "Empilé"
   },
   "footer": {
     "license": "© {{year}} Will Kelsey. Cette œuvre est sous licence Creative Commons Attribution 4.0 International. Vous ne pouvez pas revendre cet outil",

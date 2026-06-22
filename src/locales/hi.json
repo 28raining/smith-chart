@@ -38,7 +38,10 @@
     "helperModalTitle": "AI सहायक (अपनी चैट)",
     "helperModalIntro": "<chatgptProject>साझा ChatGPT प्रोजेक्ट</chatgptProject> में केवल कुछ उपयोगकर्ता हो सकते हैं। इसके बजाय: नीचे दिए निर्देश कॉपी करें, ChatGPT, Claude या किसी अन्य सहायक में नई चैट खोलें और उन्हें पहला संदेश चिपकाएँ।",
     "helperCopyButton": "निर्देश क्लिपबोर्ड पर कॉपी करें",
-    "helperCopiedSnackbar": "कॉपी हो गया। इन्हें अपने सहायक में पहला संदेश चिपकाएँ।"
+    "helperCopiedSnackbar": "कॉपी हो गया। इन्हें अपने सहायक में पहला संदेश चिपकाएँ।",
+    "layoutToggleAria": "सर्किट और चार्ट लेआउट समायोजित करें",
+    "layoutSideBySide": "साथ-साथ",
+    "layoutStacked": "ढेर"
   },
   "footer": {
     "license": "© {{year}} Will Kelsey। यह कार्य Creative Commons Attribution 4.0 International लाइसेंस के अंतर्गत है। आप इस टूल को पुनः बेच नहीं सकते",

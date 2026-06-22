@@ -38,7 +38,10 @@
     "helperModalTitle": "AI 助手（使用您自己的对话）",
     "helperModalIntro": "<chatgptProject>共享的 ChatGPT 项目</chatgptProject>人数有限。请改为：复制下方说明，在 ChatGPT、Claude 或其他助手中新建对话，并将其作为第一条消息粘贴发送。",
     "helperCopyButton": "将说明复制到剪贴板",
-    "helperCopiedSnackbar": "已复制。请将其作为第一条消息粘贴到您的助手中。"
+    "helperCopiedSnackbar": "已复制。请将其作为第一条消息粘贴到您的助手中。",
+    "layoutToggleAria": "调整电路和图表布局",
+    "layoutSideBySide": "并排",
+    "layoutStacked": "堆叠"
   },
   "footer": {
     "license": "© {{year}} Will Kelsey。本作品采用知识共享署名 4.0 国际许可协议。不得转售本工具",
