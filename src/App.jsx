@@ -81,7 +81,6 @@ function App() {
   const [userCircuit, setUserCircuit] = useState(defaultCircuit);
   const [settings, setSettings] = useState(stateInURL);
   const [urlSnackbar, setUrlSnackbar] = useState(false);
-  const [plotType, setPlotType] = useState("impedance");
   const [showIdeal, setShowIdeal] = useState(false);
   const [helperModalOpen, setHelperModalOpen] = useState(false);
   const [helperCopiedOpen, setHelperCopiedOpen] = useState(false);
@@ -104,7 +103,6 @@ function App() {
 
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
   const sParameters = sParamIndex === -1 ? null : userCircuit[sParamIndex];
-  const s1pIndex = userCircuit.findIndex((c) => c.type === "s1p");
   const chosenSparameter =
     sParamIndex === -1 ? null : { ...userCircuit[sParamIndex].data[numericalFrequency], zo: userCircuit[sParamIndex].settings.zo };
   const chosenNoiseParameter = noiseFrequency === -1 ? null : userCircuit[sParamIndex].noise[noiseFrequency];
@@ -253,7 +251,6 @@ function App() {
                   userCircuit={userCircuit}
                   setUserCircuit={setUserCircuit}
                   frequency={numericalFrequency}
-                  setPlotType={setPlotType}
                   setSettings={setSettings}
                   showIdeal={showIdeal}
                   stackedLayout={useStackedLayout}
@@ -275,7 +272,6 @@ function App() {
                 zMarkers={settings.zMarkers}
                 reflection_real={processedImpedanceResults.refReal}
                 reflection_imag={processedImpedanceResults.refImag}
-                plotType={plotType}
                 sParameters={sParameters}
                 chosenSparameter={chosenSparameter}
                 freqUnit={settings.frequencyUnit}
@@ -290,19 +286,10 @@ function App() {
           <Grid size={{ xs: 12, sm: 6, md: 6 }}>
             <Card>
               <CardContent>
-                {sParamIndex !== -1 && (
-                  <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                    <ToggleButtonGroup value={plotType} exclusive onChange={(e, newP) => setPlotType(newP)}>
-                      <ToggleButton value="sparam">{t("app.plotSparam")}</ToggleButton>
-                      <ToggleButton value="impedance">{s1pIndex !== -1 ? t("app.plotImpedanceS1p") : t("app.plotImpedanceS2p")}</ToggleButton>
-                    </ToggleButtonGroup>
-                  </Box>
-                )}
                 <Results
                   zProc={processedImpedanceResults}
                   spanResults={spanResults}
                   freqUnit={settings.frequencyUnit}
-                  plotType={plotType}
                   sParameters={sParameters}
                   gainResults={gainArray}
                   noiseArray={noiseArray}

@@ -1,5 +1,21 @@
 import { circuitComponents } from "./circuitComponents.js";
 
+export function normalizeS1pCircuit(circuit) {
+  const s1pIdx = circuit.findIndex((c) => c.type === "s1p");
+  if (s1pIdx <= 0) return circuit;
+
+  const blackBox = circuit.find((c) => c.name === "blackBox");
+  const sparam = circuit[s1pIdx];
+  const middle = circuit.filter((c) => c !== sparam && c !== blackBox && c.name !== "loadTerm").reverse();
+  const existingLoadTerm = circuit.find((c) => c.name === "loadTerm");
+  const loadTerm = existingLoadTerm ?? {
+    ...circuitComponents.loadTerm.default,
+    name: "loadTerm",
+    ...(blackBox && { real: blackBox.real, imaginary: blackBox.imaginary, tolerance: blackBox.tolerance }),
+  };
+  return [{ ...sparam, name: "sparam" }, ...middle, loadTerm];
+}
+
 export function syncObjectToUrl(settings, defaultSettings, circuit, defaultCircuit) {
   const params = new URLSearchParams(window.location.search);
 
@@ -94,6 +110,7 @@ export function updateObjectFromUrl(settings, initialCircuit, URLparams) {
       return circuitComponents[parts[0]].fromURL(parts);
     });
     defaultCircuit = defaultCircuit.filter((x) => x !== null);
+    defaultCircuit = normalizeS1pCircuit(defaultCircuit);
   }
   return [settingsFromURL, defaultCircuit, urlContainsState];
 }

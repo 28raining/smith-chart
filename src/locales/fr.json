@@ -215,6 +215,7 @@
     "shortedStubDialog": "L’arc du stub court-circuité part de 0 Ω (longueur = 0) et ne se raccorde donc pas au point précédent. Cela peut surprendre mais est cohérent avec la plage de fréquence et la tolérance",
     "hint": "Cliquez sur les composants ci-dessus pour les ajouter au circuit. L’impédance est vue {{direction}}",
     "towardsBlackBox": "vers la BOÎTE NOIRE",
+    "towardsTermination": "vers la TERMINAISON",
     "intoDp1": "vers DP1",
     "dp": "DP{{i}}"
   },
@@ -236,6 +237,11 @@
     "version": "Version",
     "date": "Date",
     "notes": "Notes",
+    "v22": [
+      "Adaptation .s1p refaite : bloc S à gauche, réseau d’adaptation à droite, terminaison en fin de chaîne",
+      "Les liens .s1p existants sont migrés automatiquement",
+      "Coefficient de réflexion et données S brutes tracés ensemble"
+    ],
     "v21": ["Ajout du composant paramètres S", "Ajout des cercles de gain pour le gain s2p", "Ajout de tutoriels sur les paramètres S"],
     "v20a": "Site déplacé de will-kelsey.com/smith_chart/ vers onlinesmithchart.com",
     "v20b": "Refonte complète du site. En plus de six ans, de nombreuses fonctions avaient rendu l’ancien code difficile à maintenir. Certains utilisateurs consultaient le code pour vérifier les implémentations, ce qui était pénible. Le code est désormais mieux structuré et optimisé. J’espère que la communauté pourra ajouter des fonctions et des améliorations.",

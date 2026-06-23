@@ -13,6 +13,26 @@ export const arcColors = [
   "#17becf", // blue-teal
 ];
 
+/** Color for one impedance arc dp (Smith chart Z traces). */
+export function impedanceArcColor({ dp, arcCount, cumulatedDP = 0, sparamType = null }) {
+  const isS1pLoadTermPassThrough = sparamType === "s1p" && dp === arcCount - 1 && arcCount > 1;
+  const colorDp = isS1pLoadTermPassThrough ? dp - 1 : dp;
+  const color = cumulatedDP === 0 ? arcColors[colorDp % arcColors.length] : arcColors[(cumulatedDP - colorDp) % arcColors.length];
+  return { color, skipDraw: isS1pLoadTermPassThrough };
+}
+
+/** Full color plan for nominal (zero-tolerance) impedance arcs. */
+export function impedanceArcColorPlan({ arcCount, cumulatedDP = 0, sparamType = null }) {
+  const drawable = [];
+  let lastDpColor = null;
+  for (let dp = 0; dp < arcCount; dp++) {
+    const { color, skipDraw } = impedanceArcColor({ dp, arcCount, cumulatedDP, sparamType });
+    lastDpColor = color;
+    if (!skipDraw) drawable.push({ dp, color });
+  }
+  return { drawable, lastDpColor };
+}
+
 export function convertSettingsToFloat(s) {
   const fields = ["zo", "frequency", "fSpan", "fRes"];
   for (const field of fields) {

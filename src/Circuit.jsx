@@ -80,6 +80,34 @@ import {
 import { parseTouchstoneFile } from "./sparam.js";
 
 import { circuitComponents } from "./circuitComponents.js";
+import s1pSvg from "./assets/components/s1p.svg";
+
+function buildS1pCircuit(circuit, parsed) {
+  const blackBox = circuit.find((c) => c.name === "blackBox");
+  const existingLoadTerm = circuit.find((c) => c.name === "loadTerm");
+  const sparamIdx = circuit.findIndex((c) => c.name === "sparam" || c.type === "s1p");
+  let middle = circuit.filter((c) => c.name !== "blackBox" && c.name !== "loadTerm" && c.name !== "sparam");
+  if (sparamIdx > 0) middle = [...middle].reverse();
+  const loadTerm = existingLoadTerm ?? {
+    ...circuitComponents.loadTerm.default,
+    name: "loadTerm",
+    ...(blackBox && { real: blackBox.real, imaginary: blackBox.imaginary, tolerance: blackBox.tolerance ?? 0 }),
+  };
+  return [{ ...parsed, name: "sparam" }, ...middle, loadTerm];
+}
+
+function restoreFromS1p(circuit) {
+  const loadTerm = circuit.find((c) => c.name === "loadTerm");
+  const middle = circuit.filter((c) => c.name !== "sparam" && c.name !== "loadTerm" && c.type !== "s1p").reverse();
+  return [
+    {
+      ...circuitComponents.blackBox.default,
+      name: "blackBox",
+      ...(loadTerm && { real: loadTerm.real, imaginary: loadTerm.imaginary, tolerance: loadTerm.tolerance ?? 0 }),
+    },
+    ...middle,
+  ];
+}
 
 function setValue(value, field, setUserCircuit, index) {
   setUserCircuit((z) => {
@@ -210,7 +238,7 @@ function CustomComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
   );
 }
 
-function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setPlotType, setSettings, frequency }) {
+function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit, setSettings, frequency }) {
   const { t } = useTranslation();
   const [customInput, setCustomInput] = useState(value.raw ? value.raw : "");
   const [showAllData, setShowAllData] = useState(false);
@@ -266,17 +294,16 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                   const fMin = allF[0]; //[0].frequency;
                   const fMax = allF[allF.length - 1]; //[parsed.data.length - 1].frequency;
                   setUserCircuit((c) => {
+                    if (parsed.type === "s1p") {
+                      return buildS1pCircuit(c, parsed);
+                    }
                     const newCircuit = [...c];
                     newCircuit[index] = parsed;
-                    //if it's .s2p and the last item is not termination load, add it
                     if (parsed.type === "s2p" && newCircuit[newCircuit.length - 1].name !== "loadTerm") {
                       newCircuit.push({ ...circuitComponents.loadTerm.default, name: "loadTerm" });
-                    } else if (parsed.type === "s1p" && newCircuit[newCircuit.length - 1].name === "loadTerm") {
-                      newCircuit.splice(index + 1); //remove anything after s1p
                     }
                     return newCircuit;
                   });
-                  setPlotType("sparam");
                   setSettings((s) => {
                     s.frequencyUnit = parsed.settings.freq_unit;
                     s.fSpanUnit = parsed.settings.freq_unit;
@@ -285,11 +312,15 @@ function SparamComponent({ modalOpen, setModalOpen, value, index, setUserCircuit
                     return s;
                   });
                 } else {
-                  //user has asked to remove it
-                  setUserCircuit((z) => [
-                    ...z.slice(0, index), // Items before the index `i`
-                    ...z.slice(index + 1),
-                  ]);
+                  setUserCircuit((z) => {
+                    const removed = z[index];
+                    if (removed?.type === "s1p") return restoreFromS1p(z);
+                    var newZ = [...z.slice(0, index), ...z.slice(index + 1)];
+                    if (removed?.name === "sparam" && newZ[newZ.length - 1]?.name === "loadTerm") {
+                      newZ = [...newZ.slice(0, -1)];
+                    }
+                    return newZ;
+                  });
                 }
                 setModalOpen(false);
               }}
@@ -904,7 +935,7 @@ function ToleranceComponent({ tol, index, setUserCircuit }) {
   );
 }
 
-function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSettings, showIdeal, stackedLayout = false }) {
+function Circuit({ userCircuit, setUserCircuit, frequency, setSettings, showIdeal, stackedLayout = false }) {
   const { t } = useTranslation();
   const w = 2 * Math.PI * frequency;
   const [modalOpen, setModalOpen] = useState(false);
@@ -986,7 +1017,6 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
             index={index}
             setUserCircuit={setUserCircuit}
             frequency={frequency}
-            setPlotType={setPlotType}
             key={type}
             setSettings={setSettings}
           />
@@ -1070,10 +1100,11 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
     }
   }
 
-  const lastElIsFixed = userCircuit[userCircuit.length - 1].name == "loadTerm" || userCircuit[userCircuit.length - 1].type == "s1p";
+  const s1pAtStart = userCircuit[0]?.type === "s1p";
+  const lastElIsFixed = userCircuit[userCircuit.length - 1].name == "loadTerm" || (!s1pAtStart && userCircuit[userCircuit.length - 1].type == "s1p");
   const lastElement = lastElIsFixed ? userCircuit.length - 2 : userCircuit.length - 1;
-  const selectorColumns = stackedLayout ? { xs: 6, sm: 12, md: 16, lg: 24 } : { xs: 6, sm: 12, md: 8, lg: 12 };
-  const drawingColumns = stackedLayout ? { xs: 4, sm: 8, md: 12, lg: 16, xl: 20 } : { xs: 4, sm: 8, md: 4, lg: 8, xl: 10 };
+  const selectorColumns = stackedLayout ? { xs: 6, sm: 12, md: 16, lg: 24 } : { xs: 6, sm: 12, md: 12, lg: 12 };
+  const drawingColumns = stackedLayout ? { xs: 4, sm: 8, md: 12, lg: 16, xl: 20 } : { xs: 4, sm: 8, md: 6, lg: 8, xl: 10 };
 
   return (
     <ThemeProvider theme={theme}>
@@ -1135,7 +1166,7 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
       <div style={{ display: "flex", width: "100%" }}>
         <p>
           {t("circuit.hint", {
-            direction: s1pIndex === -1 ? t("circuit.towardsBlackBox") : t("circuit.intoDp1"),
+            direction: s1pAtStart ? t("circuit.towardsTermination") : s1pIndex === -1 ? t("circuit.towardsBlackBox") : t("circuit.intoDp1"),
           })}
         </p>
       </div>
@@ -1147,17 +1178,14 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setPlotType, setSetti
           return (
             <Grid size={2} key={i} sx={{ display: "flex", flexDirection: "column", borderRadius: 1 }} className="circuitDrawing">
               <Box sx={{ position: "relative" }}>
-                <img src={comp.src} width="100%" />
-                {i == 0 || userCircuit[i].name == "loadTerm" ? null : (
+                <img src={c.name === "sparam" && c.type === "s1p" ? s1pSvg : comp.src} width="100%" />
+                {(i == 0 && c.type !== "s1p") || userCircuit[i].name == "loadTerm" ? null : (
                   <IconButton
                     onClick={() => {
                       setUserCircuit((z) => {
-                        var newZ = [
-                          ...z.slice(0, i), // Items before the index `i`
-                          ...z.slice(i + 1),
-                        ];
-                        //if sparam and last element is loadTerm, remove it
-                        if (c.name == "sparam" && newZ[newZ.length - 1].name == "loadTerm") {
+                        var newZ = [...z.slice(0, i), ...z.slice(i + 1)];
+                        if (c.type === "s1p") return restoreFromS1p(z);
+                        if (c.name == "sparam" && newZ[newZ.length - 1]?.name == "loadTerm") {
                           newZ = [...newZ.slice(0, -1)];
                         }
                         return newZ;

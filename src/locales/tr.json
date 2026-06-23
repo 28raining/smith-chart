@@ -214,7 +214,8 @@
     },
     "shortedStubDialog": "Kısa devre stub yayı 0 Ω’da (uzunluk = 0) başlar, bu yüzden önceki noktaya bağlı görünmez. İlk bakışta karşı sezgine gelebilir; frekans aralığı ve tolerans düşünüldüğünde daha anlaşılır olur",
     "hint": "Aşağıdaki devreye eklemek için yukarıdaki bileşenlere tıklayın. Empedans yönü: {{direction}}",
-    "towardsBlackBox": "KARA KUTU’ya doğru",
+    "towardsBlackBox": "KARA KUTU'ya doğru",
+    "towardsTermination": "SONLANDIRMA'ya doğru",
     "intoDp1": "DP1 içine",
     "dp": "DP{{i}}"
   },
@@ -236,6 +237,11 @@
     "version": "Sürüm",
     "date": "Tarih",
     "notes": "Notlar",
+    "v22": [
+      ".s1p eşleme yenilendi: solda S-parametre, sağda eşleme ağı, sonda sonlandırma",
+      "Eski .s1p paylaşım bağlantıları otomatik taşınır",
+      "Yansıma katsayısı ve ham S-parametre verisi birlikte çizilir"
+    ],
     "v21": ["S-parametre bileşeni eklendi", "s2p kazancı için kazanç çemberleri eklendi", "Birkaç s-parametre öğreticisi eklendi"],
     "v20a": "Site will-kelsey.com/smith_chart/ adresinden onlinesmithchart.com adresine taşındı",
     "v20b": "Tüm site yeniden yazıldı. 6 yıldan uzun sürede eski siteye birçok özellik eklendiği için kod çok dağınıktı. Bazı kullanıcılar doğrulama için koda bakıyordu; bu zordu. Artık kod daha düzenli ve optimize. İleride topluluğun depoya özellik ve iyileştirme eklemesini umuyorum.",

@@ -361,13 +361,9 @@ export function allImpedanceCalculations(userCircuit, settings, showIdeal = fals
   const multiZCircuits =
     s2pIndex === -1 ? [userCircuitNoLambda] : [userCircuitNoLambda.slice(0, s2pIndex), [...userCircuitNoLambda.slice(s2pIndex + 1)].reverse()];
   const multiZResults = [];
+  const loadTermIdx = userCircuitNoLambda.findIndex((c) => c.name === "loadTerm");
   for (var c of multiZCircuits) {
     var zResultsSrc = [];
-    if (s1pIndex !== -1) {
-      const cReversed = [...c].reverse();
-      cReversed.pop(); //remove the blackbox
-      c = cReversed;
-    }
     var circuitArray = createToleranceArray([c]);
     for (const z of circuitArray) zResultsSrc.push(calculateImpedance(z, numericalFrequency, detailedResolution, showIdeal));
     const noToleranceResult = zResultsSrc[zResultsSrc.length - 1];
@@ -384,7 +380,13 @@ export function allImpedanceCalculations(userCircuit, settings, showIdeal = fals
         const z = impedanceAtFrequency(c, f, showIdeal);
         fRes[f] = { z };
         if (sParamIndex !== -1) fRes[f].reflAtSZo = zToRefl(z, { real: userCircuitNoLambda[sParamIndex].settings.zo, imaginary: 0 });
-        if (s1pIndex !== -1) RefInVsF[f] = rectangularToPolar(zToRefl(z, userCircuitNoLambda[0])); //userCircuitNoLambda[0] is the termination
+        if (s1pIndex !== -1) {
+          const termZ =
+            loadTermIdx !== -1
+              ? { real: userCircuitNoLambda[loadTermIdx].real, imaginary: userCircuitNoLambda[loadTermIdx].imaginary }
+              : { real: userCircuitNoLambda[0].real, imaginary: userCircuitNoLambda[0].imaginary };
+          RefInVsF[f] = rectangularToPolar(zToRefl(z, termZ));
+        }
       }
       spanResults.push(fRes);
       if (s1pIndex !== -1) RefIn.push(RefInVsF);

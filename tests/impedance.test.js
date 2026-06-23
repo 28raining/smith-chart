@@ -231,12 +231,6 @@ test("Coupled Transformer", () => {
 test("Impedance s1p", () => {
   const circuit = [
     {
-      name: "blackBox",
-      real: "8",
-      imaginary: "1.5",
-      tolerance: "0",
-    },
-    {
       data: {
         140000000: {
           S11: {
@@ -279,6 +273,12 @@ test("Impedance s1p", () => {
       error: null,
       name: "sparam",
       type: "s1p",
+    },
+    {
+      name: "loadTerm",
+      real: "8",
+      imaginary: "1.5",
+      tolerance: "0",
     },
   ];
   const settings = {

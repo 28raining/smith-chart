@@ -424,7 +424,7 @@ function RPlot({ RefIn, options, freqUnit, title }) {
   );
 }
 
-export default function Results({ zProc, spanResults, freqUnit, plotType, sParameters, gainResults, noiseArray, RefIn, zo }) {
+export default function Results({ zProc, spanResults, freqUnit, sParameters, gainResults, noiseArray, RefIn, zo }) {
   const { t, i18n } = useTranslation();
   const { zStr, zPolarStr, refStr, refPolarStr, vswr, qFactor } = zProc;
   const containerRef = useRef();
@@ -535,22 +535,20 @@ export default function Results({ zProc, spanResults, freqUnit, plotType, sParam
     };
   }, [freqUnit, t, i18n.language]);
 
-  // plot s-parameters straight from the file
-  if (plotType === "sparam" && sParameters !== null) {
+  if (sParameters !== null) {
     const sparametersData = sParameters.data;
+    const isS1p = sParameters.type === "s1p";
     return (
       <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
+        {isS1p && <RPlot RefIn={RefIn} options={optionsS11} freqUnit={freqUnit} title={t("results.zDp1")} />}
+        {!isS1p && (
+          <>
+            <RPlot RefIn={RefIn} options={optionsS11} freqUnit={freqUnit} title={t("results.zDp1")} />
+            <GainPlot gain={gainResults} options={optionsGain} freqUnit={freqUnit} title={t("results.systemGain")} legend={t("results.gainLegend")} />
+            <GainPlot gain={noiseArray} options={optionsGain} freqUnit={freqUnit} title={t("results.noiseFigure")} legend={t("results.nfLegend")} />
+          </>
+        )}
         <SPlot sparametersData={sparametersData} options={options4} freqUnit={freqUnit} title={t("results.rawData")} />
-      </div>
-    );
-
-    // plot s-parameters when terminated with custom impedance
-  } else if (plotType !== "sparam" && sParameters !== null) {
-    return (
-      <div ref={containerRef} style={{ width: "100%", marginTop: "30px" }}>
-        <RPlot RefIn={RefIn} options={optionsS11} freqUnit={freqUnit} title={t("results.zDp1")} />
-        <GainPlot gain={gainResults} options={optionsGain} freqUnit={freqUnit} title={t("results.systemGain")} legend={t("results.gainLegend")} />
-        <GainPlot gain={noiseArray} options={optionsGain} freqUnit={freqUnit} title={t("results.noiseFigure")} legend={t("results.nfLegend")} />
       </div>
     );
   } else

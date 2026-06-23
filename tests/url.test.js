@@ -1,7 +1,7 @@
 // const { calculateImpedance } = require('../src/impedanceFunctions.js');
 import { expect, test } from "vitest";
 import { circuitComponents } from "../src/circuitComponents.js";
-import { updateObjectFromUrl } from "../src/urlFunctions.js"; // Import the syncObjectToUrl function
+import { updateObjectFromUrl, normalizeS1pCircuit } from "../src/urlFunctions.js"; // Import the syncObjectToUrl function
 
 const initialState = {
   zo: 50,
@@ -162,4 +162,30 @@ test("URL clicked them all", () => {
       model: "coupledInductor",
     },
   ]);
+});
+
+test("normalizeS1pCircuit migrates legacy layout", () => {
+  const legacy = [
+    { name: "blackBox", real: 8, imaginary: 1.5, tolerance: 0 },
+    { name: "seriesInd", value: 10, unit: "nH", tolerance: 0, esr: 0 },
+    { name: "shortedCap", value: 1, unit: "pF", tolerance: 0, esr: 0, esl: 0 },
+    { name: "sparam", type: "s1p", data: {}, noise: [], settings: { freq_unit: "Hz", param: "S", format: "RI", zo: 50 }, error: null },
+  ];
+  const migrated = normalizeS1pCircuit(legacy);
+  expect(migrated[0].name).toBe("sparam");
+  expect(migrated[0].type).toBe("s1p");
+  expect(migrated[1].name).toBe("shortedCap");
+  expect(migrated[2].name).toBe("seriesInd");
+  expect(migrated[3].name).toBe("loadTerm");
+  expect(migrated[3].real).toBe(8);
+  expect(migrated[3].imaginary).toBe(1.5);
+});
+
+test("normalizeS1pCircuit leaves new layout unchanged", () => {
+  const circuit = [
+    { name: "sparam", type: "s1p", data: {}, noise: [], settings: { freq_unit: "Hz", param: "S", format: "RI", zo: 50 }, error: null },
+    { name: "seriesInd", value: 10, unit: "nH", tolerance: 0, esr: 0 },
+    { name: "loadTerm", real: 50, imaginary: 0 },
+  ];
+  expect(normalizeS1pCircuit(circuit)).toEqual(circuit);
 });

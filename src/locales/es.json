@@ -215,6 +215,7 @@
     "shortedStubDialog": "El arco del stub en corto comienza en 0 Ω (longitud = 0), por lo que no se conectará al punto anterior. Puede parecer poco intuitivo pero encaja con el rango de frecuencia y la tolerancia",
     "hint": "Pulse los componentes de arriba para añadirlos al circuito. La impedancia se ve {{direction}}",
     "towardsBlackBox": "hacia la CAJA NEGRA",
+    "towardsTermination": "hacia la TERMINACIÓN",
     "intoDp1": "hacia DP1",
     "dp": "DP{{i}}"
   },
@@ -236,6 +237,11 @@
     "version": "Versión",
     "date": "Fecha",
     "notes": "Notas",
+    "v22": [
+      "Flujo .s1p mejorado: bloque S a la izquierda, red de adaptación a la derecha, terminación al final",
+      "Los enlaces .s1p antiguos se migran automáticamente",
+      "Coeficiente de reflexión y datos S brutos se trazan juntos"
+    ],
     "v21": ["Componente de parámetros S", "Círculos de ganancia para ganancia s2p", "Varios tutoriales de parámetros S"],
     "v20a": "El sitio pasó de will-kelsey.com/smith_chart/ a onlinesmithchart.com",
     "v20b": "Reescritura completa del sitio. En más de seis años se añadieron muchas funciones y el código antiguo quedó desordenado. Algunos usuarios revisaban el código para verificar la implementación, lo cual era difícil. Ahora el código está más organizado y optimizado. Espero que la comunidad pueda añadir funciones y mejoras.",

@@ -23,7 +23,7 @@ import Box from "@mui/material/Box";
 import Snackbar from "@mui/material/Snackbar";
 import SnackbarContent from "@mui/material/SnackbarContent";
 
-import { arcColors, processImpedance, parseInput, reflToZ, polarToRectangular, unitConverter } from "./commonFunctions.js";
+import { processImpedance, parseInput, reflToZ, polarToRectangular, unitConverter, impedanceArcColor } from "./commonFunctions.js";
 import { sparamNoiseCircles, sparamGainCircles, stabilityCircles } from "./sparam.js";
 
 // Dedicated S-parameter stroke colors (Okabe–Ito–style); avoids clashing with arcColors used for Z traces
@@ -81,7 +81,6 @@ function Graph({
   reflection_real,
   reflection_imag,
   sParameters,
-  plotType,
   chosenSparameter,
   freqUnit,
   frequency,
@@ -257,7 +256,7 @@ function Graph({
     }
 
     setSSnaps(sParamSnap);
-  }, [zo, width, plotType, sParameters, showSPlots, conjugateSParams]);
+  }, [zo, width, sParameters, showSPlots, conjugateSParams]);
 
   //draw the custom markers
   useEffect(() => {
@@ -587,12 +586,15 @@ function Graph({
               }
             } else {
               //the last entry in z array is the circuit without any tolerance applied
-              lastDpColor =
-                cumulatedDP == 0
-                  ? sParameters && sParameters.type === "s1p"
-                    ? arcColors[(zResultsSrc[0].arcs[0].length - dp) % arcColors.length]
-                    : arcColors[dp % arcColors.length]
-                  : arcColors[(cumulatedDP - dp) % arcColors.length];
+              const arcCount = z[tol].length;
+              const { color, skipDraw } = impedanceArcColor({
+                dp,
+                arcCount,
+                cumulatedDP,
+                sparamType: sParameters?.type ?? null,
+              });
+              lastDpColor = color;
+              if (skipDraw) continue;
               impedanceArc
                 .append("path")
                 .attr("stroke-linecap", "round")
@@ -684,7 +686,7 @@ function Graph({
       }
     }
     setHSnaps(hoverSnaps);
-  }, [zResultsSrc, zo, spanResults, width, plotType, frequency, showZPlots, sParameters]);
+  }, [zResultsSrc, zo, spanResults, width, frequency, showZPlots, sParameters]);
 
   //draw the labels
   useEffect(() => {
