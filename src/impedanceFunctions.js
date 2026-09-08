@@ -14,17 +14,7 @@ import { sParamFrequencyRange } from "./sparam.js"; // Import the sParamFrequenc
 
 const detailedResolution = 50;
 
-export function calculateTlineZ(
-  resolution,
-  component,
-  line_length,
-  beta,
-  startImaginary,
-  startReal,
-  impedanceResolution,
-  startAdmittance,
-  flipArc,
-) {
+export function calculateTlineZ(resolution, component, line_length, beta, startImaginary, startReal, impedanceResolution, startAdmittance, flipArc) {
   var tan_beta, zBottom_inv, zTop;
   for (var j = 0; j <= resolution; j++) {
     if (flipArc) tan_beta = Math.tan((beta * j * -line_length) / resolution);
@@ -168,17 +158,7 @@ export function calculateImpedance(userCircuit, frequency, resolution, showIdeal
         }
       }
       line_length = (segmentLambda * speedOfLight) / frequency;
-      calculateTlineZ(
-        resolution,
-        component,
-        line_length,
-        beta,
-        startImaginary,
-        startReal,
-        impedanceResolution,
-        startAdmittance,
-        flipArc,
-      );
+      calculateTlineZ(resolution, component, line_length, beta, startImaginary, startReal, impedanceResolution, startAdmittance, flipArc);
     } else if (component.name == "transformer") {
       if (component.model === "ideal") {
         // Ideal transformer: Z_out = n² * Z_in (turns ratio n from primary to secondary)

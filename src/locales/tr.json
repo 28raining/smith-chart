@@ -236,9 +236,7 @@
     "version": "Sürüm",
     "date": "Tarih",
     "notes": "Notlar",
-    "v23": [
-      "Kısa devre stub yayları artık geçerli empedans noktasından son empedansa bağlanır (0 Ω yerine)"
-    ],
+    "v23": ["Kısa devre stub yayları artık geçerli empedans noktasından son empedansa bağlanır (0 Ω yerine)"],
     "v22": [
       ".s1p eşleme yenilendi: solda S-parametre, sağda eşleme ağı, sonda sonlandırma",
       "Eski .s1p paylaşım bağlantıları otomatik taşınır",

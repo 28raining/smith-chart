@@ -236,9 +236,7 @@
     "version": "Version",
     "date": "Date",
     "notes": "Notes",
-    "v23": [
-      "Les arcs du stub court-circuité partent du point d’impédance actuel jusqu’à l’impédance finale (au lieu de partir de 0 Ω)"
-    ],
+    "v23": ["Les arcs du stub court-circuité partent du point d’impédance actuel jusqu’à l’impédance finale (au lieu de partir de 0 Ω)"],
     "v22": [
       "Adaptation .s1p refaite : bloc S à gauche, réseau d’adaptation à droite, terminaison en fin de chaîne",
       "Les liens .s1p existants sont migrés automatiquement",

@@ -236,9 +236,7 @@
     "version": "Version",
     "date": "Date",
     "notes": "Notes",
-    "v23": [
-      "Shorted stub arcs now connect from the current impedance point to the final impedance (opposed to from 0ohms)"
-    ],
+    "v23": ["Shorted stub arcs now connect from the current impedance point to the final impedance (opposed to from 0ohms)"],
     "v22": [
       "Reworked .s1p matching: S-parameter block on the left, matching components to the right, load termination at the end",
       "Legacy .s1p share links migrate automatically",
