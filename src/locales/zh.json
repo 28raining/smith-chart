@@ -45,7 +45,7 @@
   },
   "footer": {
     "license": "© {{year}} Will Kelsey。本作品采用知识共享署名 4.0 国际许可协议。不得转售本工具",
-    "version": "v2.0"
+    "version": "v2.3"
   },
   "language": {
     "label": "语言"
@@ -212,7 +212,6 @@
       "tolerance": "容差",
       "qFactorEquals": "Q 值 = {{v}}"
     },
-    "shortedStubDialog": "短路短截线弧从 0 欧（长度 = 0）开始，因此不会连接到前一点。看似不直观，但结合频率范围与容差后更易理解",
     "hint": "点击上方元件将其加入下方电路。阻抗为看向 {{direction}}",
     "towardsBlackBox": "黑盒方向",
     "towardsTermination": "终端方向",
@@ -237,6 +236,7 @@
     "version": "版本",
     "date": "日期",
     "notes": "说明",
+    "v23": ["短路短截线弧现从当前阻抗点连接到最终阻抗（而非从 0 Ω 起）"],
     "v22": ["改进 .s1p 匹配流程：左侧 S 参数、右侧匹配网络、末端负载", "旧 .s1p 分享链接自动迁移", "反射系数与原始 S 参数数据同时绘制"],
     "v21": ["新增 S 参数元件", "新增用于 s2p 增益的增益圆", "新增若干 S 参数教程"],
     "v20a": "网站从 will-kelsey.com/smith_chart/ 迁移至 onlinesmithchart.com",

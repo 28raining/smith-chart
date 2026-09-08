@@ -4,6 +4,26 @@ import { readFileSync /*, writeFileSync*/ } from "fs";
 import { join } from "path";
 import { allImpedanceCalculations, calculateImpedance } from "../src/impedanceFunctions.js";
 
+const FLOAT_PRECISION = 10;
+
+function expectProcessedImpedanceResults(actual, expected) {
+  const { refReal, refImag, ...expectedRest } = expected;
+  expect(actual).toMatchObject(expectedRest);
+  expect(actual.refReal).toBeCloseTo(refReal, FLOAT_PRECISION);
+  expect(actual.refImag).toBeCloseTo(refImag, FLOAT_PRECISION);
+}
+
+function expectImpedanceArcs(actual, expected, precision = FLOAT_PRECISION) {
+  expect(actual.length).toBe(expected.length);
+  for (let i = 0; i < actual.length; i++) {
+    expect(actual[i].length).toBe(expected[i].length);
+    for (let j = 0; j < actual[i].length; j++) {
+      expect(actual[i][j].real).toBeCloseTo(expected[i][j].real, precision);
+      expect(actual[i][j].imaginary).toBeCloseTo(expected[i][j].imaginary, precision);
+    }
+  }
+}
+
 test("Transmission line impedance test", () => {
   const circuit = [
     { name: "blackBox", real: 25, imaginary: -25 },
@@ -20,7 +40,7 @@ test("Transmission line impedance test", () => {
       { real: 46.53103192423643, imaginary: 48.109436254243874 },
     ],
   ];
-  expect(impedance).toEqual(expected);
+  expectImpedanceArcs(impedance, expected);
 });
 
 test("Impedance L-R-Shorted-Stub", () => {
@@ -67,7 +87,7 @@ test("Impedance L-R-Shorted-Stub", () => {
     settings,
   );
 
-  expect(processedImpedanceResults).toEqual({
+  expectProcessedImpedanceResults(processedImpedanceResults, {
     zStr: "27.88 - 11.2j",
     zPolarStr: "30.05 ∠ -21.88°",
     refStr: "-0.258 - 0.181j",
@@ -116,7 +136,7 @@ test("Cap with ESL and ESR", () => {
     settings,
   );
 
-  expect(processedImpedanceResults).toEqual({
+  expectProcessedImpedanceResults(processedImpedanceResults, {
     zStr: "73.00 - 34.57j",
     zPolarStr: "80.77 ∠ -25.34°",
     refStr: "0.246 - 0.212j",
@@ -166,7 +186,7 @@ test("Ideal Transformer", () => {
     settings,
   );
 
-  expect(processedImpedanceResults).toEqual({
+  expectProcessedImpedanceResults(processedImpedanceResults, {
     zStr: "83.23 + 83.23j",
     zPolarStr: "117.71 ∠ 45.00°",
     refStr: "0.460 + 0.337j",
@@ -215,7 +235,7 @@ test("Coupled Transformer", () => {
     settings,
   );
 
-  expect(processedImpedanceResults).toEqual({
+  expectProcessedImpedanceResults(processedImpedanceResults, {
     zStr: "152.12 - 339.33j",
     zPolarStr: "371.87 ∠ -65.85°",
     refStr: "0.870 - 0.218j",

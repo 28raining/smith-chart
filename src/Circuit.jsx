@@ -940,8 +940,6 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setSettings, showIdea
   const w = 2 * Math.PI * frequency;
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSparam, setModalSparam] = useState(false);
-  const [shortedStubDialogOpen, setShortedStubDialogOpen] = useState(false);
-  const [hasSeenShortedStubPopup, setHasSeenShortedStubPopup] = useState(false);
 
   const sParamIndex = userCircuit.findIndex((c) => c.name === "sparam");
   const s1pIndex = userCircuit.findIndex((c) => c.type === "s1p");
@@ -1128,9 +1126,6 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setSettings, showIdea
                       setModalOpen(true);
                     } else if (k == "sparam") {
                       setModalSparam(true);
-                    } else if (k === "shortedStub" && !hasSeenShortedStubPopup) {
-                      setHasSeenShortedStubPopup(true);
-                      setShortedStubDialogOpen(true);
                     }
                   }}
                   color="bland"
@@ -1155,14 +1150,6 @@ function Circuit({ userCircuit, setUserCircuit, frequency, setSettings, showIdea
             );
         })}
       </Grid>
-      <Dialog open={shortedStubDialogOpen} onClose={() => setShortedStubDialogOpen(false)}>
-        <Box sx={{ p: 2 }}>
-          <Typography sx={{ mb: 2 }}>{t("circuit.shortedStubDialog")}</Typography>
-          <Button variant="contained" onClick={() => setShortedStubDialogOpen(false)}>
-            {t("common.ok")}
-          </Button>
-        </Box>
-      </Dialog>
       <div style={{ display: "flex", width: "100%" }}>
         <p>
           {t("circuit.hint", {

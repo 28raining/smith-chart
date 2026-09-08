@@ -45,7 +45,7 @@
   },
   "footer": {
     "license": "© {{year}} Will Kelsey. Bu çalışma Creative Commons Atıf 4.0 Uluslararası Lisansı altındadır. Bu aracı yeniden satamazsınız",
-    "version": "sürüm 2.0"
+    "version": "sürüm 2.3"
   },
   "language": {
     "label": "Dil"
@@ -212,7 +212,6 @@
       "tolerance": "Tolerans",
       "qFactorEquals": "Q faktörü = {{v}}"
     },
-    "shortedStubDialog": "Kısa devre stub yayı 0 Ω’da (uzunluk = 0) başlar, bu yüzden önceki noktaya bağlı görünmez. İlk bakışta karşı sezgine gelebilir; frekans aralığı ve tolerans düşünüldüğünde daha anlaşılır olur",
     "hint": "Aşağıdaki devreye eklemek için yukarıdaki bileşenlere tıklayın. Empedans yönü: {{direction}}",
     "towardsBlackBox": "KARA KUTU'ya doğru",
     "towardsTermination": "SONLANDIRMA'ya doğru",
@@ -237,6 +236,7 @@
     "version": "Sürüm",
     "date": "Tarih",
     "notes": "Notlar",
+    "v23": ["Kısa devre stub yayları artık geçerli empedans noktasından son empedansa bağlanır (0 Ω yerine)"],
     "v22": [
       ".s1p eşleme yenilendi: solda S-parametre, sağda eşleme ağı, sonda sonlandırma",
       "Eski .s1p paylaşım bağlantıları otomatik taşınır",

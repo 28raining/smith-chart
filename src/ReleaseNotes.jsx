@@ -14,6 +14,7 @@ import TableRow from "@mui/material/TableRow";
 
 function ReleaseNotes() {
   const { t } = useTranslation();
+  const v23 = t("release.v23", { returnObjects: true });
   const v22 = t("release.v22", { returnObjects: true });
   const v21 = t("release.v21", { returnObjects: true });
   const v20features = t("release.v20features", { returnObjects: true });
@@ -41,6 +42,17 @@ function ReleaseNotes() {
               </TableRow>
             </TableHead>
             <TableBody>
+              <TableRow>
+                <TableCell>
+                  <Typography>v2.3</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography>September 2026</Typography>
+                </TableCell>
+                <TableCell>
+                  <ul>{Array.isArray(v23) && v23.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                </TableCell>
+              </TableRow>
               <TableRow>
                 <TableCell>
                   <Typography>v2.2</Typography>
