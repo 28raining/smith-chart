@@ -14,10 +14,20 @@ import { sParamFrequencyRange } from "./sparam.js"; // Import the sParamFrequenc
 
 const detailedResolution = 50;
 
-export function calculateTlineZ(resolution, component, line_length, beta, startImaginary, startReal, impedanceResolution, startAdmittance) {
+export function calculateTlineZ(
+  resolution,
+  component,
+  line_length,
+  beta,
+  startImaginary,
+  startReal,
+  impedanceResolution,
+  startAdmittance,
+  flipArc,
+) {
   var tan_beta, zBottom_inv, zTop;
   for (var j = 0; j <= resolution; j++) {
-    if (component.name == "shortedStub") tan_beta = Math.tan((beta * j * line_length) / resolution + Math.PI / 2);
+    if (flipArc) tan_beta = Math.tan((beta * j * -line_length) / resolution);
     else tan_beta = Math.tan((beta * j * line_length) / resolution);
 
     if (component.name == "transmissionLine") {
@@ -147,8 +157,28 @@ export function calculateImpedance(userCircuit, frequency, resolution, showIdeal
           startAdmittance,
         );
 
-      line_length = ((lengthLambda % 0.5) * speedOfLight) / frequency;
-      calculateTlineZ(resolution, component, line_length, beta, startImaginary, startReal, impedanceResolution, startAdmittance);
+      var segmentLambda = lengthLambda % 0.5;
+      var flipArc = false;
+      if (component.name === "shortedStub") {
+        if (segmentLambda > 0 && segmentLambda < 0.25) {
+          flipArc = true;
+          segmentLambda = 0.25 - segmentLambda;
+        } else if (segmentLambda >= 0.25) {
+          segmentLambda = segmentLambda - 0.25;
+        }
+      }
+      line_length = (segmentLambda * speedOfLight) / frequency;
+      calculateTlineZ(
+        resolution,
+        component,
+        line_length,
+        beta,
+        startImaginary,
+        startReal,
+        impedanceResolution,
+        startAdmittance,
+        flipArc,
+      );
     } else if (component.name == "transformer") {
       if (component.model === "ideal") {
         // Ideal transformer: Z_out = n² * Z_in (turns ratio n from primary to secondary)

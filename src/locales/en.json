@@ -45,7 +45,7 @@
   },
   "footer": {
     "license": "© {{year}} Will Kelsey. This work is licensed under a Creative Commons Attribution 4.0 International License. You may not resell this tool",
-    "version": "v2.0"
+    "version": "v2.3"
   },
   "language": {
     "label": "Language"
@@ -212,7 +212,6 @@
       "tolerance": "Tolerance",
       "qFactorEquals": "Q Factor = {{v}}"
     },
-    "shortedStubDialog": "Shorted-stub arc starts at 0-ohms (length = 0), therefore will not be connected to the previous point. This may seem unintuitive but makes more sense once considering frequency-span and tolerance",
     "hint": "Click components above to add them to the circuit below. Impedance is looking {{direction}}",
     "towardsBlackBox": "towards the BLACK BOX",
     "towardsTermination": "from the termination",
@@ -237,6 +236,9 @@
     "version": "Version",
     "date": "Date",
     "notes": "Notes",
+    "v23": [
+      "Shorted stub arcs now connect from the current impedance point to the final impedance (opposed to from 0ohms)"
+    ],
     "v22": [
       "Reworked .s1p matching: S-parameter block on the left, matching components to the right, load termination at the end",
       "Legacy .s1p share links migrate automatically",

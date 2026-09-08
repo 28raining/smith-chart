@@ -45,7 +45,7 @@
   },
   "footer": {
     "license": "© {{year}} Will Kelsey. Esta obra tiene licencia Creative Commons Atribución 4.0 Internacional. No puede revender esta herramienta",
-    "version": "v2.0"
+    "version": "v2.3"
   },
   "language": {
     "label": "Idioma"
@@ -212,7 +212,6 @@
       "tolerance": "Tolerancia",
       "qFactorEquals": "Factor Q = {{v}}"
     },
-    "shortedStubDialog": "El arco del stub en corto comienza en 0 Ω (longitud = 0), por lo que no se conectará al punto anterior. Puede parecer poco intuitivo pero encaja con el rango de frecuencia y la tolerancia",
     "hint": "Pulse los componentes de arriba para añadirlos al circuito. La impedancia se ve {{direction}}",
     "towardsBlackBox": "hacia la CAJA NEGRA",
     "towardsTermination": "hacia la TERMINACIÓN",
@@ -237,6 +236,9 @@
     "version": "Versión",
     "date": "Fecha",
     "notes": "Notas",
+    "v23": [
+      "Los arcos del stub en corto conectan desde el punto de impedancia actual hasta la impedancia final (en lugar de desde 0 Ω)"
+    ],
     "v22": [
       "Flujo .s1p mejorado: bloque S a la izquierda, red de adaptación a la derecha, terminación al final",
       "Los enlaces .s1p antiguos se migran automáticamente",
